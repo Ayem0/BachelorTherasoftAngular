@@ -1,1 +1,239 @@
+@use 'sass:map';
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use '@angular/material' as mat;
+// Plus imports for other components in your app.
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@include mat.core();
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Define the theme object.
+$_palettes: (
+  primary: (
+    0: #000000,
+    10: #1a1c1c,
+    20: #2f3131,
+    25: #3a3c3c,
+    30: #454747,
+    35: #515353,
+    40: #1f1f1f,
+    50: #767777,
+    60: #909191,
+    70: #aaabab,
+    80: #ffffff,
+    90: #e2e2e2,
+    95: #f0f1f1,
+    98: #f9f9f9,
+    99: #fcfcfc,
+    100: #ffffff,
+  ),
+  secondary: (
+    0: #000000,
+    10: #1b1b1b,
+    20: #303030,
+    25: #3b3b3b,
+    30: #474747,
+    35: #525252,
+    40: #5e5e5e,
+    50: #777777,
+    60: #919191,
+    70: #ababab,
+    80: #c6c6c6,
+    90: #e2e2e2,
+    95: #f1f1f1,
+    98: #f9f9f9,
+    99: #fcfcfc,
+    100: #ffffff,
+  ),
+  tertiary: (
+    0: #000000,
+    10: #1b1c1c,
+    20: #303031,
+    25: #3b3b3c,
+    30: #464747,
+    35: #525252,
+    40: #5e5e5e,
+    50: #777777,
+    60: #919190,
+    70: #ababab,
+    80: #c7c6c6,
+    90: #e3e2e2,
+    95: #f2f0f0,
+    98: #faf9f9,
+    99: #fdfcfb,
+    100: #ffffff,
+  ),
+  neutral: (
+    0: #000000,
+    10: #1c1b1b,
+    20: #313030,
+    25: #3c3b3b,
+    30: #474646,
+    35: #535252,
+    40: #5f5e5e,
+    50: #787776,
+    60: #929090,
+    70: #adabaa,
+    80: #c9c6c5,
+    90: #ffffff,
+    95: #f4f0ef,
+    98: #ffffff,
+    99: #f6feff,
+    100: #ffffff,
+    4: #0e0e0e,
+    6: hsl(40 10% 3.9%), 
+    12: #201f1f,
+    17: #2a2a2a,
+    22: #353434,
+    24: #3a3939,
+    87: #ddd9d9,
+    92: #ebe7e7,
+    94: #eeeeee,
+    96: #f6f3f2,
+  ),
+  neutral-variant: (
+    0: #000000,
+    10: #181c1d,
+    20: #2d3132,
+    25: #383c3d,
+    30: #444748,
+    35: #4f5354,
+    40: #5b5f60,
+    50: #747878,
+    60: #8e9192,
+    70: #a8acac,
+    80: #c4c7c8,
+    90: #e0e3e3,
+    95: #eef1f2,
+    98: #f7fafa,
+    99: #fafdfd,
+    100: #ffffff,
+  ),
+  error: (
+    0: #000000,
+    10: #410002,
+    20: #690005,
+    25: #7e0007,
+    30: #93000a,
+    35: #a80710,
+    40: #ba1a1a,
+    50: #de3730,
+    60: #ff5449,
+    70: #ff897d,
+    80: #ffb4ab,
+    90: #ffdad6,
+    95: #ffedea,
+    98: #fff8f7,
+    99: #fffbff,
+    100: #ffffff,
+  ),
+);
+
+$_rest: (
+  secondary: map.get($_palettes, secondary),
+  neutral: map.get($_palettes, neutral),
+  neutral-variant: map.get($_palettes,  neutral-variant),
+  error: map.get($_palettes, error),
+);
+$_primary: map.merge(map.get($_palettes, primary), $_rest);
+$_tertiary: map.merge(map.get($_palettes, tertiary), $_rest);
+
+$light: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: $_primary,
+    tertiary: $_tertiary,
+  ),
+  density: (
+    scale: 0,
+  )
+));
+$dark: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: $_primary,
+    tertiary: $_tertiary,
+  ),
+  density: (
+    scale: 0,
+  )
+));
+
+// $light: mat.define-theme((
+//   color: (
+//     theme-type: light,
+//     primary: mat.$azure-palette,
+//   ),
+//   density: (
+//     scale: 0,
+//   )
+// ));
+
+// $dark: mat.define-theme((
+//   color: (
+//     theme-type: dark,
+//     primary: mat.$azure-palette,
+//   ),
+//   density: (
+//     scale: 0,
+//   )
+// ));
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+:root {
+  --mat-app-background-hover-color: #e6e6e6;
+  // @include mat.core-theme($light);
+  @include mat.button-theme($light);
+  @include mat.icon-theme($light);
+  @include mat.icon-button-theme($light);
+  @include mat.menu-theme($light);
+  @include mat.tooltip-theme($light);
+  @include mat.sidenav-theme($light);
+  @include mat.form-field-theme($light);
+  @include mat.card-theme($light);
+  @include mat.input-theme($light);
+  @include mat.progress-spinner-theme($light);
+}
+
+.dark {
+  --mat-app-background-color: hsl(40 10% 3.9%);
+  --mat-app-background-hover-color: #252629;
+  @include mat.button-color($dark);
+  @include mat.icon-color($dark);
+  @include mat.icon-button-color($dark);
+  @include mat.menu-color($dark);
+  @include mat.tooltip-color($dark);
+  @include mat.sidenav-color($dark);
+  @include mat.form-field-color($dark);
+  @include mat.card-color($dark);
+  @include mat.input-color($dark);
+
+  @include mat.progress-spinner-color($dark);
+}
+
+
+// Comment out the line below if you want to use the pre-defined typography utility classes.
+// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
+// @include mat.typography-hierarchy($BachelorTherasoftAngular-theme);
+
+// Comment out the line below if you want to use the deprecated `color` inputs.
+// @include mat.color-variants-backwards-compatibility($BachelorTherasoftAngular-theme);
 /* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// fix alignment icon in button
+.mat-mdc-icon-button {
+  line-height: normal;
+}
+// fix border on mat-form-outlined with labels 
+.mat-mdc-notch-piece {
+  border-right: 1px transparent;
+}

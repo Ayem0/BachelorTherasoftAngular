@@ -1,0 +1,75 @@
+<div class="backdrop-blur fixed left-0 top-0 right-0 z-50 p-2 md:px-4 bg-transparent/05 dark:transparent/05"> 
+    <div class="flex justify-between">
+        <div class="flex items-center gap-2">
+            <button mat-icon-button aria-label="Menu" (click)="toggleMenu()">
+                <mat-icon>menu</mat-icon>
+            </button>
+            <a routerLink="/" class="hidden sm:block text-2xl dark:text-white">Title</a>
+        </div>
+        <div class="flex items-center gap-2">
+            <!-- <a routerLink="/login" mat-stroked-button aria-label="Login">Login</a>
+            <a routerLink="/register" mat-flat-button aria-label="Register">Register</a> -->
+            <button matTooltip="Settings" mat-icon-button [matMenuTriggerFor]="settings" aria-label="Settings Menu">
+                <mat-icon>settings</mat-icon>
+            </button>
+           <mat-menu #settings="matMenu">
+                <button mat-menu-item [matMenuTriggerFor]="theme" aria-label="Theme Menu">
+                    <mat-icon>contrast</mat-icon>
+                    <span>Appearance</span>
+                </button>
+                <mat-menu #theme="matMenu">
+                    <button mat-menu-item aria-label="Dark" (click)="setTheme(themes.dark)">
+                        <mat-icon>dark_mode</mat-icon>
+                        <span>Dark</span>
+                    </button>
+                    <button mat-menu-item aria-label="Light" (click)="setTheme(themes.light)">
+                        <mat-icon>light_mode</mat-icon>
+                        <span>Light</span>
+                    </button>
+                </mat-menu>
+           
+                <button mat-menu-item [matMenuTriggerFor]="language" aria-label="Language Menu">
+                    <mat-icon>translate</mat-icon>
+                    <span>Language</span>
+                </button>
+                <mat-menu #language="matMenu">
+                    <button mat-menu-item aria-label="French" aria-label="French">
+                        <mat-icon>language_french</mat-icon>
+                        <span>French</span>
+                    </button>
+                    <button mat-menu-item aria-label="English" aria-label="English">
+                        <mat-icon>language_gb_english</mat-icon>
+                        <span>English</span>
+                    </button>
+                </mat-menu>
+            </mat-menu>
+            
+            <button matTooltip="Notifications" mat-icon-button aria-label="Notifications">
+                <mat-icon>notifications</mat-icon>
+            </button>
+            <button matTooltip="Messages" mat-icon-button aria-label="Messages">
+                <mat-icon>forum</mat-icon>
+            </button>
+    
+            <button mat-icon-button [matMenuTriggerFor]="profile" aria-label="Profile Menu">
+                <mat-icon>account_circle</mat-icon>
+            </button>
+            <mat-menu #profile="matMenu">
+                <button mat-menu-item aria-label="Profile">
+                    <mat-icon>account_box</mat-icon>
+                    <span>Profile</span>
+                </button>
+                <button mat-menu-item aria-label="Profile Settings">
+                    <mat-icon>manage_accounts</mat-icon>
+                    <span>Settings</span>
+                </button>
+                <div class="border-b mx-1"></div>
+                <button mat-menu-item aria-label="Logout">
+                    <mat-icon>logout</mat-icon>
+                    <span>Logout</span>
+                </button>
+            </mat-menu>
+        </div>
+    </div>
+</div>
+  
