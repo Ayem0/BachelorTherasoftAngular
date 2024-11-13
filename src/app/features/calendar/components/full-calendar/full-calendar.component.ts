@@ -71,7 +71,8 @@ export class FullCalendarComponent implements AfterViewInit {
     handleWindowResize: true,
     windowResize: this.autoResize.bind(this),
     expandRows: true,
-    scrollTime: this.getCurrentDateInput()
+    scrollTime: this.getCurrentDateInput(),
+    height: "100%"
 
     // dayHeaderFormat: {
     //   weekday: 'short',
@@ -125,7 +126,6 @@ export class FullCalendarComponent implements AfterViewInit {
         end: selectInfo.endStr,
         allDay: selectInfo.allDay
       });
-      this.sonner.CreateToast();
     }
   }
 

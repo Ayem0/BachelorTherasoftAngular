@@ -1,17 +1,10 @@
 @use 'sass:map';
 // Custom Theming for Angular Material
-// For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
-// Plus imports for other components in your app.
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@include mat.core();
-
-// Include the common styles for Angular Material. We include this here so that you only
-// have to load a single css file for Angular Material in your app.
-// Define the theme object.
 $_palettes: (
   primary: (
     0: #000000,
@@ -139,6 +132,7 @@ $_rest: (
   neutral-variant: map.get($_palettes,  neutral-variant),
   error: map.get($_palettes, error),
 );
+
 $_primary: map.merge(map.get($_palettes, primary), $_rest);
 $_tertiary: map.merge(map.get($_palettes, tertiary), $_rest);
 
@@ -163,32 +157,9 @@ $dark: mat.define-theme((
   )
 ));
 
-// $light: mat.define-theme((
-//   color: (
-//     theme-type: light,
-//     primary: mat.$azure-palette,
-//   ),
-//   density: (
-//     scale: 0,
-//   )
-// ));
-
-// $dark: mat.define-theme((
-//   color: (
-//     theme-type: dark,
-//     primary: mat.$azure-palette,
-//   ),
-//   density: (
-//     scale: 0,
-//   )
-// ));
-
-// Include theme styles for core and each component used in your app.
-// Alternatively, you can import and @include the theme mixins for each component
-// that you are using.
 :root {
   --mat-app-background-hover-color: #e6e6e6;
-  // @include mat.core-theme($light);
+  @include mat.core();
   @include mat.button-theme($light);
   @include mat.icon-theme($light);
   @include mat.icon-button-theme($light);
@@ -213,18 +184,10 @@ $dark: mat.define-theme((
   @include mat.form-field-color($dark);
   @include mat.card-color($dark);
   @include mat.input-color($dark);
-
   @include mat.progress-spinner-color($dark);
 }
 
-
-// Comment out the line below if you want to use the pre-defined typography utility classes.
-// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
-// @include mat.typography-hierarchy($BachelorTherasoftAngular-theme);
-
-// Comment out the line below if you want to use the deprecated `color` inputs.
-// @include mat.color-variants-backwards-compatibility($BachelorTherasoftAngular-theme);
-/* You can add global styles to this file, and also import other style files */
+// Global styles
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

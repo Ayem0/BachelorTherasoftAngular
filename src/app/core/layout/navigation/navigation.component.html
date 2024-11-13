@@ -1,10 +1,12 @@
 <div class="flex flex-col h-full">
-    <div class="flex items-center gap-2 p-2 md:pl-4">
-        <button mat-icon-button aria-label="Menu" (click)="toggleMenu()">
-            <mat-icon>menu</mat-icon>
-        </button>
-        <a routerLink="/" class="sm:block text-2xl dark:text-white">Title</a>
-    </div>
+    @if(showTitle()) {
+        <div class="flex items-center gap-2 p-2 md:pl-4">
+            <button mat-icon-button aria-label="Menu" (click)="toggleMenu()">
+                <mat-icon>menu</mat-icon>
+            </button>
+            <a routerLink="/" class="sm:block text-2xl dark:text-white">Title</a>
+        </div>
+    }
 
     <!-- Make the `ul` scrollable while keeping the rest of the component static -->
     <ul class="overflow-y-auto flex-grow">

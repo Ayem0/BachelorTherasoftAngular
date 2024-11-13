@@ -19,7 +19,7 @@ WORKDIR /app
 
 # Copier le package.json et le package-lock.json, et installer les dépendances
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Copy the rest of the source files into the image.
 COPY . .

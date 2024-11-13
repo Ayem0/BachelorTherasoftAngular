@@ -43,32 +43,33 @@
                     </button>
                 </mat-menu>
             </mat-menu>
-            
-            <button matTooltip="Notifications" mat-icon-button aria-label="Notifications">
-                <mat-icon>notifications</mat-icon>
-            </button>
-            <button matTooltip="Messages" mat-icon-button aria-label="Messages">
-                <mat-icon>forum</mat-icon>
-            </button>
-    
-            <button mat-icon-button [matMenuTriggerFor]="profile" aria-label="Profile Menu">
-                <mat-icon>account_circle</mat-icon>
-            </button>
-            <mat-menu #profile="matMenu">
-                <button mat-menu-item aria-label="Profile">
-                    <mat-icon>account_box</mat-icon>
-                    <span>Profile</span>
+            @if (isLoggedIn()) {
+                <button matTooltip="Notifications" mat-icon-button aria-label="Notifications">
+                    <mat-icon>notifications</mat-icon>
                 </button>
-                <button mat-menu-item aria-label="Profile Settings">
-                    <mat-icon>manage_accounts</mat-icon>
-                    <span>Settings</span>
+                <button matTooltip="Messages" mat-icon-button aria-label="Messages">
+                    <mat-icon>forum</mat-icon>
                 </button>
-                <div class="border-b mx-1"></div>
-                <button mat-menu-item aria-label="Logout">
-                    <mat-icon>logout</mat-icon>
-                    <span>Logout</span>
+        
+                <button mat-icon-button [matMenuTriggerFor]="profile" aria-label="Profile Menu">
+                    <mat-icon>account_circle</mat-icon>
                 </button>
-            </mat-menu>
+                <mat-menu #profile="matMenu">
+                    <button mat-menu-item aria-label="Profile">
+                        <mat-icon>account_box</mat-icon>
+                        <span>Profile</span>
+                    </button>
+                    <button mat-menu-item aria-label="Profile Settings">
+                        <mat-icon>manage_accounts</mat-icon>
+                        <span>Settings</span>
+                    </button>
+                    <div class="border-b mx-1"></div>
+                    <button mat-menu-item aria-label="Logout">
+                        <mat-icon>logout</mat-icon>
+                        <span>Logout</span>
+                    </button>
+                </mat-menu>
+            }
         </div>
     </div>
 </div>
