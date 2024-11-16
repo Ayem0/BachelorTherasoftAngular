@@ -11,19 +11,21 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline" [hideRequiredMarker]="true">
                     <mat-label>Password</mat-label>
-                    <input matInput [type]="isHidden() ? 'password' : 'text'" formControlName="password" />
+                    <input matInput [type]="isHidden() ? 'password' : 'text'" formControlName="password" autocomplete="current-password"/>
                     <button
                       mat-icon-button
                       matSuffix
+                      [autofocus]="false"
                       (click)="togglePassword($event)"
                       [attr.aria-label]="isHidden() ? 'Hide password' : 'Show password'"
                       [attr.aria-pressed]="isHidden()"
+                      type="button"
                     >
                       <mat-icon>{{isHidden() ? 'visibility_off' : 'visibility'}}</mat-icon>
                     </button>
                 </mat-form-field>
                 <a class="text-sm text-end text-zinc-700 dark:text-zinc-300 hover:underline  dark:hover:text-white hover:text-black underline-offset-2">Forgot password?</a>
-                <button mat-flat-button (click)="submit()" [disabled]="isLoading()" class=" my-4" [disabled]="!loginForm.valid">
+                <button mat-flat-button type="submit" (click)="submit()" [disabled]="isLoading()" class="my-4" [disabled]="!loginForm.valid">
                     @if(isLoading()) {
                         <mat-spinner diameter="24"></mat-spinner>
                     } @else {

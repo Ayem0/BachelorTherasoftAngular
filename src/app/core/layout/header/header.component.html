@@ -7,8 +7,10 @@
             <a routerLink="/" class="hidden sm:block text-2xl dark:text-white">Title</a>
         </div>
         <div class="flex items-center gap-2">
-            <!-- <a routerLink="/login" mat-stroked-button aria-label="Login">Login</a>
-            <a routerLink="/register" mat-flat-button aria-label="Register">Register</a> -->
+            @if (!isLoggedIn()) {
+                <a routerLink="/login" mat-stroked-button aria-label="Login">Login</a>
+                <a routerLink="/register" mat-flat-button aria-label="Register">Register</a>
+            }
             <button matTooltip="Settings" mat-icon-button [matMenuTriggerFor]="settings" aria-label="Settings Menu">
                 <mat-icon>settings</mat-icon>
             </button>

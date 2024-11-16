@@ -55,7 +55,7 @@ export class LoginComponent {
     if (this.loginForm.valid && email && password) {
       this.authService.login(email, password).subscribe({
         next: (res) => {
-          this.router.navigateByUrl("/calendar");
+          this.router.navigateByUrl("home");
           this.isLoading.set(false);
         },
         error: (err) => {
