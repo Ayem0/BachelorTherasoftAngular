@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { afterNextRender, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SidebarService } from '../sidebar/sidebar.service';
@@ -17,17 +17,20 @@ import { fromEvent, map } from 'rxjs';
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss'
 })
-export class NavigationComponent implements OnInit {
+export class NavigationComponent {
  
   private readonly sidebarService = inject(SidebarService);
-  public windowWidth = signal<number>(window.innerWidth);
+  
+  public windowWidth = signal<number>(0);
   public showTitle = computed(() => this.windowWidth() < 1280);
-
-  ngOnInit(): void {
-    fromEvent(window, 'resize').pipe(
-      map(() => window.innerWidth),
-    ).subscribe(width => {
-        this.windowWidth.set(width);
+  constructor() {
+    afterNextRender(() => {
+      this.windowWidth.set(window.innerWidth)
+      fromEvent(window, 'resize').pipe(
+        map(() => window.innerWidth),
+      ).subscribe(width => {
+          this.windowWidth.set(width);
+      });
     });
   }
 
