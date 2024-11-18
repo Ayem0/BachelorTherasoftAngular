@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, firstValueFrom, map, tap } from 'rxjs';
+import { BehaviorSubject, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -16,18 +16,15 @@ export class AuthService {
   ) { }
 
   public login(email: string, password: string) {
-    return this.http.post(`${this.url}login`, { email, password }, 
-      { 
-        params: {"useCookies": true }, 
-        observe: "response",
-        withCredentials: true
-      }).pipe(
+    return this.http.post(`${this.url}login`, { email, password }, { params: {"useCookies": true }, observe: "response"})
+      .pipe(
         tap(res => {
           if(res.ok) {
             this.isAuth.set(true);
           }
         }),
-        map(res => res.ok)
+        map(res => res.ok),
+        catchError(() => of(false))
       )
   }
 

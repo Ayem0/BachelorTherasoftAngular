@@ -9,7 +9,7 @@ export class SonnerService {
   constructor() { }
 
   public errorToast(err: string) {
-    toast.error(err, {position: "bottom-center", closeButton: true});
+    toast.error(err, {position: "bottom-right", closeButton: true});
   }
 
 

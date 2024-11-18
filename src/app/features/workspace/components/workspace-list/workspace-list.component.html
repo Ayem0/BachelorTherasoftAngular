@@ -1,0 +1,54 @@
+
+<div class="mt-14">
+    <div class="flex w-full flex-col px-4">
+        <span class="text-3xl">Workspaces</span>
+        <div class="flex justify-between">
+            <span>TODO filters</span>
+            <button mat-flat-button>
+                <mat-icon>add</mat-icon>
+                <span>Create</span>
+            </button>
+        </div>
+    </div>
+    @defer (when !isLoading()) {
+        @if (workspaces().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 p-4  ">
+            @for (workspace of workspaces(); track workspace.id) {
+                
+                <mat-card [routerLink]="['/workspace', workspace.id]" class="cursor-pointer">
+                    <mat-card-title class="p-4">
+                        <div class="flex justify-between items-center">
+                            <span>{{ workspace.name }}</span>
+                            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu" (click)="$event.stopPropagation()">
+                                <mat-icon>more_vert</mat-icon>
+                            </button>
+                            <mat-menu #menu="matMenu">
+                                <button mat-menu-item>
+                                    <mat-icon>edit</mat-icon>
+                                    <span>Edit</span>
+                                </button>
+                                <button mat-menu-item>
+                                    <mat-icon>delete</mat-icon>
+                                    <span>Delete</span>
+                                </button>
+                            </mat-menu>
+                        </div>
+                    </mat-card-title>
+                    <mat-card-subtitle class="p-4">{{ workspace.description }}</mat-card-subtitle>
+                </mat-card>
+
+            }
+            </div>
+        } @else {
+            <div>No workspace yet!</div>
+        }
+    } @loading {
+        <div class="flex items-center justify-center">
+            <mat-progress-spinner></mat-progress-spinner>
+        </div>
+    } @error {
+        <div>Error getting your workspaces, try again later.</div>
+    }
+    
+</div>
+

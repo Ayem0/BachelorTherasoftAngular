@@ -53,17 +53,14 @@ export class LoginComponent {
     this.isLoading.set(true);
     const { email, password } = this.loginForm.value;
     if (this.loginForm.valid && email && password) {
-      this.authService.login(email, password).subscribe({
-        next: (res) => {
+      this.authService.login(email, password).subscribe((res) => {
+        if (res) {
           this.router.navigateByUrl("home");
-          this.isLoading.set(false);
-        },
-        error: (err) => {
+        } else {
           this.sonnerService.errorToast("Invalid credentials");
-          this.isLoading.set(false);
         }
+        this.isLoading.set(false);
       })
-
     }
   }
 }

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { user } from '../models/auth';
+import { User } from '../models/auth';
 import { catchError, map, tap } from 'rxjs';
 
 @Injectable({
@@ -10,7 +10,7 @@ export class UserService {
   private readonly http = inject(HttpClient);
   private readonly url = "http://localhost:8080/"
 
-  private currentUser = signal<user | null>(null);
+  private currentUser = signal<User | null>(null);
   public readonly user = computed(this.currentUser);
 
   constructor() { }
