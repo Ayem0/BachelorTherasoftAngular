@@ -33,14 +33,16 @@ export class LoginComponent {
   private readonly sonnerService = inject(SonnerService);
   private readonly router = inject(Router);
 
-  loginForm = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required, Validators.minLength(10), Validators.maxLength(30)]),
-  });
   /** Hide or show password signals */
   isHidden = signal(true);
   /** Loading when submitting form */
   isLoading = signal(false);
+
+  loginForm = new FormGroup({
+    email: new FormControl({ value: "", disabled: this.isLoading() }, [Validators.required, Validators.email]),
+    password: new FormControl({ value: "", disabled: this.isLoading() }, [Validators.required, Validators.minLength(10), Validators.maxLength(30)]),
+  });
+
   
   /** Hide or show password */
   togglePassword(event: MouseEvent) {
@@ -49,7 +51,7 @@ export class LoginComponent {
   }
 
   /** Submit login form */
-  public async submit() {
+  public submit() {
     this.isLoading.set(true);
     const { email, password } = this.loginForm.value;
     if (this.loginForm.valid && email && password) {

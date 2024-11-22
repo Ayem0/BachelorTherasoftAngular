@@ -1,1 +1,59 @@
-<p>workspace-details works!</p>
+
+<div class="flex size-full pt-14">
+@if(!isLoading()) {
+    @if (workspace() != null) {
+        <div class="flex size-full flex-col">
+            <div class="flex w-full flex-col px-4 md:px-6">
+                <h1 class="text-4xl pb-4">{{ workspace()?.name}}</h1>
+                <div class="flex justify-between">
+                    <span>{{ workspace()?.description}}</span>
+                    <button mat-flat-button>
+                        <mat-icon>edit</mat-icon>
+                        <span>Edit</span>
+                    </button>
+                </div>
+            </div>
+            <div class="flex size-full p-4 md:p-6">
+                <mat-tab-group class="flex size-full">
+                    <mat-tab label="Overview"></mat-tab>
+                    <mat-tab label="Members">
+                        <div class="pt-2">
+                            <mat-table [dataSource]="users">
+                                <!-- First Name Column -->
+                                <ng-container matColumnDef="firstName">
+                                <mat-header-cell *matHeaderCellDef> First Name </mat-header-cell>
+                                <mat-cell *matCellDef="let user"> {{user.firstName}} </mat-cell>
+                                </ng-container>
+                            
+                                <!-- Last Name Column -->
+                                <ng-container matColumnDef="lastName">
+                                <mat-header-cell *matHeaderCellDef> Last Name </mat-header-cell>
+                                <mat-cell *matCellDef="let user"> {{user.lastName }} </mat-cell>
+                                </ng-container>
+                            
+                                <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+                            </mat-table>
+                            <mat-paginator
+                                            [pageSizeOptions]="[5, 10, 20]"
+                                            showFirstLastButtons
+                                            aria-label="Select page of users">
+                            </mat-paginator>
+                        </div>
+                    </mat-tab>
+                    <mat-tab label="Locations"></mat-tab>
+                    <mat-tab label="Participants"></mat-tab>
+                    <mat-tab label="Participant Categories"></mat-tab>
+                    <mat-tab label="Event Categories"></mat-tab>
+                </mat-tab-group>
+            </div>
+        </div>
+    } @else {
+        <div class="content-center">Workspace not found.</div>
+    }
+} @else {
+
+}
+</div>
+
+    

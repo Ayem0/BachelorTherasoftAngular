@@ -170,6 +170,11 @@ $dark: mat.define-theme((
   @include mat.card-theme($light);
   @include mat.input-theme($light);
   @include mat.progress-spinner-theme($light);
+  @include mat.tabs-theme($light);
+  @include mat.table-theme($light);
+  @include mat.paginator-theme($light);
+  @include mat.select-theme($light);
+  @include mat.option-theme($light);
 }
 
 .dark {
@@ -185,6 +190,11 @@ $dark: mat.define-theme((
   @include mat.card-color($dark);
   @include mat.input-color($dark);
   @include mat.progress-spinner-color($dark);
+  @include mat.tabs-color($dark);
+  @include mat.table-color($dark);
+  @include mat.paginator-color($dark);
+  @include mat.select-color($dark);
+  @include mat.option-color($dark);
 }
 
 // Global styles

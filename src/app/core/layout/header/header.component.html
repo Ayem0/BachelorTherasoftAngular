@@ -7,7 +7,7 @@
             <a routerLink="/" class="hidden sm:block text-2xl dark:text-white">Title</a>
         </div>
         <div class="flex items-center gap-2">
-            @if (!isLoggedIn()) {
+            @if (!(isAuthenticated() | async))  {
                 <a routerLink="/login" mat-stroked-button aria-label="Login">Login</a>
                 <a routerLink="/register" mat-flat-button aria-label="Register">Register</a>
             }
@@ -45,7 +45,7 @@
                     </button>
                 </mat-menu>
             </mat-menu>
-            @if (isLoggedIn()) {
+            @if (isAuthenticated() | async) {
                 <button matTooltip="Notifications" mat-icon-button aria-label="Notifications">
                     <mat-icon>notifications</mat-icon>
                 </button>
@@ -66,7 +66,7 @@
                         <span>Settings</span>
                     </button>
                     <div class="border-b mx-1"></div>
-                    <button mat-menu-item aria-label="Logout">
+                    <button mat-menu-item aria-label="Logout" (click)="logout()">
                         <mat-icon>logout</mat-icon>
                         <span>Logout</span>
                     </button>

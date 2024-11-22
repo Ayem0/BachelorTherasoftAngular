@@ -1,11 +1,20 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/guards/auth.guard';
+import { unauthGuard } from './core/auth/guards/unauth.guard';
 
 export const routes: Routes = [
     { path: "", loadComponent: () => import('./features/home/home.component').then(c => c.HomeComponent) },
     { path: "home", redirectTo: "" },
-    { path: "login", loadComponent: () => import('./core/auth/components/login/login.component').then(c => c.LoginComponent) },
-    { path: "register", loadComponent: () => import('./core/auth/components/register/register.component').then(c => c.RegisterComponent) },
+    { 
+        path: "login", 
+        loadComponent: () => import('./core/auth/components/login/login.component').then(c => c.LoginComponent),
+        canActivate: [unauthGuard]
+    },
+    { 
+        path: "register", 
+        loadComponent: () => import('./core/auth/components/register/register.component').then(c => c.RegisterComponent),
+        canActivate: [unauthGuard]
+    },
     {
         path: "calendar",
         loadComponent: () => import('./features/calendar/components/full-calendar/full-calendar.component').then(c => c.FullCalendarComponent),

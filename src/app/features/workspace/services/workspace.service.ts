@@ -11,10 +11,14 @@ export class WorkspaceService {
   constructor() { }
 
   public getWorkspaceByUserId() {
-    return this.http.get<Workspace[]>(`${environment.apiUrl}/workspace/user`);
+    return this.http.get<Partial<Workspace>[]>(`${environment.apiUrl}/api/workspace/user`);
   }
 
   public createWorkspace(name: string, description: string) {
-    return this.http.post<Workspace>(`${environment.apiUrl}/workspace`, { name, description })
+    return this.http.post<Partial<Workspace>>(`${environment.apiUrl}/api/workspace`, { name, description })
+  }
+
+  public getWorkspaceDetailsById(id: string) {
+    return this.http.get<Workspace>(`${environment.apiUrl}/api/workspace/details`, { params: { id: id } });
   }
 }

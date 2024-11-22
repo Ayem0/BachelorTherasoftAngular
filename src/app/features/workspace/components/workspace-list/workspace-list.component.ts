@@ -26,7 +26,7 @@ export class WorkspaceListComponent implements OnInit {
 
   private readonly workspaceService = inject(WorkspaceService);
 
-  public workspaces = signal<Workspace[]>([]);
+  public workspaces = signal<Partial<Workspace>[]>([]);
   public isLoading = signal(true);
 
   public async ngOnInit() {
