@@ -1,24 +1,38 @@
 
 <div class="mt-14">
     <div class="flex w-full flex-col px-4 md:px-6">
-        <span class="text-3xl">Workspaces</span>
+        <span class="text-3xl pb-4">Workspaces</span>
         <div class="flex justify-between">
-            <span>TODO filters</span>
-            <button mat-flat-button>
+            <div class="flex flex-row gap-2">
+                <mat-form-field appearance="outline">
+                    <mat-label>Search</mat-label>
+                    <input matInput>
+                    <mat-icon matPrefix>search</mat-icon>
+                </mat-form-field>
+                <mat-form-field appearance="outline"  class="w-48">
+                    <mat-label>Sort</mat-label>
+                    <mat-select value="one">
+                        <mat-option value="one">Creation date</mat-option>
+                      <mat-option value="two">A-Z</mat-option>
+                      <mat-option value="three">Z-A</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+            </div>
+            <button mat-flat-button (click)="openCreateDialog()">
                 <mat-icon>add</mat-icon>
                 <span>Create</span>
             </button>
         </div>
     </div>
-    @defer (when !isLoading()) {
+    @if(!isLoading()) {
         @if (workspaces().length > 0) {
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 p-4  ">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 p-4">
             @for (workspace of workspaces(); track workspace.id) {
                 
-                <mat-card [routerLink]="['/workspace', workspace.id]" class="cursor-pointer">
+                <mat-card [routerLink]="['/workspace', workspace.id]" class="cursor-pointer hover:dark:!bg-[--mat-app-background-hover-color] h-28">
                     <mat-card-title class="p-4">
                         <div class="flex justify-between items-center">
-                            <span>{{ workspace.name }}</span>
+                            <p class="truncate">{{ workspace.name }}</p>
                             <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu" (click)="$event.stopPropagation()">
                                 <mat-icon>more_vert</mat-icon>
                             </button>
@@ -34,20 +48,19 @@
                             </mat-menu>
                         </div>
                     </mat-card-title>
-                    <mat-card-subtitle class="p-4">{{ workspace.description }}</mat-card-subtitle>
+                    <mat-card-subtitle class="p-4">
+                        <p class="truncate">{{ workspace.description }}</p>
+                    </mat-card-subtitle>
                 </mat-card>
-
             }
             </div>
         } @else {
             <div>No workspace yet!</div>
         }
-    } @loading {
-        <div class="flex items-center justify-center">
-            <mat-progress-spinner></mat-progress-spinner>
+    } @else {
+        <div class="flex size-full items-center justify-center">
+            <mat-spinner diameter="50"></mat-spinner>
         </div>
-    } @error {
-        <div>Error getting your workspaces, try again later.</div>
     }
     
 </div>

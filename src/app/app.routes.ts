@@ -23,7 +23,7 @@ export const routes: Routes = [
     {
         path: "workspace",
         loadComponent: () => import('./features/workspace/components/workspace-list/workspace-list.component').then(c => c.WorkspaceListComponent),
-        canActivate: [authGuard]
+        // canActivate: [authGuard],
     },
     {
         path: "workspace/:id",

@@ -14,7 +14,7 @@ export class WorkspaceService {
     return this.http.get<Partial<Workspace>[]>(`${environment.apiUrl}/api/workspace/user`);
   }
 
-  public createWorkspace(name: string, description: string) {
+  public createWorkspace(name: string, description?: string) {
     return this.http.post<Partial<Workspace>>(`${environment.apiUrl}/api/workspace`, { name, description })
   }
 
