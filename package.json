@@ -29,6 +29,7 @@
     "@fullcalendar/interaction": "^6.1.15",
     "@fullcalendar/resource": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
+    "@ngrx/signals": "^18.1.1",
     "express": "^4.18.2",
     "ngx-sonner": "^2.0.2",
     "rxjs": "~7.8.0",

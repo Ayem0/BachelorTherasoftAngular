@@ -1,8 +1,8 @@
 
 
 <div class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
-    <h2 class="p-4 dark:text-white text-2xl">Create Workspace</h2>
-    <form [formGroup]="createForm" class="flex flex-col px-4 pb-4">
+    <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate() ? "Update Workspace " + this.workspace()?.name : "Create Workspace" }}</h2>
+    <form [formGroup]="form" class="flex flex-col px-4 pb-4">
         <mat-form-field appearance="outline" [hideRequiredMarker]="true">
             <mat-label>Name</mat-label>
             <input matInput type="text" placeholder="Name" formControlName="name">
@@ -11,11 +11,11 @@
             <mat-label>Description</mat-label>
             <textarea matInput placeholder="Description" formControlName="description"></textarea>
           </mat-form-field>
-          <button mat-flat-button type="submit" (click)="submit()" [disabled]="isLoading() || !createForm.valid" class="my-4">
-            @if(isLoading()) {
+          <button mat-flat-button type="submit" (click)="submit()" [disabled]="workspaceStore.creating() || workspaceStore.updating() || !form.valid" class="my-4">
+            @if(workspaceStore.creating() || workspaceStore.updating()) {
                 <mat-spinner diameter="24"></mat-spinner>
             } @else {
-                <span>Create</span>
+                <span>{{ isUpdate() ? "Update" : "Create"}}</span>
             }
         </button>
     </form>
