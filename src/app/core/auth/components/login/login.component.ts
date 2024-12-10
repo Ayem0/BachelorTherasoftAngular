@@ -10,7 +10,6 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner'
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { SonnerService } from '../../../../shared/services/sonner/sonner.service';
-import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
