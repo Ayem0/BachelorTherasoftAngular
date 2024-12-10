@@ -4,13 +4,12 @@ import { ThemeService } from './features/theme/theme.service';
 
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [
-    LayoutComponent
-  ],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+    selector: 'app-root',
+    imports: [
+        LayoutComponent
+    ],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss'
 })
 export class AppComponent  {
   title = 'BachelorTherasoftAngular';

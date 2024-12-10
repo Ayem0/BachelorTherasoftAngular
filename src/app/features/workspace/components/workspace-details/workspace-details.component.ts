@@ -10,17 +10,16 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { User } from '../../../../core/auth/models/auth';
 
 @Component({
-  selector: 'app-workspace-details',
-  standalone: true,
-  imports: [
-    MatIcon,
-    MatButtonModule,
-    MatTabsModule,
-    MatTableModule, 
-    MatPaginatorModule
-  ],
-  templateUrl: './workspace-details.component.html',
-  styleUrl: './workspace-details.component.scss'
+    selector: 'app-workspace-details',
+    imports: [
+        MatIcon,
+        MatButtonModule,
+        MatTabsModule,
+        MatTableModule,
+        MatPaginatorModule
+    ],
+    templateUrl: './workspace-details.component.html',
+    styleUrl: './workspace-details.component.scss'
 })
 export class WorkspaceDetailsComponent implements OnInit {
   private readonly workspaceService = inject(WorkspaceService);

@@ -8,13 +8,12 @@ import { SonnerService } from '../../../../shared/services/sonner/sonner.service
 import { CalendarService } from '../../services/calendar.service';
 
 @Component({
-  selector: 'app-calendar',
-  standalone: true,
-  imports: [
-    FullCalendarModule
-  ],
-  templateUrl: './full-calendar.component.html',
-  styleUrl: './full-calendar.component.scss'
+    selector: 'app-calendar',
+    imports: [
+        FullCalendarModule
+    ],
+    templateUrl: './full-calendar.component.html',
+    styleUrl: './full-calendar.component.scss'
 })
 export class FullCalendarComponent implements AfterViewInit {
   private readonly sonner = inject(SonnerService);

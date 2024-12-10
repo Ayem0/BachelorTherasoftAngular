@@ -13,18 +13,17 @@ import { WorkspaceStore } from '../../store/workspace.store';
 import { catchError, of, tap } from 'rxjs';
 
 @Component({
-  selector: 'app-workspace-dialog',
-  standalone: true,
-  imports: [
-    MatCardModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatProgressSpinner,
-    MatInputModule,
-    MatButton
-  ],
-  templateUrl: './workspace-dialog.component.html',
-  styleUrl: './workspace-dialog.component.scss'
+    selector: 'app-workspace-dialog',
+    imports: [
+        MatCardModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatProgressSpinner,
+        MatInputModule,
+        MatButton
+    ],
+    templateUrl: './workspace-dialog.component.html',
+    styleUrl: './workspace-dialog.component.scss'
 })
 export class WorkspaceDialogComponent {
   readonly workspaceStore = inject(WorkspaceStore);

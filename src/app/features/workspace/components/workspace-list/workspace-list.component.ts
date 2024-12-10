@@ -15,23 +15,22 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { WorkspaceStore } from '../../store/workspace.store';
 
 @Component({
-  selector: 'app-workspace-list',
-  standalone: true,
-  imports: [
-    MatCardModule,
-    MatProgressSpinner,
-    MatButtonModule,
-    MatMenuModule,
-    MatIcon,
-    RouterLink,
-    MatSelectModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    MatTooltip
-  ],
-  templateUrl: './workspace-list.component.html',
-  styleUrl: './workspace-list.component.scss',
+    selector: 'app-workspace-list',
+    imports: [
+        MatCardModule,
+        MatProgressSpinner,
+        MatButtonModule,
+        MatMenuModule,
+        MatIcon,
+        RouterLink,
+        MatSelectModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatIconModule,
+        MatTooltip
+    ],
+    templateUrl: './workspace-list.component.html',
+    styleUrl: './workspace-list.component.scss'
 })
 export class WorkspaceListComponent implements OnInit {
   private readonly matDialog = inject(MatDialog);

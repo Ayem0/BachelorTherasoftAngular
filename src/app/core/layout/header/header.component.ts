@@ -11,18 +11,17 @@ import { themes } from '../../../features/theme/theme';
 import { AsyncPipe } from '@angular/common';
 
 @Component({
-  selector: 'app-header',
-  standalone: true,
-  imports: [
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatTooltip,
-    RouterLink,
-    AsyncPipe
-  ],
-  templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+    selector: 'app-header',
+    imports: [
+        MatButtonModule,
+        MatIconModule,
+        MatMenuModule,
+        MatTooltip,
+        RouterLink,
+        AsyncPipe
+    ],
+    templateUrl: './header.component.html',
+    styleUrl: './header.component.scss'
 })
 export class HeaderComponent  {
   private readonly themeService = inject(ThemeService);

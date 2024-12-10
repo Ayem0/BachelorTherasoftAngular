@@ -6,16 +6,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { fromEvent, map } from 'rxjs';
 
 @Component({
-  selector: 'app-navigation',
-  standalone: true,
-  imports: [
-    MatIcon,
-    RouterLink,
-    RouterLinkActive,
-    MatButtonModule
-  ],
-  templateUrl: './navigation.component.html',
-  styleUrl: './navigation.component.scss'
+    selector: 'app-navigation',
+    imports: [
+        MatIcon,
+        RouterLink,
+        RouterLinkActive,
+        MatButtonModule
+    ],
+    templateUrl: './navigation.component.html',
+    styleUrl: './navigation.component.scss'
 })
 export class NavigationComponent {
  

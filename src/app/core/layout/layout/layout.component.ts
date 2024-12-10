@@ -8,17 +8,16 @@ import { HeaderComponent } from '../header/header.component';
 import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
-  selector: 'app-layout',
-  standalone: true,
-  imports: [
-    RouterOutlet,
-    NgxSonnerToaster,
-    HeaderComponent,
-    MatSidenavModule,
-    NavigationComponent
-  ],
-  templateUrl: './layout.component.html',
-  styleUrl: './layout.component.scss'
+    selector: 'app-layout',
+    imports: [
+        RouterOutlet,
+        NgxSonnerToaster,
+        HeaderComponent,
+        MatSidenavModule,
+        NavigationComponent
+    ],
+    templateUrl: './layout.component.html',
+    styleUrl: './layout.component.scss'
 })
 export class LayoutComponent implements AfterViewInit {
   @ViewChild('leftSidebar') public leftSidebar!: MatSidenav;
