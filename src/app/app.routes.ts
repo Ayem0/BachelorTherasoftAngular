@@ -3,8 +3,10 @@ import { authGuard } from './core/auth/guards/auth.guard';
 import { unauthGuard } from './core/auth/guards/unauth.guard';
 
 export const routes: Routes = [
-    { path: "", loadComponent: () => import('./features/home/home.component').then(c => c.HomeComponent) },
-    { path: "home", redirectTo: "" },
+    { 
+        path: "", 
+        loadComponent: () => import('./features/home/home.component').then(c => c.HomeComponent)
+    },
     { 
         path: "login", 
         loadComponent: () => import('./core/auth/components/login/login.component').then(c => c.LoginComponent),

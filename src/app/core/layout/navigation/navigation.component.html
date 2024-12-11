@@ -11,24 +11,25 @@
     <!-- Make the `ul` scrollable while keeping the rest of the component static -->
     <ul class="overflow-y-auto flex-grow">
         <li>
-            <a routerLink="/" routerLinkActive="bg-white">
-                <div class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
+            <a routerLink="/">
+                <div routerLinkActive="bg-[--mat-app-background-hover-color]" [routerLinkActiveOptions]="{ exact: true }"
+                class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
                     <mat-icon aria-label="calendar">home</mat-icon>
                     <span class="text-base align-bottom">Home</span>
                 </div>
             </a>
         </li>
         <li>
-            <a routerLink="/calendar" routerLinkActive="bg-white">
-                <div class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
+            <a routerLink="/calendar">
+                <div routerLinkActive="bg-[--mat-app-background-hover-color]" class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
                     <mat-icon aria-label="calendar">calendar_month</mat-icon>
                     <span class="text-base align-bottom">Agenda</span>
                 </div>
             </a>
         </li>    
         <li>
-            <a routerLink="/workspace" routerLinkActive="bg-white">
-                <div class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
+            <a routerLink="/workspace">
+                <div routerLinkActive="bg-[--mat-app-background-hover-color]" class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
                     <mat-icon aria-label="Workspace">business_center</mat-icon>
                     <span class="text-base align-bottom">Workspace</span>
                 </div>

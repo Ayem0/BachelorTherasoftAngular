@@ -55,7 +55,7 @@ export class LoginComponent {
     if (this.loginForm.valid && email && password) {
       this.authService.login(email, password).subscribe((res) => {
         if (res) {
-          this.router.navigateByUrl("home");
+          this.router.navigateByUrl("");
         } else {
           this.sonnerService.errorToast("Invalid credentials");
         }

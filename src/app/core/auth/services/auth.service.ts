@@ -1,35 +1,46 @@
-import { Inject, inject, Injectable, makeStateKey, Optional, PLATFORM_ID, TransferState } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { inject, Injectable, makeStateKey, PLATFORM_ID, REQUEST, TransferState } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, of, take, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { User } from '../models/auth';
 import { isPlatformServer } from '@angular/common';
+
+const USER_STATE_KEY = makeStateKey<User | null>('currentUser');
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly platform = inject(PLATFORM_ID);
   private readonly transferState = inject(TransferState);
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
-    @Optional() @Inject('SERVER_COOKIES') private serverCookies: any
   ) {
-    const USER_STATE_KEY = makeStateKey<User | null>('currentUser');
-    if (isPlatformServer(this.platform)) {
+    const platform = inject(PLATFORM_ID);
+    if (isPlatformServer(platform)) {
       console.log("Server")
-      this.me().pipe(
-        take(1),
-        tap((res) => {
-          this.transferState.set(USER_STATE_KEY, res);
-        })
-      ).subscribe();
+      const request = inject(REQUEST) as any;
+      const cookieHeader = request?.headers?.cookie;
+      if (cookieHeader) {
+        this.me(cookieHeader).pipe(
+          take(1),
+          tap((res) => {
+            this.transferState.set(USER_STATE_KEY, res);
+            const userState= this.transferState.get(USER_STATE_KEY, null);
+            console.log(userState);
+            console.log(this.currentUserSubject.value)
+          })
+        ).subscribe();
+      }
     } else {
       console.log("Client")
-      this.currentUserSubject.next(this.transferState.get(USER_STATE_KEY, null));
+      const userState = this.transferState.get(USER_STATE_KEY, null);
+      console.log(userState);
+      if (userState) {
+        this.currentUserSubject.next(userState);
+      }
     }
   }
 
@@ -69,24 +80,9 @@ export class AuthService {
     )
   }
 
-  private createHeadersWithCookies(): HttpHeaders {
-    if (isPlatformServer(this.platform) && this.serverCookies) {
-      const cookieString = Object.entries(this.serverCookies)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('; ');
-
-      return new HttpHeaders({
-        Cookie: cookieString,
-      });
-    }
-    return new HttpHeaders();
-  }
-
   /** Get user info */
-  private me() {
-    const headers = this.createHeadersWithCookies();
-    console.log(headers)
-    return this.http.get<User>(`http://localhost:8080/api/auth/me`, { headers }).pipe(
+  private me(cookie: string) {
+    return this.http.get<User>(`http://localhost:8080/api/auth/me`, { headers: { "Cookie": cookie} }).pipe(
       tap(user => this.currentUserSubject.next(user)),
       catchError((err) => {
         console.log(err)
