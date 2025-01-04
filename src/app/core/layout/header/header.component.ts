@@ -17,8 +17,7 @@ import { AsyncPipe } from '@angular/common';
         MatIconModule,
         MatMenuModule,
         MatTooltip,
-        RouterLink,
-        AsyncPipe
+        RouterLink
     ],
     templateUrl: './header.component.html',
     styleUrl: './header.component.scss'
@@ -26,7 +25,7 @@ import { AsyncPipe } from '@angular/common';
 export class HeaderComponent  {
   private readonly themeService = inject(ThemeService);
   private readonly sidebarService = inject(SidebarService);
-  private readonly authService = inject(AuthService);
+  public readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   public themes = themes;
@@ -45,9 +44,5 @@ export class HeaderComponent  {
         this.router.navigateByUrl("login");
       }
     });
-  }
-
-  public isAuthenticated() {
-    return this.authService.isAuthenticated();
   }
 }

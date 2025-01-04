@@ -7,7 +7,7 @@
             <a routerLink="/" class="hidden sm:block text-2xl dark:text-white">Title</a>
         </div>
         <div class="flex items-center gap-2">
-            @if (!(isAuthenticated() | async))  {
+            @if (!authService.currentUser())  {
                 <a routerLink="/login" mat-stroked-button aria-label="Login">Login</a>
                 <a routerLink="/register" mat-flat-button aria-label="Register">Register</a>
             }
@@ -45,7 +45,7 @@
                     </button>
                 </mat-menu>
             </mat-menu>
-            @if (isAuthenticated() | async) {
+            @if (authService.currentUser()) {
                 <button matTooltip="Notifications" mat-icon-button aria-label="Notifications">
                     <mat-icon>notifications</mat-icon>
                 </button>

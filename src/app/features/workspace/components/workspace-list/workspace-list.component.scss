@@ -1,0 +1,7 @@
+.mat-column-action {
+    max-width: 56px;
+}
+.mat-mdc-row:hover .mat-mdc-cell {
+    cursor: pointer;
+    background-color: var(--mat-app-background-hover-color);
+}

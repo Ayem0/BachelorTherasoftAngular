@@ -41,34 +41,30 @@ export const WorkspaceStore = signalStore(
     })
   })),
   withMethods((store, workspaceService = inject(WorkspaceService)) => ({
-    getWorkspaces: rxMethod<void>(
-      pipe(
-        switchMap(() => {
-          if (store.loaded()) {
-            return of();
+    getWorkspaces() {
+      if (store.loaded()) {
+        return of(store.workspaces());
+      }
+      patchState(store, { loading: true });
+      return workspaceService.getWorkspaceByUserId().pipe(
+        tap({
+          next: (workspaces) => {
+            patchState(store, {
+              workspaces,
+              loading: false,
+              loaded: true,
+              error: null
+            });
+          },
+          error: (error: Error) => {
+            patchState(store, {
+              loading: false,
+              error: error.message
+            });
           }
-          patchState(store, { loading: true });
-          return workspaceService.getWorkspaceByUserId().pipe(
-            tap({
-              next: (workspaces) => {
-                patchState(store, {
-                  workspaces,
-                  loading: false,
-                  loaded: true,
-                  error: null
-                });
-              },
-              error: (error: Error) => {
-                patchState(store, {
-                  loading: false,
-                  error: error.message
-                });
-              }
-            })
-          );
         })
-      )
-    ),
+      );
+    },
     createWorkspace(name: string, description?: string) {
       patchState(store, { creating: true });
       return workspaceService.createWorkspace(name, description).pipe(

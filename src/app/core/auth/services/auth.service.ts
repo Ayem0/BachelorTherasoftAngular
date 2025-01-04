@@ -1,73 +1,28 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, catchError, map, of, take, tap } from 'rxjs';
+import { catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { User } from '../models/auth';
-import { isPlatformServer } from '@angular/common';
 import { SocketService } from '../../../shared/services/socket/socket.service';
 
-// const USER_STATE_KEY = makeStateKey<User | null>('currentUser');
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  // private readonly transferState = inject(TransferState);
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  public currentUser = signal<User | null | undefined>(undefined);
+
   private readonly socket = inject(SocketService);
 
-  constructor(
-  ) {
-    this.me().pipe(
-      take(1),
-      tap((res) => {
-        this.currentUserSubject.next(res);
-        if (res) {
-          this.socket.startConnection()
-          this.socket.onEvent<string>('WorkspaceUpdated', (message) => {
-            console.log('Workspace updated:', message);
-            // Handle the event data (e.g., update UI)
-          });
-        }
-      })
-    ).subscribe();
-    // const platform = inject(PLATFORM_ID);
-    // if (isPlatformServer(platform)) {
-    //   console.log("Server")
-    //   const request = inject(REQUEST) as any;
-    //   const cookieHeader = request?.headers?.cookie;
-    //   if (cookieHeader) {
-    //     this.me(cookieHeader).pipe(
-    //       take(1),
-    //       tap((res) => {
-    //         this.transferState.set(USER_STATE_KEY, res);
-    //         const userState= this.transferState.get(USER_STATE_KEY, null);
-    //         console.log(userState);
-    //         console.log(this.currentUserSubject.value)
-    //       })
-    //     ).subscribe();
-    //   }
-    // } else {
-    //   console.log("Client")
-    //   const userState = this.transferState.get(USER_STATE_KEY, null);
-    //   console.log(userState);
-    //   if (userState) {
-    //     this.currentUserSubject.next(userState);
-    //   }
-    // }
-  }
+  constructor() {}
 
   public login(email: string, password: string) {
     return this.http.post(`${environment.apiUrl}/login`, { email, password }, { params: { useCookies: true }, observe: "response" })
       .pipe(
-        tap(res => {
+        tap(async res => {
           if(res.ok) {
-            this.currentUserSubject.next({
-              id: "oe",
-              email: "test@test.com"
-            });
+            await firstValueFrom(this.getUserInfo());
           }
         }),
         map(res => res.ok),
@@ -87,7 +42,7 @@ export class AuthService {
     return this.http.post(`${environment.apiUrl}/api/auth/logout`, {}, { observe: "response" }).pipe(
       tap(res => {
         if (res.ok) {
-          this.currentUserSubject.next(null);
+          this.currentUser.set(null);
         }
       }),
       map(res => res.ok),
@@ -96,20 +51,17 @@ export class AuthService {
   }
 
   /** Get user info */
-  private me() {
+  public getUserInfo() {
     return this.http.get<User>(`${environment.apiUrl}/api/auth/me`).pipe(
-      tap(user => this.currentUserSubject.next(user)),
+      tap(user => {
+        this.currentUser.set(user)
+        this.socket.startConnection();
+      }),
       catchError((err) => {
         console.log(err)
-        this.currentUserSubject.next(null);
+        this.currentUser.set(null);
         return of(null);
       })
-    );
-  }
-
-  public isAuthenticated() {
-    return this.currentUser$.pipe(
-      map(user => !!user)
     );
   }
 }

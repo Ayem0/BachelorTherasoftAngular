@@ -42,7 +42,7 @@ export class WorkspaceDialogComponent {
       if (this.workspace()?.id) {
         this.workspaceStore.updateWorkspace(this.workspace()!.id, this.form.controls.name.value, this.form.controls.description.value ?? undefined).pipe(
           tap(res => {
-            this.dialogRef.close();
+            this.dialogRef.close(res);
           }),
           catchError((err) => {
             console.log(err);
@@ -52,7 +52,7 @@ export class WorkspaceDialogComponent {
       } else {
         this.workspaceStore.createWorkspace(this.form.controls.name.value, this.form.controls.description.value ?? undefined).pipe(
           tap(res => {
-            this.dialogRef.close();
+            this.dialogRef.close(res);
           }),
           catchError((err) => {
             console.log(err);
