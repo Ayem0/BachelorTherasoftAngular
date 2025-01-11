@@ -25,11 +25,12 @@ import { AsyncPipe } from '@angular/common';
 export class HeaderComponent  {
   private readonly themeService = inject(ThemeService);
   private readonly sidebarService = inject(SidebarService);
-  public readonly authService = inject(AuthService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   public themes = themes;
-
+  public isLoggedIn = this.authService.isLoggedIn;
+  
   public setTheme(theme: themes) {
     this.themeService.setTheme(theme);
   }

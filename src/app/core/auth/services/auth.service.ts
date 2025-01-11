@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -11,11 +11,10 @@ import { SocketService } from '../../../shared/services/socket/socket.service';
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  public currentUser = signal<User | null | undefined>(undefined);
-
   private readonly socket = inject(SocketService);
-
-  constructor() {}
+  private currentUser = signal<User | null >(null);
+  public currentUserInfo = computed(() => this.currentUser()); 
+  public isLoggedIn = computed(() => !!this.currentUser());
 
   public login(email: string, password: string) {
     return this.http.post(`${environment.apiUrl}/login`, { email, password }, { params: { useCookies: true }, observe: "response" })
@@ -43,6 +42,7 @@ export class AuthService {
       tap(res => {
         if (res.ok) {
           this.currentUser.set(null);
+          this.socket.endConnection();
         }
       }),
       map(res => res.ok),
@@ -50,17 +50,25 @@ export class AuthService {
     )
   }
 
-  /** Get user info */
   public getUserInfo() {
-    return this.http.get<User>(`${environment.apiUrl}/api/auth/me`).pipe(
+    return this.http.get<User>(`${environment.apiUrl}/api/user`).pipe(
       tap(user => {
         this.currentUser.set(user)
         this.socket.startConnection();
       }),
-      catchError((err) => {
-        console.log(err)
+      catchError(() => {
         this.currentUser.set(null);
         return of(null);
+      })
+    );
+  }
+
+  public updateUserInfo(firstname: string, lastname: string) {
+    return this.http.put<User>(`${environment.apiUrl}/api/user`, { firstname, lastname }).pipe(
+      tap(user => this.currentUser.set(user)),
+      catchError((err) => {
+        console.log(err);
+        return of(null)
       })
     );
   }

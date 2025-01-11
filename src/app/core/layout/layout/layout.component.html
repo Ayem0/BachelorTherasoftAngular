@@ -1,4 +1,5 @@
 <div class="absolute left-0 top-0 right-0 bottom-0 flex flex-col">
+
     @if(!showOver()) {
         <app-header/>
     }
@@ -6,13 +7,19 @@
         <mat-sidenav #leftSidebar autoFocus="false" [mode]="sidenavMode()" [fixedInViewport]="true" [fixedTopGap]="showOver() ? 0 :56" class="!w-48 !rounded-none">
             <app-navigation></app-navigation>
         </mat-sidenav>
-
         <mat-sidenav-content class="!mr-0">
-            @if(showOver()) {
-                <app-header/>
+            @if (isLoggedIn() && !userFirstName()) {
+                <div class="flex items-center justify-center size-full"> 
+                    <app-initial-login></app-initial-login>
+                </div>
+            } @else {
+                @if(showOver()) {
+                    <app-header/>
+                }
+                <router-outlet/>
             }
-            <router-outlet/>
         </mat-sidenav-content>
     </mat-sidenav-container>
 </div>
-<ngx-sonner-toaster visibleToasts="4" />
+
+<ngx-sonner-toaster></ngx-sonner-toaster>

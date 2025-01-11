@@ -27,4 +27,10 @@ export class SocketService {
       this.connection.on(eventName, callback);
     }
   }
+
+  endConnection() {
+    if (this.connection) {
+      this.connection.stop();
+    }
+  }
 }

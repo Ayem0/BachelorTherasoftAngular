@@ -15,7 +15,6 @@
             </div>
             <div class="flex size-full p-4 md:p-6">
                 <mat-tab-group class="flex size-full">
-                    <mat-tab label="Overview"></mat-tab>
                     <mat-tab label="Members">
                         <div class="pt-2">
                             <mat-table [dataSource]="users">
@@ -41,10 +40,14 @@
                             </mat-paginator>
                         </div>
                     </mat-tab>
-                    <mat-tab label="Locations"></mat-tab>
+                    <mat-tab label="Locations">
+                        <app-location-list [workspaceId]="workspace()!.id"></app-location-list>
+                    </mat-tab>
                     <mat-tab label="Participants"></mat-tab>
                     <mat-tab label="Participant Categories"></mat-tab>
                     <mat-tab label="Event Categories"></mat-tab>
+                    <mat-tab label="Roles"></mat-tab>
+                    <mat-tab label="Slots"></mat-tab>
                 </mat-tab-group>
             </div>
         </div>

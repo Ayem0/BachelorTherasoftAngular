@@ -1,16 +1,14 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
-import { WorkspaceService } from '../../services/workspace.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
-import { Router } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Workspace } from '../../models/workspace';
-import { WorkspaceStore } from '../../store/workspace.store';
 import { catchError, of, tap } from 'rxjs';
+import { Workspace } from '../../workspace';
+import { WorkspaceStore } from '../../workspace.store';
 
 @Component({
     selector: 'app-workspace-dialog',

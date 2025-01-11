@@ -1,0 +1,34 @@
+
+
+<div class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
+    <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate() ? "Update Location " : "Create Location" }}</h2>
+    <form [formGroup]="form" class="flex flex-col px-4 pb-4">
+        <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+            <mat-label>Name</mat-label>
+            <input matInput type="text" placeholder="Name" formControlName="name">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <textarea matInput placeholder="Description" formControlName="description"></textarea>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Address</mat-label>
+            <input matInput type="text" placeholder="Address" formControlName="address">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>City</mat-label>
+            <input matInput type="text" placeholder="City" formControlName="city">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Country</mat-label>
+            <input matInput type="text" placeholder="Country" formControlName="country">
+          </mat-form-field>
+          <button mat-flat-button type="submit" (click)="submit()" [disabled]="locationStore.creating() || locationStore.updating() || !form.valid" class="my-4">
+            @if(locationStore.creating() || locationStore.updating()) {
+                <mat-spinner diameter="24"></mat-spinner>
+            } @else {
+                <span>{{ isUpdate() ? "Update" : "Create"}}</span>
+            }
+        </button>
+    </form>
+</div>

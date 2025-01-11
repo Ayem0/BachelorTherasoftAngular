@@ -31,9 +31,7 @@ export class LoginComponent {
   private readonly sonnerService = inject(SonnerService);
   private readonly router = inject(Router);
 
-  /** Hide or show password signals */
   isHidden = signal(true);
-  /** Loading when submitting form */
   isLoading = signal(false);
 
   loginForm = new FormGroup({
@@ -41,14 +39,11 @@ export class LoginComponent {
     password: new FormControl({ value: "", disabled: this.isLoading() }, [Validators.required, Validators.minLength(10), Validators.maxLength(30)]),
   });
 
-  
-  /** Hide or show password */
   togglePassword(event: MouseEvent) {
     this.isHidden.set(!this.isHidden());
     event.stopPropagation();
   }
 
-  /** Submit login form */
   public submit() {
     this.isLoading.set(true);
     const { email, password } = this.loginForm.value;

@@ -8,10 +8,7 @@ export class ThemeService {
   private readonly themeKey = "theme";
   private currentTheme: themes | null = null;
 
-  constructor() {
-    this.loadTheme(); 
-  }
-
+  /** Initial load of the theme */
   public loadTheme() {
     const localTheme = this.getTheme();
     if (localTheme && localTheme === themes.dark || localTheme === themes.light) {

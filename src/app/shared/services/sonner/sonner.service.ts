@@ -13,6 +13,7 @@ export class SonnerService {
   }
 
   public errorToast(err: string) {
-    toast.error(err, {position: "bottom-right", closeButton: true});
+    console.log("SONNER ERROR: ", err);
+    toast.error(err);
   }
 }

@@ -1,0 +1,27 @@
+
+<div class="flex size-full justify-center items-center">
+    <mat-card appearance="outlined" class="p-2 md:p-4 xl:p-8">
+        <mat-card-title class="p-4">Get Started</mat-card-title>
+        <mat-card-content>
+            <form [formGroup]="form" class="flex flex-col">
+                <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+                    <mat-label>First Name</mat-label>
+                    <input matInput [type]="'text'" placeholder="First Name" formControlName="firstName" autocomplete="name">
+                    <mat-icon matSuffix>add</mat-icon>
+                </mat-form-field>
+                <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+                    <mat-label>Last Name</mat-label>
+                    <input matInput [type]="'text'" placeholder="Last Name" formControlName="lastName" autocomplete="family-name"/>
+                    <mat-icon matSuffix>add</mat-icon>
+                </mat-form-field>
+                <button mat-flat-button type="submit" (click)="submit()" [disabled]="isLoading() || !form.valid" class="my-4">
+                    @if(isLoading()) {
+                        <mat-spinner diameter="24"></mat-spinner>
+                    } @else {
+                        <span>Get Started</span>
+                    }
+                </button>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>
