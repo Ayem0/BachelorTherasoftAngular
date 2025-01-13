@@ -1,0 +1,68 @@
+
+
+<div class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
+  <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate() ? "Update Participant Category " : "Create Participant Category" }}</h2>
+  <form [formGroup]="form" class="flex flex-col px-4 pb-4">
+    <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+      <mat-label>First name</mat-label>
+      <input matInput type="text" placeholder="First name" formControlName="firstName">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+      <mat-label>Last name</mat-label>
+      <input matInput type="text" placeholder="Last name" formControlName="lastName">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+      <mat-label>Participant category</mat-label>
+      <mat-select placeholder="Participant category" formControlName="participantCategory" [value]="participant()?.participantCategory">
+        @for (p of participantCategories(); track p.id) {
+          <mat-option [value]="p.id">{{p.name}}</mat-option>
+        }
+      </mat-select> 
+    </mat-form-field>
+    
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+      <textarea matInput placeholder="Description" formControlName="description"></textarea>
+    </mat-form-field>
+    
+    <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" placeholder="Email" formControlName="email">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+      <mat-label>Phone number</mat-label>
+      <input matInput type="number" placeholder="Phone number" formControlName="phoneNumber">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Address</mat-label>
+      <input matInput type="text" placeholder="Address" formControlName="address">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>City</mat-label>
+      <input matInput type="text" placeholder="City" formControlName="city">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Country</mat-label>
+      <input matInput type="text" placeholder="Country" formControlName="country">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Date of birth</mat-label>
+      <input matInput type="text" placeholder="Date of birth" formControlName="dateOfBirth">
+    </mat-form-field>
+
+    <button mat-flat-button type="submit" (click)="submit()" [disabled]="participantStore.creating() || participantStore.updating() || !form.valid" class="my-4">
+      @if(participantStore.creating() || participantStore.updating()) {
+          <mat-spinner diameter="24"></mat-spinner>
+      } @else {
+          <span>{{ isUpdate() ? "Update" : "Create"}}</span>
+      }
+    </button>
+  </form>
+</div>

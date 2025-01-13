@@ -43,8 +43,12 @@
                     <mat-tab label="Locations">
                         <app-location-list [workspaceId]="workspace()!.id"></app-location-list>
                     </mat-tab>
-                    <mat-tab label="Participants"></mat-tab>
-                    <mat-tab label="Participant Categories"></mat-tab>
+                    <mat-tab label="Participants">
+                        <app-participant-list [workspaceId]="workspace()!.id"></app-participant-list>
+                    </mat-tab>
+                    <mat-tab label="Participant Categories">
+                        <app-participant-category-list [workspaceId]="workspace()!.id"></app-participant-category-list>
+                    </mat-tab>
                     <mat-tab label="Event Categories"></mat-tab>
                     <mat-tab label="Roles"></mat-tab>
                     <mat-tab label="Slots"></mat-tab>

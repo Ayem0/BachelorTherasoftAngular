@@ -9,6 +9,9 @@ import { User } from '../../../../core/auth/models/auth';
 import { Workspace } from '../../workspace';
 import { WorkspaceService } from '../../workspace.service';
 import { LocationListComponent } from "../../../location/components/location-list/location-list.component";
+import { ParticipantListComponent } from "../../../participant/components/participant-list/participant-list.component";
+import { WorkspaceStore } from '../../workspace.store';
+import { ParticipantCategoryListComponent } from "../../../participant-category/components/participant-category-list/participant-category-list.component";
 
 @Component({
     selector: 'app-workspace-details',
@@ -18,13 +21,15 @@ import { LocationListComponent } from "../../../location/components/location-lis
     MatTabsModule,
     MatTableModule,
     MatPaginatorModule,
-    LocationListComponent
+    LocationListComponent,
+    ParticipantListComponent,
+    ParticipantCategoryListComponent
 ],
     templateUrl: './workspace-details.component.html',
     styleUrl: './workspace-details.component.scss'
 })
 export class WorkspaceDetailsComponent implements OnInit {
-  private readonly workspaceService = inject(WorkspaceService);
+  private readonly workspaceStore = inject(WorkspaceStore);
   private readonly route = inject(ActivatedRoute);
   
   public workspace = signal<Workspace | null>(null);
@@ -34,7 +39,7 @@ export class WorkspaceDetailsComponent implements OnInit {
   public users = new MatTableDataSource<Partial<User>>([]);
 
   public ngOnInit(): void {
-    if (this.workspaceId) this.workspaceService.getWorkspaceDetailsById(this.workspaceId).subscribe({
+    if (this.workspaceId) this.workspaceStore.getWorkspaceDetailsById(this.workspaceId).subscribe({
       next: (workspace) => {
         this.workspace.set(workspace);
         this.users.data = workspace.users;
@@ -44,5 +49,7 @@ export class WorkspaceDetailsComponent implements OnInit {
         this.isLoading.set(false);
       }
     })
+
+    console.log(this.workspaceStore.workspacesDetails().get(this.workspaceId!));
   }
 }

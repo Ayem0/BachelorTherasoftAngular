@@ -37,8 +37,10 @@ export const WorkspaceStore = signalStore(
       return workspaceService.getWorkspaceDetailsById(workspaceId).pipe(
         tap({
           next: (workspace) => {
+            const updatedWorkspacesDetails = new Map(store.workspacesDetails());
+            updatedWorkspacesDetails.set(workspaceId, workspace);
             patchState(store, {
-              workspacesDetails: store.workspacesDetails().set(workspaceId, workspace),
+              workspacesDetails: updatedWorkspacesDetails,
               loading: false,
               error: null
             });
