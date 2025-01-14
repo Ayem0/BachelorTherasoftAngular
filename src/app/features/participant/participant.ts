@@ -4,6 +4,7 @@ export interface Participant {
     id: string,
     firstName: string,
     lastName: string,
+    participantCategoryId: string
     email?: string,
     phoneNumber?: string,
     address?: string,
@@ -11,5 +12,4 @@ export interface Participant {
     country?: string,
     description?: string,
     dateOfBirth?: Date,
-    participantCategory: ParticipantCategory
 }

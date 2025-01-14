@@ -25,12 +25,55 @@ export const routes: Routes = [
     {
         path: "workspace",
         loadComponent: () => import('./features/workspace/components/workspace-list/workspace-list.component').then(c => c.WorkspaceListComponent),
-        canActivate: [authGuard],
+        canActivate: [authGuard]
     },
     {
         path: "workspace/:id",
         loadComponent: () => import('./features/workspace/components/workspace-details/workspace-details.component').then(c => c.WorkspaceDetailsComponent),
-        canActivate: [authGuard]
+        canActivate: [authGuard],
+        loadChildren: () => [
+            {
+                path: "members",
+                loadComponent: () => import('./features/location/components/location-list/location-list.component').then(c => c.LocationListComponent),
+                canActivate: [authGuard]
+            },
+            {
+                path: "locations",
+                loadComponent: () => import('./features/location/components/location-list/location-list.component').then(c => c.LocationListComponent),
+                canActivate: [authGuard]
+            },
+            {
+                path: "participants",
+                loadComponent: () => import('./features/participant/components/participant-list/participant-list.component').then(c => c.ParticipantListComponent),
+                canActivate: [authGuard]
+            },
+            {
+                path: "participant-categories",
+                loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component')
+                    .then(c => c.ParticipantCategoryListComponent),
+                canActivate: [authGuard]
+            },
+            {
+                path: "event-categories",
+                loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component').then(c => c.ParticipantCategoryListComponent),
+                canActivate: [authGuard]
+            },
+            {
+                path: "roles",
+                loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component').then(c => c.ParticipantCategoryListComponent),
+                canActivate: [authGuard]
+            },
+            {
+                path: "slots",
+                loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component').then(c => c.ParticipantCategoryListComponent),
+                canActivate: [authGuard]
+            },
+            {
+                path: "",
+                redirectTo: 'members',
+                pathMatch: 'full'
+            }
+        ]
     },
     { path: "**", loadComponent: () => import('./features/not-found/not-found.component').then(c => c.NotFoundComponent) },
 

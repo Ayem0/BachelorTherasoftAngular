@@ -15,7 +15,7 @@
 
     <mat-form-field appearance="outline" [hideRequiredMarker]="true">
       <mat-label>Participant category</mat-label>
-      <mat-select placeholder="Participant category" formControlName="participantCategory" [value]="participant()?.participantCategory">
+      <mat-select placeholder="Participant category" formControlName="participantCategory">
         @for (p of participantCategories(); track p.id) {
           <mat-option [value]="p.id">{{p.name}}</mat-option>
         }

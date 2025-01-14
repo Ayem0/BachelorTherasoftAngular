@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { User } from '../../../../core/auth/models/auth';
@@ -20,10 +20,11 @@ import { ParticipantCategoryListComponent } from "../../../participant-category/
     MatButtonModule,
     MatTabsModule,
     MatTableModule,
-    MatPaginatorModule,
-    LocationListComponent,
-    ParticipantListComponent,
-    ParticipantCategoryListComponent
+    // MatPaginatorModule,
+    // LocationListComponent,
+    // ParticipantListComponent,
+    // ParticipantCategoryListComponent,
+    RouterOutlet
 ],
     templateUrl: './workspace-details.component.html',
     styleUrl: './workspace-details.component.scss'
@@ -31,7 +32,19 @@ import { ParticipantCategoryListComponent } from "../../../participant-category/
 export class WorkspaceDetailsComponent implements OnInit {
   private readonly workspaceStore = inject(WorkspaceStore);
   private readonly route = inject(ActivatedRoute);
-  
+  private readonly router = inject(Router);
+
+  private routes = [
+    './members',
+    './locations',
+    './participants',
+    './participant-categories',
+    './event-categories',
+    './roles',
+    './slots',
+  ];
+
+  public selectedIndex = this.routes.indexOf(this.router.url.split('/').pop()!);
   public workspace = signal<Workspace | null>(null);
   public workspaceId = this.route.snapshot.paramMap.get('id');
   public isLoading = signal(true);
@@ -49,7 +62,9 @@ export class WorkspaceDetailsComponent implements OnInit {
         this.isLoading.set(false);
       }
     })
+  }
 
-    console.log(this.workspaceStore.workspacesDetails().get(this.workspaceId!));
+  public tabChanged(event: MatTabChangeEvent) {
+    this.router.navigate([this.routes[event.index]], { relativeTo: this.route });
   }
 }

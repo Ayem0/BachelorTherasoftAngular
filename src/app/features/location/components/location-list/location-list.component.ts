@@ -1,4 +1,4 @@
-import { Component, inject, input, viewChild } from '@angular/core';
+import { Component, inject, input, Signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -15,7 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { RouterLink } from '@angular/router';
+import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { LocationDialogComponent } from '../location-dialog/location-dialog.component';
 
 @Component({
@@ -40,8 +40,7 @@ import { LocationDialogComponent } from '../location-dialog/location-dialog.comp
 export class LocationListComponent {
   private readonly matDialog = inject(MatDialog);
   public readonly locationStore = inject(locationStore);
-
-  public workspaceId = input.required<string>();
+  private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
 
   public search = new FormControl("");
   private paginator = viewChild.required(MatPaginator);

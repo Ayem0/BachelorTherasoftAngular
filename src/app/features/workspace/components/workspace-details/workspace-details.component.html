@@ -13,18 +13,16 @@
                     </button>
                 </div>
             </div>
-            <div class="flex size-full p-4 md:p-6">
-                <mat-tab-group class="flex size-full">
-                    <mat-tab label="Members">
-                        <div class="pt-2">
+            <div class="flex flex-col size-full p-4 md:p-6">
+                <mat-tab-group [selectedIndex]="selectedIndex" (selectedTabChange)="tabChanged($event)">
+                    <mat-tab label="Members"></mat-tab>
+                        <!-- <div class="pt-2">
                             <mat-table [dataSource]="users">
-                                <!-- First Name Column -->
                                 <ng-container matColumnDef="firstName">
                                 <mat-header-cell *matHeaderCellDef> First Name </mat-header-cell>
                                 <mat-cell *matCellDef="let user"> {{user.firstName}} </mat-cell>
                                 </ng-container>
                             
-                                <!-- Last Name Column -->
                                 <ng-container matColumnDef="lastName">
                                 <mat-header-cell *matHeaderCellDef> Last Name </mat-header-cell>
                                 <mat-cell *matCellDef="let user"> {{user.lastName }} </mat-cell>
@@ -38,21 +36,18 @@
                                             showFirstLastButtons
                                             aria-label="Select page of users">
                             </mat-paginator>
-                        </div>
-                    </mat-tab>
-                    <mat-tab label="Locations">
-                        <app-location-list [workspaceId]="workspace()!.id"></app-location-list>
-                    </mat-tab>
-                    <mat-tab label="Participants">
-                        <app-participant-list [workspaceId]="workspace()!.id"></app-participant-list>
-                    </mat-tab>
-                    <mat-tab label="Participant Categories">
-                        <app-participant-category-list [workspaceId]="workspace()!.id"></app-participant-category-list>
-                    </mat-tab>
+                        </div> -->
+                    <mat-tab label="Locations"></mat-tab>
+                        <!-- <app-location-list [workspaceId]="workspace()!.id"></app-location-list> -->
+                    <mat-tab label="Participants"></mat-tab>
+                        <!-- <app-participant-list [workspaceId]="workspace()!.id"></app-participant-list> -->
+                    <mat-tab label="Participant Categories"></mat-tab>
+                        <!-- <app-participant-category-list [workspaceId]="workspace()!.id"></app-participant-category-list> -->
                     <mat-tab label="Event Categories"></mat-tab>
                     <mat-tab label="Roles"></mat-tab>
                     <mat-tab label="Slots"></mat-tab>
                 </mat-tab-group>
+                <router-outlet [routerOutletData]="workspace()!.id"/>
             </div>
         </div>
     } @else {

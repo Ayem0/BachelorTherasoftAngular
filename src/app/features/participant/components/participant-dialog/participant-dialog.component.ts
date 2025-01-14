@@ -42,7 +42,7 @@ export class ParticipantDialogComponent implements OnInit {
   public form = new FormGroup({
     firstName: new FormControl({ value: this.participant()?.firstName || "", disabled: this.participantStore.updating() || this.participantStore.creating() }, [Validators.required]),
     lastName: new FormControl({ value: this.participant()?.lastName || "", disabled: this.participantStore.updating() || this.participantStore.creating() }, [Validators.required]),
-    participantCategory: new FormControl({ value: this.participant()?.participantCategory?.id, disabled: this.participantStore.updating() || this.participantStore.creating() }, [Validators.required]),
+    participantCategory: new FormControl({ value: this.participant()?.participantCategoryId, disabled: this.participantStore.updating() || this.participantStore.creating() }, [Validators.required]),
     description: new FormControl({ value: this.participant()?.description || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
     email: new FormControl({ value: this.participant()?.country || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
     phoneNumber: new FormControl({ value: this.participant()?.phoneNumber || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
@@ -56,7 +56,6 @@ export class ParticipantDialogComponent implements OnInit {
     this.participantCategoryStore.getParticipantCategoriesByWorkspaceId(this.workspaceId()).subscribe(participantCategories => {
       this.participantCategories.set(participantCategories);
     });
-    // this.form.controls.participantCategory.setValue)
   }
 
   public submit() {
