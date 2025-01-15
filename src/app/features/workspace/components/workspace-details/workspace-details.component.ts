@@ -1,17 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
-import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatIcon } from '@angular/material/icon';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { User } from '../../../../core/auth/models/auth';
 import { Workspace } from '../../workspace';
-import { WorkspaceService } from '../../workspace.service';
-import { LocationListComponent } from "../../../location/components/location-list/location-list.component";
-import { ParticipantListComponent } from "../../../participant/components/participant-list/participant-list.component";
 import { WorkspaceStore } from '../../workspace.store';
-import { ParticipantCategoryListComponent } from "../../../participant-category/components/participant-category-list/participant-category-list.component";
 
 @Component({
     selector: 'app-workspace-details',
@@ -42,9 +37,10 @@ export class WorkspaceDetailsComponent implements OnInit {
     './event-categories',
     './roles',
     './slots',
+    './tags'
   ];
 
-  public selectedIndex = this.routes.indexOf(this.router.url.split('/').pop()!);
+  public selectedIndex = this.routes.indexOf(`./${this.router.url.split('/').pop()!}`);
   public workspace = signal<Workspace | null>(null);
   public workspaceId = this.route.snapshot.paramMap.get('id');
   public isLoading = signal(true);

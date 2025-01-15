@@ -5,6 +5,7 @@ import { ParticipantCategory } from "../participant-category/participant-categor
 import { Participant } from "../participant/participant"
 import { Slot } from "../slot/slot"
 import { Tag } from "../tag/tag"
+import { WorkspaceRole } from "../workspace-role/workspace-role"
 
 export interface Workspace {
     id: string,
@@ -20,11 +21,6 @@ export interface Workspace {
     slots: Slot[]
 }
 
-export interface WorkspaceRole {
-    id: string,
-    name: string,
-    description?: string,
-}
 
 
 

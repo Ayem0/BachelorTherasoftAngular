@@ -55,12 +55,12 @@ export const routes: Routes = [
             },
             {
                 path: "event-categories",
-                loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component').then(c => c.ParticipantCategoryListComponent),
+                loadComponent: () => import('./features/event-category/components/event-category-list/event-category-list.component').then(c => c.EventCategoryListComponent),
                 canActivate: [authGuard]
             },
             {
                 path: "roles",
-                loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component').then(c => c.ParticipantCategoryListComponent),
+                loadComponent: () => import('./features/workspace-role/components/workspace-role-list/workspace-role-list.component').then(c => c.WorkspaceRoleListComponent),
                 canActivate: [authGuard]
             },
             {
@@ -69,11 +69,46 @@ export const routes: Routes = [
                 canActivate: [authGuard]
             },
             {
+                path: "tags",
+                loadComponent: () => import('./features/tag/components/tag-list/tag-list.component').then(c => c.TagListComponent),
+                canActivate: [authGuard]
+            },
+            {
                 path: "",
                 redirectTo: 'members',
                 pathMatch: 'full'
             }
         ]
+    },
+    {
+        path: "location/:id",
+        loadComponent: () => import('./features/location/components/location-list/location-list.component').then(c => c.LocationListComponent),
+        canActivate: [authGuard]
+    },
+    {
+        path: "role/:id",
+        loadComponent: () => import('./features/workspace-role/components/workspace-role-list/workspace-role-list.component').then(c => c.WorkspaceRoleListComponent),
+        canActivate: [authGuard]
+    },
+    {
+        path: "tag/:id",
+        loadComponent: () => import('./features/tag/components/tag-list/tag-list.component').then(c => c.TagListComponent),
+        canActivate: [authGuard]
+    },
+    {
+        path: "event-category/:id",
+        loadComponent: () => import('./features/event-category/components/event-category-list/event-category-list.component').then(c => c.EventCategoryListComponent),
+        canActivate: [authGuard]
+    },
+    {
+        path: "participant-category/:id",
+        loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component').then(c => c.ParticipantCategoryListComponent),
+        canActivate: [authGuard]
+    },
+    {
+        path: "participant/:id",
+        loadComponent: () => import('./features/participant/components/participant-list/participant-list.component').then(c => c.ParticipantListComponent),
+        canActivate: [authGuard]
     },
     { path: "**", loadComponent: () => import('./features/not-found/not-found.component').then(c => c.NotFoundComponent) },
 

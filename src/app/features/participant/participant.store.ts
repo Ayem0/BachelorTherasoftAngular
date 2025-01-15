@@ -1,10 +1,9 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Observable, of, tap } from 'rxjs';
-import { ParticipantService } from './participant.service';
 import { WorkspaceStore } from '../workspace/workspace.store';
 import { Participant } from './participant';
-import { ParticipantCategory } from '../participant-category/participant-category';
+import { ParticipantService } from './participant.service';
 
 type ParticipantState = {
     participants: Map<string, Participant[]>; // string is workspaceId
