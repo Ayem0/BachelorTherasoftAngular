@@ -177,6 +177,9 @@ $dark: mat.define-theme((
   @include mat.select-theme($light);
   @include mat.option-theme($light);
   @include mat.dialog-theme($light);
+  @include mat.datepicker-theme($light);
+  @include mat.timepicker-theme($light);
+  @include mat.slide-toggle-theme($light);
 }
 
 .dark {
@@ -198,6 +201,9 @@ $dark: mat.define-theme((
   @include mat.select-color($dark);
   @include mat.option-color($dark);
   @include mat.dialog-color($dark);
+  @include mat.datepicker-color($dark);
+  @include mat.timepicker-color($dark);
+  @include mat.slide-toggle-color($dark);
 }
 
 // Global styles

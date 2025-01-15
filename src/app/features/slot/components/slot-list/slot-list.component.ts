@@ -1,24 +1,25 @@
 import { Component, inject, Signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { debounceTime } from 'rxjs';
+// import { slotDialogComponent } from '../../../slot/components/slot-dialog/slot-dialog.component';
+import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
-import { debounceTime } from 'rxjs';
-import { WorkspaceRole } from '../../workspace-role';
-import { WorkspaceRoleStore } from '../../workspace-role.store';
-import { WorkspaceRoleDialogComponent } from '../workspace-role-dialog/workspace-role-dialog.component';
+import { SlotStore } from '../../../slot/slot.store';
+import { Slot } from '../../slot';
+import { SlotDialogComponent } from '../slot-dialog/slot-dialog.component';
 
 @Component({
-  selector: 'app-workspace-role-list',
+  selector: 'app-slot-list',
   imports: [
     MatProgressSpinner,
     MatButtonModule,
@@ -33,25 +34,24 @@ import { WorkspaceRoleDialogComponent } from '../workspace-role-dialog/workspace
     MatSortModule,
     ReactiveFormsModule
   ],
-  templateUrl: './workspace-role-list.component.html',
-  styleUrl: './workspace-role-list.component.scss'
+  templateUrl: './slot-list.component.html',
+  styleUrl: './slot-list.component.scss'
 })
-export class WorkspaceRoleListComponent {
+export class SlotListComponent {
   private readonly matDialog = inject(MatDialog);
-  public readonly WorkspaceRoleStore = inject(WorkspaceRoleStore);
+  public readonly slotStore = inject(SlotStore);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-  
 
   public search = new FormControl("");
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
-  public dataSource = new MatTableDataSource<WorkspaceRole>([]);
-  public displayedColumns: string[] = ['name', 'description', 'action'];
+  public dataSource = new MatTableDataSource<Slot>([]);
+  public displayedColumns: string[] = ['firstName', 'lastName', 'email', 'phoneNumber', 'description', 'address', 'city', 'country', 'dateOfBirth', 'action'];
 
   public ngOnInit(): void {
-    this.WorkspaceRoleStore.getWorkspaceRolesByWorkspaceId(this.workspaceId()).subscribe(workspaceRoles => {
-      this.dataSource.data = workspaceRoles ?? [];
+    this.slotStore.getSlotsByWorkspaceId(this.workspaceId()).subscribe(slots => {
+      this.dataSource.data = slots;
     });
   }
 
@@ -66,10 +66,10 @@ export class WorkspaceRoleListComponent {
     });
   }
 
-  public openDialog(workspaceRole?: Partial<WorkspaceRole>) {
-    this.matDialog.open(WorkspaceRoleDialogComponent, { data: { workspaceId: this.workspaceId(), workspaceRole: workspaceRole}, width: '500px' }).afterClosed().subscribe(x => {
+  public openDialog(slot?: Partial<Slot>) {
+    this.matDialog.open(SlotDialogComponent, { data: { workspaceId: this.workspaceId(), slot: slot}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
-        this.dataSource.data = this.WorkspaceRoleStore.workspaceRoles().get(this.workspaceId()) ?? [];
+        this.dataSource.data = this.slotStore.slots().get(this.workspaceId()) ?? [];
       } 
     });
   }

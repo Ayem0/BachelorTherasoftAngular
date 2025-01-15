@@ -1,7 +1,7 @@
 
 
 <div class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
-  <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate() ? "Update Participant Category " : "Create Participant Category" }}</h2>
+  <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate() ? "Update Participant " : "Create Participant" }}</h2>
   <form [formGroup]="form" class="flex flex-col px-4 pb-4">
     <div class="h-96 overflow-y-scroll flex flex-col pt-1">
       <mat-form-field appearance="outline" [hideRequiredMarker]="true">
@@ -55,8 +55,11 @@
   
       <mat-form-field appearance="outline">
         <mat-label>Date of birth</mat-label>
-        <input matInput type="text" placeholder="Date of birth" formControlName="dateOfBirth">
-      </mat-form-field>  
+        <input matInput [matDatepicker]="picker" formControlName="dateOfBirth">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
     </div>
     <button mat-flat-button type="submit" (click)="submit()" [disabled]="participantStore.creating() || participantStore.updating() || !form.valid" class="my-4">
       @if(participantStore.creating() || participantStore.updating()) {

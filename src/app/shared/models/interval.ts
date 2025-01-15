@@ -1,6 +1,6 @@
 export enum Interval {
-    day,
-    wekk,
-    month,
-    year
+    day = "day",
+    weak = "weak",
+    month = "month",
+    year = "year"
 }

@@ -1,17 +1,19 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ParticipantStore } from '../../participant.store';
-import { FormGroup, FormControl, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { tap, catchError, of } from 'rxjs';
-import { Participant } from '../../participant';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { ParticipantCategoryStore } from '../../../participant-category/participant-category.store';
+import { catchError, of, tap } from 'rxjs';
 import { ParticipantCategory } from '../../../participant-category/participant-category';
+import { ParticipantCategoryStore } from '../../../participant-category/participant-category.store';
+import { Participant } from '../../participant';
+import { ParticipantStore } from '../../participant.store';
 
 @Component({
   selector: 'app-participant-dialog',
@@ -23,8 +25,10 @@ import { ParticipantCategory } from '../../../participant-category/participant-c
     MatInputModule,
     MatButton,
     MatSelectModule,
-    FormsModule
+    FormsModule,
+    MatDatepickerModule
   ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './participant-dialog.component.html',
   styleUrl: './participant-dialog.component.scss'
 })

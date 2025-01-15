@@ -1,0 +1,91 @@
+
+
+<div class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
+  <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate() ? "Update Slot " : "Create Slot" }}</h2>
+  <form [formGroup]="form" class="flex flex-col px-4 pb-4" (ngSubmit)="submit()">
+    <div class="h-96 overflow-y-scroll flex flex-col pt-1">
+      <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+        <mat-label>Name</mat-label>
+        <input matInput type="text" placeholder="Name" formControlName="name">
+      </mat-form-field>
+  
+      <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+        <mat-label>Event category</mat-label>
+        <mat-select placeholder="Event categories" [multiple]="true" formControlName="eventCategoryIds">
+          @for (e of eventCategories(); track e.id) {
+            <mat-option [value]="e.id">{{e.name}}</mat-option>
+          }
+        </mat-select> 
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Description</mat-label>
+        <textarea matInput placeholder="Description" formControlName="description"></textarea>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Start time</mat-label>
+        <input matInput [matTimepicker]="startTime" formControlName="startTime">
+        <mat-timepicker-toggle matIconSuffix [for]="startTime"/>
+        <mat-timepicker #startTime/>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>End time</mat-label>
+        <input matInput [matTimepicker]="endTime" formControlName="endTime">
+        <mat-timepicker-toggle matIconSuffix [for]="endTime"/>
+        <mat-timepicker #endTime/>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Start date</mat-label>
+        <input matInput [matDatepicker]="startDate" formControlName="startDate">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matIconSuffix [for]="startDate"></mat-datepicker-toggle>
+        <mat-datepicker #startDate></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>End date</mat-label>
+        <input matInput [matDatepicker]="endDate" formControlName="startDate">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matIconSuffix [for]="endDate"></mat-datepicker-toggle>
+        <mat-datepicker #endDate></mat-datepicker>
+      </mat-form-field> 
+
+      <mat-slide-toggle [(ngModel)]="useRepetition" [ngModelOptions]="{standalone: true}">Use repetition</mat-slide-toggle>
+      
+      @if (useRepetition) {
+        <mat-form-field appearance="outline" [hideRequiredMarker]="true" class="pt-5">
+          <mat-label>Repetition</mat-label>
+          <mat-select placeholder="Repetition" formControlName="repetitionInterval">
+            <!-- <mat-option [value]="null">None</mat-option> -->
+            @for (e of repetitionInterval | keyvalue; track e.key) {
+              <mat-option [value]="e.key">{{e.value}}</mat-option>
+            }
+          </mat-select> 
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Every</mat-label>
+          <input matInput type="number" min="0" formControlName="repetitionNumber">
+        </mat-form-field>
+  
+        <mat-form-field appearance="outline">
+          <mat-label>Repetition end date</mat-label>
+          <input matInput [matDatepicker]="repetitionEndDate" formControlName="repetitionEndDate">
+          <mat-hint>MM/DD/YYYY</mat-hint>
+          <mat-datepicker-toggle matIconSuffix [for]="repetitionEndDate"></mat-datepicker-toggle>
+          <mat-datepicker #repetitionEndDate></mat-datepicker>
+        </mat-form-field>
+      }
+    </div>
+    <button mat-flat-button type="submit" [disabled]="slotStore.creating() || slotStore.updating() || !form.valid" class="my-4">
+      @if(slotStore.creating() || slotStore.updating()) {
+          <mat-spinner diameter="24"></mat-spinner>
+      } @else {
+          <span>{{ isUpdate() ? "Update" : "Create"}}</span>
+      }
+    </button>
+  </form>
+</div>

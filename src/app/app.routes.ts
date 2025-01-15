@@ -65,7 +65,7 @@ export const routes: Routes = [
             },
             {
                 path: "slots",
-                loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component').then(c => c.ParticipantCategoryListComponent),
+                loadComponent: () => import('./features/slot/components/slot-list/slot-list.component').then(c => c.SlotListComponent),
                 canActivate: [authGuard]
             },
             {
@@ -82,32 +82,32 @@ export const routes: Routes = [
     },
     {
         path: "location/:id",
-        loadComponent: () => import('./features/location/components/location-list/location-list.component').then(c => c.LocationListComponent),
+        loadComponent: () => import('./features/location/components/location-details/location-details.component').then(c => c.LocationDetailsComponent),
         canActivate: [authGuard]
     },
     {
         path: "role/:id",
-        loadComponent: () => import('./features/workspace-role/components/workspace-role-list/workspace-role-list.component').then(c => c.WorkspaceRoleListComponent),
+        loadComponent: () => import('./features/workspace-role/components/workspace-role-details/workspace-role-details.component').then(c => c.WorkspaceRoleDetailsComponent),
         canActivate: [authGuard]
     },
     {
         path: "tag/:id",
-        loadComponent: () => import('./features/tag/components/tag-list/tag-list.component').then(c => c.TagListComponent),
+        loadComponent: () => import('./features/tag/components/tag-details/tag-details.component').then(c => c.TagDetailsComponent),
         canActivate: [authGuard]
     },
     {
         path: "event-category/:id",
-        loadComponent: () => import('./features/event-category/components/event-category-list/event-category-list.component').then(c => c.EventCategoryListComponent),
+        loadComponent: () => import('./features/event-category/components/event-category-details/event-category-details.component').then(c => c.EventCategoryDetailsComponent),
         canActivate: [authGuard]
     },
     {
         path: "participant-category/:id",
-        loadComponent: () => import('./features/participant-category/components/participant-category-list/participant-category-list.component').then(c => c.ParticipantCategoryListComponent),
+        loadComponent: () => import('./features/participant-category/components/participant-category-details/participant-category-details.component').then(c => c.ParticipantCategoryDetailsComponent),
         canActivate: [authGuard]
     },
     {
         path: "participant/:id",
-        loadComponent: () => import('./features/participant/components/participant-list/participant-list.component').then(c => c.ParticipantListComponent),
+        loadComponent: () => import('./features/participant/components/participant-details/participant-details.component').then(c => c.ParticipantDetailsComponent),
         canActivate: [authGuard]
     },
     { path: "**", loadComponent: () => import('./features/not-found/not-found.component').then(c => c.NotFoundComponent) },

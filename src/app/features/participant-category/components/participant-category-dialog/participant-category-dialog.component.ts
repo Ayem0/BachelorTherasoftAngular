@@ -1,14 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { ParticipantCategoryStore } from '../../participant-category.store';
-import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { tap, catchError, of, first } from 'rxjs';
-import { ParticipantCategory } from '../../participant-category';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { catchError, of, tap } from 'rxjs';
+import { ParticipantCategory } from '../../participant-category';
+import { ParticipantCategoryStore } from '../../participant-category.store';
 
 @Component({
   selector: 'app-participant-dialog',
@@ -20,8 +20,8 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
     MatInputModule,
     MatButton
   ],
-  templateUrl: './participant-dialog.component.html',
-  styleUrl: './participant-dialog.component.scss'
+  templateUrl: './participant-category-dialog.component.html',
+  styleUrl: './participant-category-dialog.component.scss'
 })
 export class ParticipantCategoryDialogComponent {
   readonly participantCategoryStore = inject(ParticipantCategoryStore);
