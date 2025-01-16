@@ -1,11 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { catchError, of, tap } from 'rxjs';
 import { Workspace } from '../../workspace';
 import { WorkspaceStore } from '../../workspace.store';
@@ -24,15 +24,16 @@ import { WorkspaceStore } from '../../workspace.store';
     styleUrl: './workspace-dialog.component.scss'
 })
 export class WorkspaceDialogComponent {
-  readonly workspaceStore = inject(WorkspaceStore);
+  private readonly workspaceStore = inject(WorkspaceStore);
   private readonly dialogRef = inject(MatDialogRef<WorkspaceDialogComponent>);
   private readonly matDialogData = inject(MAT_DIALOG_DATA);
   public workspace = signal<Workspace | null>(this.matDialogData);
   public isUpdate = computed(() => !!this.workspace());
+  public disabled = computed(() => this.workspaceStore.updating() || this.workspaceStore.creating());
 
   public form = new FormGroup({
-    name: new FormControl({ value: this.workspace()?.name || "", disabled: this.workspaceStore.updating() || this.workspaceStore.creating() }, [Validators.required]),
-    description: new FormControl({ value: this.workspace()?.description || "", disabled: this.workspaceStore.updating() || this.workspaceStore.creating() }),
+    name: new FormControl({ value: this.workspace()?.name || "", disabled: this.disabled() }, [Validators.required]),
+    description: new FormControl({ value: this.workspace()?.description || "", disabled: this.disabled() }),
   });
 
   public submit() {

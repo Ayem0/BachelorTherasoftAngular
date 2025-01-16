@@ -69,7 +69,7 @@
                 </ng-container>
 
                 <ng-container matColumnDef="action">
-                    <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                    <mat-header-cell *matHeaderCellDef class="w-14"></mat-header-cell>
                     <mat-cell *matCellDef="let participant">
                         <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="participant actions" (click)="$event.stopPropagation()">
                             <mat-icon>more_vert</mat-icon>

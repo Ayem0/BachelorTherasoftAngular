@@ -1,6 +1,6 @@
-import { User } from "../../core/auth/models/auth"
 import { EventCategory } from "../event-category/event-category"
 import { Place } from "../location/location"
+import { Member } from "../member/member"
 import { ParticipantCategory } from "../participant-category/participant-category"
 import { Participant } from "../participant/participant"
 import { Slot } from "../slot/slot"
@@ -16,7 +16,7 @@ export interface Workspace {
     locations: Place[],
     eventCategories: EventCategory[],
     tags: Tag[],
-    users: User[],
+    members: Member[],
     workspaceRoles: WorkspaceRole[],
     slots: Slot[]
 }

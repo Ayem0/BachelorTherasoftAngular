@@ -61,8 +61,8 @@
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
     </div>
-    <button mat-flat-button type="submit" (click)="submit()" [disabled]="participantStore.creating() || participantStore.updating() || !form.valid" class="my-4">
-      @if(participantStore.creating() || participantStore.updating()) {
+    <button mat-flat-button type="submit" (click)="submit()" [disabled]="disabled() || !form.valid" class="my-4">
+      @if(disabled()) {
           <mat-spinner diameter="24"></mat-spinner>
       } @else {
           <span>{{ isUpdate() ? "Update" : "Create"}}</span>

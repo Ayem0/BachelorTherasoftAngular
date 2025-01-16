@@ -24,18 +24,20 @@ import { TagStore } from '../../tag.store';
   styleUrl: './tag-dialog.component.scss'
 })
 export class TagDialogComponent {
-  readonly tagStore = inject(TagStore);
+  private readonly tagStore = inject(TagStore);
   private readonly dialogRef = inject(MatDialogRef<TagDialogComponent>);
   private readonly matDialogData : { workspaceId: string, tag: Tag | null } = inject(MAT_DIALOG_DATA);
   public tag = signal<Tag | null>(this.matDialogData.tag);
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.tag());
+  public disabled = computed(() => this.tagStore.updating() || this.tagStore.creating());
+
 
   public form = new FormGroup({
-    name: new FormControl({ value: this.tag()?.name || "", disabled: this.tagStore.updating() || this.tagStore.creating() }, [Validators.required]),
-    color: new FormControl({ value: this.tag()?.color || "", disabled: this.tagStore.updating() || this.tagStore.creating() }, [Validators.required]),
-    icon: new FormControl({ value: this.tag()?.icon || "", disabled: this.tagStore.updating() || this.tagStore.creating() }, [Validators.required]),
-    description: new FormControl({ value: this.tag()?.description || "", disabled: this.tagStore.updating() || this.tagStore.creating() }),
+    name: new FormControl({ value: this.tag()?.name || "", disabled: this.disabled() }, [Validators.required]),
+    color: new FormControl({ value: this.tag()?.color || "", disabled: this.disabled() }, [Validators.required]),
+    icon: new FormControl({ value: this.tag()?.icon || "", disabled: this.disabled() }, [Validators.required]),
+    description: new FormControl({ value: this.tag()?.description || "", disabled: this.disabled() }),
   });
 
   public submit() {

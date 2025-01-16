@@ -23,8 +23,8 @@
       <textarea matInput placeholder="Description" formControlName="description"></textarea>
     </mat-form-field>
 
-    <button mat-flat-button type="submit" (click)="submit()" [disabled]="tagStore.creating() || tagStore.updating() || !form.valid" class="my-4">
-      @if(tagStore.creating() || tagStore.updating()) {
+    <button mat-flat-button type="submit" (click)="submit()" [disabled]="disabled() || !form.valid" class="my-4">
+      @if(disabled()) {
           <mat-spinner diameter="24"></mat-spinner>
       } @else {
           <span>{{ isUpdate() ? "Update" : "Create"}}</span>

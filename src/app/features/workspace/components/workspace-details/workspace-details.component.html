@@ -16,33 +16,9 @@
             <div class="flex flex-col size-full p-4 md:p-6">
                 <mat-tab-group [selectedIndex]="selectedIndex" (selectedTabChange)="tabChanged($event)">
                     <mat-tab label="Members"></mat-tab>
-                        <!-- <div class="pt-2">
-                            <mat-table [dataSource]="users">
-                                <ng-container matColumnDef="firstName">
-                                <mat-header-cell *matHeaderCellDef> First Name </mat-header-cell>
-                                <mat-cell *matCellDef="let user"> {{user.firstName}} </mat-cell>
-                                </ng-container>
-                            
-                                <ng-container matColumnDef="lastName">
-                                <mat-header-cell *matHeaderCellDef> Last Name </mat-header-cell>
-                                <mat-cell *matCellDef="let user"> {{user.lastName }} </mat-cell>
-                                </ng-container>
-                            
-                                <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-                            </mat-table>
-                            <mat-paginator
-                                            [pageSizeOptions]="[5, 10, 20]"
-                                            showFirstLastButtons
-                                            aria-label="Select page of users">
-                            </mat-paginator>
-                        </div> -->
                     <mat-tab label="Locations"></mat-tab>
-                        <!-- <app-location-list [workspaceId]="workspace()!.id"></app-location-list> -->
                     <mat-tab label="Participants"></mat-tab>
-                        <!-- <app-participant-list [workspaceId]="workspace()!.id"></app-participant-list> -->
                     <mat-tab label="Participant Categories"></mat-tab>
-                        <!-- <app-participant-category-list [workspaceId]="workspace()!.id"></app-participant-category-list> -->
                     <mat-tab label="Event Categories"></mat-tab>
                     <mat-tab label="Roles"></mat-tab>
                     <mat-tab label="Slots"></mat-tab>

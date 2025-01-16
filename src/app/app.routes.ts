@@ -34,7 +34,7 @@ export const routes: Routes = [
         loadChildren: () => [
             {
                 path: "members",
-                loadComponent: () => import('./features/location/components/location-list/location-list.component').then(c => c.LocationListComponent),
+                loadComponent: () => import('./features/member/components/member-list/member-list.component').then(c => c.MemberListComponent),
                 canActivate: [authGuard]
             },
             {

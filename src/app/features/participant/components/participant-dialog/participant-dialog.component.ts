@@ -33,8 +33,8 @@ import { ParticipantStore } from '../../participant.store';
   styleUrl: './participant-dialog.component.scss'
 })
 export class ParticipantDialogComponent implements OnInit {
-  readonly participantStore = inject(ParticipantStore);
-  readonly participantCategoryStore = inject(ParticipantCategoryStore);
+  private readonly participantStore = inject(ParticipantStore);
+  private readonly participantCategoryStore = inject(ParticipantCategoryStore);
   private readonly dialogRef = inject(MatDialogRef<ParticipantDialogComponent>);
   private readonly matDialogData : { workspaceId: string, participant: Participant | null } = inject(MAT_DIALOG_DATA);
 
@@ -42,18 +42,20 @@ export class ParticipantDialogComponent implements OnInit {
   public participant = signal<Participant | null>(this.matDialogData.participant).asReadonly();
   public isUpdate = computed(() => !!this.participant());
   public participantCategories = signal<ParticipantCategory[]>([]);
+  public disabled = computed(() => this.participantStore.updating() || this.participantStore.creating());
+
 
   public form = new FormGroup({
-    firstName: new FormControl({ value: this.participant()?.firstName || "", disabled: this.participantStore.updating() || this.participantStore.creating() }, [Validators.required]),
-    lastName: new FormControl({ value: this.participant()?.lastName || "", disabled: this.participantStore.updating() || this.participantStore.creating() }, [Validators.required]),
-    participantCategory: new FormControl({ value: this.participant()?.participantCategoryId, disabled: this.participantStore.updating() || this.participantStore.creating() }, [Validators.required]),
-    description: new FormControl({ value: this.participant()?.description || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
-    email: new FormControl({ value: this.participant()?.country || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
-    phoneNumber: new FormControl({ value: this.participant()?.phoneNumber || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
-    address: new FormControl({ value: this.participant()?.address || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
-    city: new FormControl({ value: this.participant()?.city || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
-    country: new FormControl({ value: this.participant()?.country || "", disabled: this.participantStore.updating() || this.participantStore.creating() }),
-    dateOfBirth: new FormControl({ value: this.participant()?.dateOfBirth, disabled: this.participantStore.updating() || this.participantStore.creating() }),
+    firstName: new FormControl({ value: this.participant()?.firstName || "", disabled: this.disabled() }, [Validators.required]),
+    lastName: new FormControl({ value: this.participant()?.lastName || "", disabled: this.disabled() }, [Validators.required]),
+    participantCategory: new FormControl({ value: this.participant()?.participantCategoryId, disabled: this.disabled() }, [Validators.required]),
+    description: new FormControl({ value: this.participant()?.description || "", disabled: this.disabled() }),
+    email: new FormControl({ value: this.participant()?.country || "", disabled: this.disabled() }),
+    phoneNumber: new FormControl({ value: this.participant()?.phoneNumber || "", disabled: this.disabled() }),
+    address: new FormControl({ value: this.participant()?.address || "", disabled: this.disabled() }),
+    city: new FormControl({ value: this.participant()?.city || "", disabled: this.disabled() }),
+    country: new FormControl({ value: this.participant()?.country || "", disabled: this.disabled() }),
+    dateOfBirth: new FormControl({ value: this.participant()?.dateOfBirth, disabled: this.disabled() }),
   });
 
   public ngOnInit(): void {

@@ -23,8 +23,8 @@
             <mat-label>Country</mat-label>
             <input matInput type="text" placeholder="Country" formControlName="country">
           </mat-form-field>
-          <button mat-flat-button type="submit" (click)="submit()" [disabled]="locationStore.creating() || locationStore.updating() || !form.valid" class="my-4">
-            @if(locationStore.creating() || locationStore.updating()) {
+          <button mat-flat-button type="submit" (click)="submit()" [disabled]="disabled() || !form.valid" class="my-4">
+            @if(disabled()) {
                 <mat-spinner diameter="24"></mat-spinner>
             } @else {
                 <span>{{ isUpdate() ? "Update" : "Create"}}</span>

@@ -24,18 +24,20 @@ import { ParticipantCategoryStore } from '../../participant-category.store';
   styleUrl: './participant-category-dialog.component.scss'
 })
 export class ParticipantCategoryDialogComponent {
-  readonly participantCategoryStore = inject(ParticipantCategoryStore);
+  private readonly participantCategoryStore = inject(ParticipantCategoryStore);
   private readonly dialogRef = inject(MatDialogRef<ParticipantCategoryDialogComponent>);
   private readonly matDialogData : { workspaceId: string, participantCategory: ParticipantCategory | null } = inject(MAT_DIALOG_DATA);
   public participantCategory = signal<ParticipantCategory | null>(this.matDialogData.participantCategory);
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.participantCategory());
+  public disabled = computed(() => this.participantCategoryStore.updating() || this.participantCategoryStore.creating());
+
 
   public form = new FormGroup({
-    name: new FormControl({ value: this.participantCategory()?.name || "", disabled: this.participantCategoryStore.updating() || this.participantCategoryStore.creating() }, [Validators.required]),
-    color: new FormControl({ value: this.participantCategory()?.color || "", disabled: this.participantCategoryStore.updating() || this.participantCategoryStore.creating() }, [Validators.required]),
-    icon: new FormControl({ value: this.participantCategory()?.icon || "", disabled: this.participantCategoryStore.updating() || this.participantCategoryStore.creating() }, [Validators.required]),
-    description: new FormControl({ value: this.participantCategory()?.description || "", disabled: this.participantCategoryStore.updating() || this.participantCategoryStore.creating() }),
+    name: new FormControl({ value: this.participantCategory()?.name || "", disabled: this.disabled() }, [Validators.required]),
+    color: new FormControl({ value: this.participantCategory()?.color || "", disabled: this.disabled() }, [Validators.required]),
+    icon: new FormControl({ value: this.participantCategory()?.icon || "", disabled: this.disabled() }, [Validators.required]),
+    description: new FormControl({ value: this.participantCategory()?.description || "", disabled: this.disabled() }),
   });
 
   public submit() {

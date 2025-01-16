@@ -24,18 +24,19 @@ import { EventCategoryStore } from '../../event-category.store';
   styleUrl: './event-category-dialog.component.scss'
 })
 export class EventCategoryDialogComponent {
-  readonly eventCategoryStore = inject(EventCategoryStore);
+  private readonly eventCategoryStore = inject(EventCategoryStore);
   private readonly dialogRef = inject(MatDialogRef<EventCategoryDialogComponent>);
   private readonly matDialogData : { workspaceId: string, eventCategory: EventCategory | null } = inject(MAT_DIALOG_DATA);
   public eventCategory = signal<EventCategory | null>(this.matDialogData.eventCategory);
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.eventCategory());
+  public disabled = computed(() => this.eventCategoryStore.updating() || this.eventCategoryStore.creating());
 
   public form = new FormGroup({
-    name: new FormControl({ value: this.eventCategory()?.name || "", disabled: this.eventCategoryStore.updating() || this.eventCategoryStore.creating() }, [Validators.required]),
-    color: new FormControl({ value: this.eventCategory()?.color || "", disabled: this.eventCategoryStore.updating() || this.eventCategoryStore.creating() }, [Validators.required]),
-    icon: new FormControl({ value: this.eventCategory()?.icon || "", disabled: this.eventCategoryStore.updating() || this.eventCategoryStore.creating() }, [Validators.required]),
-    description: new FormControl({ value: this.eventCategory()?.description || "", disabled: this.eventCategoryStore.updating() || this.eventCategoryStore.creating() }),
+    name: new FormControl({ value: this.eventCategory()?.name || "", disabled: this.disabled() }, [Validators.required]),
+    color: new FormControl({ value: this.eventCategory()?.color || "", disabled: this.disabled() }, [Validators.required]),
+    icon: new FormControl({ value: this.eventCategory()?.icon || "", disabled: this.disabled() }, [Validators.required]),
+    description: new FormControl({ value: this.eventCategory()?.description || "", disabled: this.disabled() }),
   });
 
   public submit() {

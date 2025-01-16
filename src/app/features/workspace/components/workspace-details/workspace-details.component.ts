@@ -1,10 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
-import { User } from '../../../../core/auth/models/auth';
 import { Workspace } from '../../workspace';
 import { WorkspaceStore } from '../../workspace.store';
 
@@ -15,10 +14,6 @@ import { WorkspaceStore } from '../../workspace.store';
     MatButtonModule,
     MatTabsModule,
     MatTableModule,
-    // MatPaginatorModule,
-    // LocationListComponent,
-    // ParticipantListComponent,
-    // ParticipantCategoryListComponent,
     RouterOutlet
 ],
     templateUrl: './workspace-details.component.html',
@@ -44,14 +39,11 @@ export class WorkspaceDetailsComponent implements OnInit {
   public workspace = signal<Workspace | null>(null);
   public workspaceId = this.route.snapshot.paramMap.get('id');
   public isLoading = signal(true);
-  public displayedColumns: string[] = ['firstName', 'lastName'];
-  public users = new MatTableDataSource<Partial<User>>([]);
 
   public ngOnInit(): void {
     if (this.workspaceId) this.workspaceStore.getWorkspaceDetailsById(this.workspaceId).subscribe({
       next: (workspace) => {
         this.workspace.set(workspace);
-        this.users.data = workspace.users;
         this.isLoading.set(false);
       },
       error: () => {

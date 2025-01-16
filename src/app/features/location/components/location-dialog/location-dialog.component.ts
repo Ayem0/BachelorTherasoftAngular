@@ -1,14 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { locationStore } from '../../location.store';
-import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { tap, catchError, of } from 'rxjs';
-import { Place } from '../../location';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { catchError, of, tap } from 'rxjs';
+import { Place } from '../../location';
+import { locationStore } from '../../location.store';
 
 @Component({
   selector: 'app-location-dialog',
@@ -24,20 +24,31 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
   styleUrl: './location-dialog.component.scss'
 })
 export class LocationDialogComponent {
-  readonly locationStore = inject(locationStore);
+  private readonly locationStore = inject(locationStore);
   private readonly dialogRef = inject(MatDialogRef<LocationDialogComponent>);
   private readonly matDialogData : { workspaceId: string, location: Place | null } = inject(MAT_DIALOG_DATA);
+  private readonly fb = inject(FormBuilder);
+
   public location = signal<Place | null>(this.matDialogData.location);
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.location());
+  public disabled = computed(() => this.locationStore.updating() || this.locationStore.creating());
 
   public form = new FormGroup({
-    name: new FormControl({ value: this.location()?.name || "", disabled: this.locationStore.updating() || this.locationStore.creating() }, [Validators.required]),
-    description: new FormControl({ value: this.location()?.description || "", disabled: this.locationStore.updating() || this.locationStore.creating() }),
-    address: new FormControl({ value: this.location()?.address || "", disabled: this.locationStore.updating() || this.locationStore.creating() }),
-    city: new FormControl({ value: this.location()?.city || "", disabled: this.locationStore.updating() || this.locationStore.creating() }),
-    country: new FormControl({ value: this.location()?.country || "", disabled: this.locationStore.updating() || this.locationStore.creating() }),
+    name: new FormControl({ value: this.location()?.name || "", disabled: this.disabled() }, [Validators.required]),
+    description: new FormControl({ value: this.location()?.description || "", disabled: this.disabled() }),
+    address: new FormControl({ value: this.location()?.address || "", disabled: this.disabled() }),
+    city: new FormControl({ value: this.location()?.city || "", disabled: this.disabled() }),
+    country: new FormControl({ value: this.location()?.country || "", disabled: this.disabled() }),
   });
+
+  // public form2 = this.fb.group({
+  //   name: [this.location()?.description, ]
+  //   description: new FormControl({ value: this.location()?.description || "", disabled: this.disabled() }),
+  //   address: new FormControl({ value: this.location()?.address || "", disabled: this.disabled() }),
+  //   city: new FormControl({ value: this.location()?.city || "", disabled: this.disabled() }),
+  //   country: new FormControl({ value: this.location()?.country || "", disabled: this.disabled() }),
+  // })
 
   public submit() {
     if(this.form.valid && this.form.value && this.form.value.name) {

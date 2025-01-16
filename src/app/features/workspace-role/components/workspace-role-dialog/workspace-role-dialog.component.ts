@@ -24,16 +24,17 @@ import { WorkspaceRoleStore } from '../../workspace-role.store';
   styleUrl: './workspace-role-dialog.component.scss'
 })
 export class WorkspaceRoleDialogComponent {
-  readonly workspaceRoleStore = inject(WorkspaceRoleStore);
+  private readonly workspaceRoleStore = inject(WorkspaceRoleStore);
   private readonly dialogRef = inject(MatDialogRef<WorkspaceRoleDialogComponent>);
   private readonly matDialogData : { workspaceId: string, workspaceRole: WorkspaceRole | null } = inject(MAT_DIALOG_DATA);
   public workspaceRole = signal<WorkspaceRole | null>(this.matDialogData.workspaceRole);
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.workspaceRole());
+  public disabled = computed(() => this.workspaceRoleStore.updating() || this.workspaceRoleStore.creating());
 
   public form = new FormGroup({
-    name: new FormControl({ value: this.workspaceRole()?.name || "", disabled: this.workspaceRoleStore.updating() || this.workspaceRoleStore.creating() }, [Validators.required]),
-    description: new FormControl({ value: this.workspaceRole()?.description || "", disabled: this.workspaceRoleStore.updating() || this.workspaceRoleStore.creating() }),
+    name: new FormControl({ value: this.workspaceRole()?.name || "", disabled: this.disabled() }, [Validators.required]),
+    description: new FormControl({ value: this.workspaceRole()?.description || "", disabled: this.disabled() }),
   });
 
   public submit() {
