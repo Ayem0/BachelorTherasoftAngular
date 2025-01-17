@@ -28,15 +28,19 @@ export const WorkspaceRoleStore = signalStore(
         getWorkspaceRolesByWorkspaceId(workspaceId: string) : Observable<WorkspaceRole[]> {
             patchState(store, { loading: true });
             if (store.workspaceRoles().has(workspaceId)) {
+                console.log("la")
                 patchState(store, { loading: false });
                 return of(store.workspaceRoles().get(workspaceId)!);
             }
+            console.log(workspaceStore.workspacesDetails().get(workspaceId))
             if (workspaceStore.workspacesDetails().has(workspaceId)) {
+                console.log("ici")
                 const workspaceRoles = workspaceStore.workspacesDetails().get(workspaceId)!.workspaceRoles;
-                const updatedworkspaceRoles = new Map(store.workspaceRoles());
-                updatedworkspaceRoles.set(workspaceId, workspaceRoles);
+                console.log(workspaceRoles)
+                const updatedWorkspaceRoles = new Map(store.workspaceRoles());
+                updatedWorkspaceRoles.set(workspaceId, workspaceRoles);
                 patchState(store, {
-                    workspaceRoles: updatedworkspaceRoles,
+                    workspaceRoles: updatedWorkspaceRoles,
                     loading: false,
                     error: null
                 });
@@ -45,8 +49,10 @@ export const WorkspaceRoleStore = signalStore(
             return workspaceRoleService.getWorkspaceRolesByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (workspaceRoles) => {
+                        const updatedWorkspaceRoles = new Map(store.workspaceRoles());
+                        updatedWorkspaceRoles.set(workspaceId, workspaceRoles);
                         patchState(store, {
-                            workspaceRoles: store.workspaceRoles().set(workspaceId, workspaceRoles),
+                            workspaceRoles: updatedWorkspaceRoles,
                             loading: false,
                             error: null
                         });

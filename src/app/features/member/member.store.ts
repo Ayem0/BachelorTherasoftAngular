@@ -28,11 +28,14 @@ export const MemberStore = signalStore(
         getMembersByWorkspaceId(workspaceId: string) : Observable<Member[]> {
             patchState(store, { loading: true });
             if (store.members().has(workspaceId)) {
+                console.log("la")
                 patchState(store, { loading: false });
                 return of(store.members().get(workspaceId)!);
             }
             if (workspaceStore.workspacesDetails().has(workspaceId)) {
+                console.log("ici")
                 const members = workspaceStore.workspacesDetails().get(workspaceId)!.members;
+                console.log( workspaceStore.workspacesDetails().get(workspaceId))
                 const updatedmembers = new Map(store.members());
                 updatedmembers.set(workspaceId, members);
                 patchState(store, {
@@ -42,11 +45,14 @@ export const MemberStore = signalStore(
                 });
                 return of(members);
             }
+            console.log("la bas")
             return memberService.getMembersByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (members) => {
+                        const updatedMembers = new Map(store.members());
+                        updatedMembers.set(workspaceId, members);
                         patchState(store, {
-                            members: store.members().set(workspaceId, members),
+                            members: updatedMembers,
                             loading: false,
                             error: null
                         });

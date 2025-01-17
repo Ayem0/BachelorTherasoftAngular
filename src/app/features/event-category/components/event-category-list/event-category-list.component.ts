@@ -67,7 +67,7 @@ export class EventCategoryListComponent {
   }
 
   public openDialog(eventCategory?: Partial<EventCategory>) {
-    this.matDialog.open(EventCategoryDialogComponent, { data: { workspaceId: this.workspaceId(), eventCategory: eventCategory}, width: '500px' }).afterClosed().subscribe(x => {
+    this.matDialog.open(EventCategoryDialogComponent, { data: { workspaceId: this.workspaceId, eventCategory: eventCategory}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
         this.dataSource.data = this.eventCategoryStore.eventCategories().get(this.workspaceId()) ?? [];
       } 

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, Signal, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -26,7 +26,7 @@ import { locationStore } from '../../location.store';
 export class LocationDialogComponent {
   private readonly locationStore = inject(locationStore);
   private readonly dialogRef = inject(MatDialogRef<LocationDialogComponent>);
-  private readonly matDialogData : { workspaceId: string, location: Place | null } = inject(MAT_DIALOG_DATA);
+  private readonly matDialogData : { workspaceId: Signal<string>, location: Place | null } = inject(MAT_DIALOG_DATA);
   private readonly fb = inject(FormBuilder);
 
   public location = signal<Place | null>(this.matDialogData.location);
@@ -54,7 +54,7 @@ export class LocationDialogComponent {
     if(this.form.valid && this.form.value && this.form.value.name) {
       const { name, description, address, city, country } = this.form.value;
       if (this.location()) {
-        this.locationStore.updateLocation(this.workspaceId, this.location()!.id, name, description ?? undefined).pipe(
+        this.locationStore.updateLocation(this.workspaceId(), this.location()!.id, name, description ?? undefined).pipe(
           tap(res => {
             this.dialogRef.close(res);
           }),
@@ -64,7 +64,7 @@ export class LocationDialogComponent {
           })
         ).subscribe();
       } else {
-        this.locationStore.createLocation(this.workspaceId, name, description ?? undefined, address ?? undefined, city ?? undefined, country ?? undefined).pipe(
+        this.locationStore.createLocation(this.workspaceId(), name, description ?? undefined, address ?? undefined, city ?? undefined, country ?? undefined).pipe(
           tap(res => {
             this.dialogRef.close(res);
           }),

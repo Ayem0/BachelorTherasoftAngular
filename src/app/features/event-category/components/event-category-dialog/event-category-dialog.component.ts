@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, Signal, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -26,7 +26,7 @@ import { EventCategoryStore } from '../../event-category.store';
 export class EventCategoryDialogComponent {
   private readonly eventCategoryStore = inject(EventCategoryStore);
   private readonly dialogRef = inject(MatDialogRef<EventCategoryDialogComponent>);
-  private readonly matDialogData : { workspaceId: string, eventCategory: EventCategory | null } = inject(MAT_DIALOG_DATA);
+  private readonly matDialogData : { workspaceId: Signal<string>, eventCategory: EventCategory | null } = inject(MAT_DIALOG_DATA);
   public eventCategory = signal<EventCategory | null>(this.matDialogData.eventCategory);
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.eventCategory());
@@ -44,7 +44,7 @@ export class EventCategoryDialogComponent {
       const { name, color, icon, description } = this.form.value;
       if (this.eventCategory()) {
         this.eventCategoryStore.updateEventCategory(
-          this.workspaceId, 
+          this.workspaceId(), 
           this.eventCategory()!.id, 
           name, 
           color, 
@@ -61,7 +61,7 @@ export class EventCategoryDialogComponent {
         ).subscribe();
       } else {
         this.eventCategoryStore.createEventCategory(
-          this.workspaceId,
+          this.workspaceId(),
           name, 
           color, 
           icon,

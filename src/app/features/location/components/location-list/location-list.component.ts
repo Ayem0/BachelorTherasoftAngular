@@ -67,7 +67,7 @@ export class LocationListComponent {
   }
 
   public openDialog(location?: Partial<Place>) {
-    this.matDialog.open(LocationDialogComponent, { data: { workspaceId: this.workspaceId(), location: location}, width: '500px' }).afterClosed().subscribe(x => {
+    this.matDialog.open(LocationDialogComponent, { data: { workspaceId: this.workspaceId, location: location}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
         this.dataSource.data = this.locationStore.locations().get(this.workspaceId()) ?? [];
       } 
