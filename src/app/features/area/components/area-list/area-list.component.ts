@@ -5,7 +5,7 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { debounceTime } from 'rxjs';
-// import { locationDialogComponent } from '../../../location/components/location-dialog/location-dialog.component';
+// import { areaDialogComponent } from '../../../area/components/area-dialog/area-dialog.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,12 +14,11 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
-import { LocationStore } from '../../../location/location.store';
-import { Place } from '../../location';
-import { LocationDialogComponent } from '../location-dialog/location-dialog.component';
+import { AreaStore } from '../../../area/area.store';
+import { Area } from '../../area';
 
 @Component({
-  selector: 'app-location-list',
+  selector: 'app-area-list',
   imports: [
     MatProgressSpinner,
     MatButtonModule,
@@ -34,27 +33,27 @@ import { LocationDialogComponent } from '../location-dialog/location-dialog.comp
     MatSortModule,
     ReactiveFormsModule
   ],
-  templateUrl: './location-list.component.html',
-  styleUrl: './location-list.component.scss'
+  templateUrl: './area-list.component.html',
+  styleUrl: './area-list.component.scss'
 })
-export class LocationListComponent {
+export class AreaListComponent {
   private readonly matDialog = inject(MatDialog);
-  private readonly locationStore = inject(LocationStore);
-  private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
+  private readonly areaStore = inject(AreaStore);
+  private readonly locationId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
 
   public search = new FormControl("");
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
-  public dataSource = new MatTableDataSource<Place>([]);
+  public dataSource = new MatTableDataSource<Area>([]);
   public displayedColumns: string[] = ['name', 'description', 'address', 'city', 'country', 'action'];
-  public loading = this.locationStore.loading;
+  public loading = this.areaStore.loading;
 
-  public ngOnInit(): void {
-    this.locationStore.getLocationsByWorkspaceId(this.workspaceId()).subscribe(locations => {
-      this.dataSource.data = locations ?? [];
-    });
-  }
+  // public ngOnInit(): void {
+  //   this.areaStore.getAreasByLocationId(this.workspaceId()).subscribe(areas => {
+  //     this.dataSource.data = areas ?? [];
+  //   });
+  // }
 
   public ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator();
@@ -67,11 +66,11 @@ export class LocationListComponent {
     });
   }
 
-  public openDialog(location?: Partial<Place>) {
-    this.matDialog.open(LocationDialogComponent, { data: { workspaceId: this.workspaceId, location: location}, width: '500px' }).afterClosed().subscribe(x => {
-      if (x) {
-        this.dataSource.data = this.locationStore.locations().get(this.workspaceId()) ?? [];
-      } 
-    });
-  }
+  // public openDialog(area?: Partial<Area>) {
+  //   this.matDialog.open(AreaDialogComponent, { data: { workspaceId: this.workspaceId, area: area}, width: '500px' }).afterClosed().subscribe(x => {
+  //     if (x) {
+  //       this.dataSource.data = this.areaStore.areas().get(this.workspaceId()) ?? [];
+  //     } 
+  //   });
+  // }
 }

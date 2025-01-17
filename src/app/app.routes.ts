@@ -81,13 +81,13 @@ export const routes: Routes = [
         ]
     },
     {
-        path: "location/:id",
-        loadComponent: () => import('./features/location/components/location-details/location-details.component').then(c => c.LocationDetailsComponent),
+        path: "role/:id",
+        loadComponent: () => import('./features/workspace-role/components/workspace-role-details/workspace-role-details.component').then(c => c.WorkspaceRoleDetailsComponent),
         canActivate: [authGuard]
     },
     {
-        path: "role/:id",
-        loadComponent: () => import('./features/workspace-role/components/workspace-role-details/workspace-role-details.component').then(c => c.WorkspaceRoleDetailsComponent),
+        path: "location/:id",
+        loadComponent: () => import('./features/location/components/location-details/location-details.component').then(c => c.LocationDetailsComponent),
         canActivate: [authGuard]
     },
     {

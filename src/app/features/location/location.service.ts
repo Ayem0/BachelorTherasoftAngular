@@ -1,7 +1,7 @@
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Place } from './location';
-import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +24,7 @@ export class LocationService {
     return this.http.put<Place>(`${environment.apiUrl}/api/location`, { newName, newDescription }, { params: { id: id } })
   }
 
-  public getLocationDetailsById(id: string) {
-    return this.http.get<Place>(`${environment.apiUrl}/api/location/details`, { params: { id: id } });
+  public getLocationDetailsById(workspaceId: string, locationId: string) {
+    return this.http.get<Place>(`${environment.apiUrl}/api/location/details`, { params: { workspaceId, locationId } });
   }
 }

@@ -1,9 +1,9 @@
 
-import { computed, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { inject } from '@angular/core';
+import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
+import { Observable, of, tap } from 'rxjs';
 import { Workspace } from './workspace';
 import { WorkspaceService } from './workspace.service';
-import { delay, Observable, of, tap } from 'rxjs';
 
 type WorkspaceState = {
   workspaces: Workspace[];
@@ -59,7 +59,7 @@ export const WorkspaceStore = signalStore(
         return of(store.workspaces());
       }
       patchState(store, { loading: true });
-      return workspaceService.getWorkspaceByUserId().pipe(
+      return workspaceService.getWorkspacesByUser().pipe(
         tap({
           next: (workspaces) => {
             patchState(store, {

@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { catchError, of, tap } from 'rxjs';
 import { Place } from '../../location';
-import { locationStore } from '../../location.store';
+import { LocationStore } from '../../location.store';
 
 @Component({
   selector: 'app-location-dialog',
@@ -24,7 +24,7 @@ import { locationStore } from '../../location.store';
   styleUrl: './location-dialog.component.scss'
 })
 export class LocationDialogComponent {
-  private readonly locationStore = inject(locationStore);
+  private readonly locationStore = inject(LocationStore);
   private readonly dialogRef = inject(MatDialogRef<LocationDialogComponent>);
   private readonly matDialogData : { workspaceId: Signal<string>, location: Place | null } = inject(MAT_DIALOG_DATA);
   private readonly fb = inject(FormBuilder);

@@ -1,4 +1,4 @@
-<div class="flex size-full flex-col">
+<!-- <div class="flex size-full flex-col">
     <div class="flex w-full justify-between items-center pt-4">
         <mat-form-field appearance="outline">
             <input matInput type="text" [formControl]="search">
@@ -21,22 +21,22 @@
         
                 <ng-container matColumnDef="name">
                     <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>
-                    <mat-cell *matCellDef="let location" [routerLink]="['/location', location.id]"> {{location.name}} </mat-cell>
+                    <mat-cell *matCellDef="let area" [routerLink]="['/area', area.id]"> {{area.name}} </mat-cell>
                 </ng-container>
     
                 <ng-container matColumnDef="description">
                     <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
-                    <mat-cell *matCellDef="let location" [routerLink]="['/location', location.id]"> {{location.description }} </mat-cell>
+                    <mat-cell *matCellDef="let area" [routerLink]="['/area', area.id]"> {{area.description }} </mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="address">
                     <mat-header-cell *matHeaderCellDef mat-sort-header> address </mat-header-cell>
-                    <mat-cell *matCellDef="let location" [routerLink]="['/location', location.id]"> {{location.address }} </mat-cell>
+                    <mat-cell *matCellDef="let area" [routerLink]="['/area', area.id]"> {{area.address }} </mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="city">
                     <mat-header-cell *matHeaderCellDef mat-sort-header> city </mat-header-cell>
-                    <mat-cell *matCellDef="let location" [routerLink]="['/location', location.id]"> {{location.city }} </mat-cell>
+                    <mat-cell *matCellDef="let area" [routerLink]="['/area', area.id]"> {{area.city }} </mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="country">
@@ -72,4 +72,4 @@
             aria-label="Select page of locations">
         </mat-paginator>
     </div>
-</div>
+</div> -->

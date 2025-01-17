@@ -10,7 +10,7 @@ export class WorkspaceService {
   private readonly http = inject(HttpClient);
   constructor() { }
 
-  public getWorkspaceByUserId() {
+  public getWorkspacesByUser() {
     return this.http.get<Workspace[]>(`${environment.apiUrl}/api/workspace/user`);
   }
 
@@ -18,11 +18,11 @@ export class WorkspaceService {
     return this.http.post<Workspace>(`${environment.apiUrl}/api/workspace`, { name, description })
   }
 
-  public updateWorkspace(id: string, newName: string, newDescription?: string) {
-    return this.http.put<Workspace>(`${environment.apiUrl}/api/workspace`, { newName, newDescription }, { params: { id: id } })
+  public updateWorkspace(workspaceId: string, newName: string, newDescription?: string) {
+    return this.http.put<Workspace>(`${environment.apiUrl}/api/workspace`, { newName, newDescription }, { params: { workspaceId } })
   }
 
-  public getWorkspaceDetailsById(id: string) {
-    return this.http.get<Workspace>(`${environment.apiUrl}/api/workspace/details`, { params: { id: id } });
+  public getWorkspaceDetailsById(workspaceId: string) {
+    return this.http.get<Workspace>(`${environment.apiUrl}/api/workspace/details`, { params: { workspaceId } });
   }
 }

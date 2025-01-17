@@ -1,27 +1,29 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Observable, of, tap } from 'rxjs';
-import { LocationService } from './location.service';
 import { WorkspaceStore } from '../workspace/workspace.store';
 import { Place } from './location';
+import { LocationService } from './location.service';
 
-type locationState = {
+type LocationState = {
     locations: Map<string, Place[]>; // string is workspaceId
+    locationsDetails: Map<string, Place>;
     loading: boolean;
     updating: boolean;
     creating: boolean;
     error: string | null;
 }
 
-const initialLocationState: locationState = {
+const initialLocationState: LocationState = {
     locations: new Map(),
+    locationsDetails: new Map(),
     loading: false,
     creating: false,
     updating: false,
     error: null
 };
 
-export const locationStore = signalStore(
+export const LocationStore = signalStore(
     { providedIn: "root" },
     withState(initialLocationState),
     withMethods((store, locationService = inject(LocationService), workspaceStore = inject(WorkspaceStore)) => ({
@@ -110,6 +112,32 @@ export const locationStore = signalStore(
                     }
                 })
             );
-        }
+        }, 
+        getLocationDetailsById(workspaceId: string, locationId: string) {
+            patchState(store, { loading: true })
+            if (store.locationsDetails().has(locationId)) {
+                patchState(store, { loading: false })
+                return of(store.locationsDetails().get(locationId)!)
+            }
+            return locationService.getLocationDetailsById(workspaceId, locationId).pipe(
+                tap({
+                    next: (location) => {
+                        const updatedLocationsDetails = new Map(store.locationsDetails());
+                        updatedLocationsDetails.set(workspaceId, location);
+                        patchState(store, {
+                            locationsDetails: updatedLocationsDetails,
+                            loading: false,
+                            error: null
+                        })
+                    },
+                    error: (err: Error) => {
+                        patchState(store, {
+                            loading: false,
+                            error: err.message
+                        })
+                    }
+                })
+            )
+        }        
     })
 ))
