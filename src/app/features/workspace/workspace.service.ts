@@ -18,11 +18,11 @@ export class WorkspaceService {
     return this.http.post<Workspace>(`${environment.apiUrl}/api/workspace`, { name, description })
   }
 
-  public updateWorkspace(workspaceId: string, newName: string, newDescription?: string) {
-    return this.http.put<Workspace>(`${environment.apiUrl}/api/workspace`, { newName, newDescription }, { params: { workspaceId } })
+  public updateWorkspace(id: string, newName: string, newDescription?: string) {
+    return this.http.put<Workspace>(`${environment.apiUrl}/api/workspace`, { newName, newDescription }, { params: { id } })
   }
 
-  public getWorkspaceDetailsById(workspaceId: string) {
-    return this.http.get<Workspace>(`${environment.apiUrl}/api/workspace/details`, { params: { workspaceId } });
+  public getWorkspaceById(id: string) {
+    return this.http.get<Workspace>(`${environment.apiUrl}/api/workspace`, { params: { id } });
   }
 }

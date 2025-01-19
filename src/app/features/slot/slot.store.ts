@@ -32,15 +32,6 @@ export const SlotStore = signalStore(
                 patchState(store, { loading: false });
                 return of(store.slots().get(workspaceId)!);
             }
-            if (workspaceStore.workspacesDetails().has(workspaceId)) {
-                const slots = workspaceStore.workspacesDetails().get(workspaceId)!.slots;
-                patchState(store, {
-                    slots: store.slots().set(workspaceId, slots),
-                    loading: false,
-                    error: null
-                });
-                return of(slots);
-            }
             return slotService.getSlotsByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (slots) => {

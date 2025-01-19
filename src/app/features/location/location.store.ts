@@ -1,13 +1,12 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Observable, of, tap } from 'rxjs';
-import { WorkspaceStore } from '../workspace/workspace.store';
 import { Place } from './location';
 import { LocationService } from './location.service';
 
 type LocationState = {
-    locations: Map<string, Place[]>; // string is workspaceId
-    locationsDetails: Map<string, Place>;
+    locations: Map<string, Place>;
+    locationIdsByWorkspaceId: Map<string, string[]>;
     loading: boolean;
     updating: boolean;
     creating: boolean;
@@ -16,7 +15,7 @@ type LocationState = {
 
 const initialLocationState: LocationState = {
     locations: new Map(),
-    locationsDetails: new Map(),
+    locationIdsByWorkspaceId: new Map(),
     loading: false,
     creating: false,
     updating: false,
@@ -26,27 +25,25 @@ const initialLocationState: LocationState = {
 export const LocationStore = signalStore(
     { providedIn: "root" },
     withState(initialLocationState),
-    withMethods((store, locationService = inject(LocationService), workspaceStore = inject(WorkspaceStore)) => ({
+    withMethods((store, locationService = inject(LocationService)) => ({
         getLocationsByWorkspaceId(workspaceId: string) : Observable<Place[]> {
             patchState(store, { loading: true });
-            if (store.locations().has(workspaceId)) {
+            if (store.locationIdsByWorkspaceId().has(workspaceId)) {
+                const ids = store.locationIdsByWorkspaceId().get(workspaceId)!;
+                const locations = ids.map(id => store.locations().get(id)!);
                 patchState(store, { loading: false });
-                return of(store.locations().get(workspaceId)!);
-            }
-            if (workspaceStore.workspacesDetails().has(workspaceId)) {
-                const locations = workspaceStore.workspacesDetails().get(workspaceId)!.locations;
-                patchState(store, {
-                    locations: store.locations().set(workspaceId, locations),
-                    loading: false,
-                    error: null
-                });
                 return of(locations);
             }
-            return locationService.getLocationByWorkspaceId(workspaceId).pipe(
+            return locationService.getLocationsByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (locations) => {
+                        const updatedLocationIdsByWorkspaceId = new Map(store.locationIdsByWorkspaceId());
+                        updatedLocationIdsByWorkspaceId.set(workspaceId, locations.map(location => location.id));
+                        const updatedLocations = new Map(store.locations());
+                        locations.forEach(location => updatedLocations.set(location.id, location));
                         patchState(store, {
-                            locations: store.locations().set(workspaceId, locations),
+                            locationIdsByWorkspaceId: updatedLocationIdsByWorkspaceId,
+                            locations: updatedLocations,
                             loading: false,
                             error: null
                         });
@@ -60,6 +57,34 @@ export const LocationStore = signalStore(
                 })
             );
         },
+
+        getLocationById(id: string): Observable<Place> {
+            patchState(store, { loading: true });
+            if (store.locations().has(id)) {
+                patchState(store, { loading: false });
+                return of(store.locations().get(id)!);
+            }
+            return locationService.getById(id).pipe(
+                tap({
+                    next: (location) => {
+                        const updatedLocations = new Map(store.locations());
+                        updatedLocations.set(location.id, location);
+                        patchState(store, {
+                            locations: updatedLocations,
+                            loading: false,
+                            error: null
+                        });
+                    },
+                    error: (error: Error) => {
+                        patchState(store, {
+                            loading: false,
+                            error: error.message
+                        });
+                    }
+                })
+            );
+        },
+
         createLocation(
             workspaceId: string, 
             name: string, 
@@ -69,21 +94,19 @@ export const LocationStore = signalStore(
             country?: string
         ) {
             patchState(store, { creating: true });
-            return locationService.createLocation(
-                workspaceId,
-                name, 
-                description,
-                address,
-                city,
-                country
-
-            ).pipe(
+            return locationService.createLocation(workspaceId, name, description, address, city, country).pipe(
                 tap({
                     next: (newlocation) => {
+                        const updatedLocations = new Map(store.locations());
+                        updatedLocations.set(newlocation.id, newlocation);
+                        let updatedLocationIdsByWorkspaceId : Map<string, string[]> | null = null;
+                        if (store.locationIdsByWorkspaceId().has(workspaceId)) {
+                            updatedLocationIdsByWorkspaceId = new Map(store.locationIdsByWorkspaceId());
+                            updatedLocationIdsByWorkspaceId.set(workspaceId, [...store.locationIdsByWorkspaceId().get(workspaceId)!, newlocation.id]);
+                        }
                         patchState(store, {
-                            locations: store.locations().set(workspaceId, store.locations().has(workspaceId) 
-                                ? [newlocation, ...store.locations().get(workspaceId)!]
-                                : [newlocation]),
+                            locations: updatedLocations,
+                            locationIdsByWorkspaceId: updatedLocationIdsByWorkspaceId ?? store.locationIdsByWorkspaceId(),
                             creating: false,
                             error: null
                         });
@@ -94,15 +117,16 @@ export const LocationStore = signalStore(
                 })
             )
         },
-        updateLocation(workspaceId: string, id: string, name: string, description?: string) {
+
+        updateLocation(id: string, name: string, description?: string) {
             patchState(store, { updating: true })
             return locationService.updateLocation(id, name, description).pipe(
                 tap({
-                    next: (updatedlocation) => {
+                    next: (updatedLocation) => {
+                        const updatedLocations = new Map(store.locations());
+                        updatedLocations.set(updatedLocation.id, updatedLocation);
                         patchState(store, {
-                            locations: store.locations().set(workspaceId, store.locations().has(workspaceId) 
-                                ? store.locations().get(workspaceId)!.map(location => location.id === updatedlocation.id ? updatedlocation : location)
-                                : [updatedlocation]),
+                            locations: updatedLocations,
                             updating: false,
                             error: null
                         });
@@ -112,32 +136,6 @@ export const LocationStore = signalStore(
                     }
                 })
             );
-        }, 
-        getLocationDetailsById(workspaceId: string, locationId: string) {
-            patchState(store, { loading: true })
-            if (store.locationsDetails().has(locationId)) {
-                patchState(store, { loading: false })
-                return of(store.locationsDetails().get(locationId)!)
-            }
-            return locationService.getLocationDetailsById(workspaceId, locationId).pipe(
-                tap({
-                    next: (location) => {
-                        const updatedLocationsDetails = new Map(store.locationsDetails());
-                        updatedLocationsDetails.set(workspaceId, location);
-                        patchState(store, {
-                            locationsDetails: updatedLocationsDetails,
-                            loading: false,
-                            error: null
-                        })
-                    },
-                    error: (err: Error) => {
-                        patchState(store, {
-                            loading: false,
-                            error: err.message
-                        })
-                    }
-                })
-            )
-        }        
+        }
     })
 ))

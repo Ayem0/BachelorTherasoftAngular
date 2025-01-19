@@ -53,7 +53,6 @@ export class MemberListComponent {
 
   public ngOnInit(): void {
     this.memberStore.getMembersByWorkspaceId(this.workspaceId()).subscribe(Members => {
-      console.log(Members);
       this.dataSource.data = Members ?? [];
     });
   }

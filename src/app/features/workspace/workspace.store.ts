@@ -7,7 +7,6 @@ import { WorkspaceService } from './workspace.service';
 
 type WorkspaceState = {
   workspaces: Workspace[];
-  workspacesDetails: Map<string, Workspace>;
   loading: boolean;
   loaded: boolean;
   updating: boolean;
@@ -17,7 +16,6 @@ type WorkspaceState = {
 
 const initialWorkspaceState: WorkspaceState = {
   workspaces: [],
-  workspacesDetails: new Map(),
   loading: false,
   loaded: false,
   creating: false,
@@ -29,31 +27,6 @@ export const WorkspaceStore = signalStore(
   { providedIn: "root" },
   withState(initialWorkspaceState),
   withMethods((store, workspaceService = inject(WorkspaceService)) => ({
-    getWorkspaceDetailsById(workspaceId: string) : Observable<Workspace> {
-      if (store.workspacesDetails().has(workspaceId)) {
-        return of(store.workspacesDetails().get(workspaceId)!);
-      }
-      patchState(store, { loading: true });
-      return workspaceService.getWorkspaceDetailsById(workspaceId).pipe(
-        tap({
-          next: (workspace) => {
-            const updatedWorkspacesDetails = new Map(store.workspacesDetails());
-            updatedWorkspacesDetails.set(workspaceId, workspace);
-            patchState(store, {
-              workspacesDetails: updatedWorkspacesDetails,
-              loading: false,
-              error: null
-            });
-          },
-          error: (error: Error) => {
-            patchState(store, {
-              loading: false,
-              error: error.message
-            });
-          }
-        })
-      );
-    },
     getWorkspaces() {
       if (store.loaded()) {
         return of(store.workspaces());
@@ -78,6 +51,27 @@ export const WorkspaceStore = signalStore(
         })
       );
     },
+
+    getWorkspaceById(id: string) {
+      patchState(store, { loading: true });
+      if (store.loaded()) {
+        return of(store.workspaces().find(x => x.id === id)!);
+      }
+      return workspaceService.getWorkspaceById(id).pipe(tap({
+          next: (newWorkspace) => {
+            patchState(store, state => ({
+              workspaces: [...state.workspaces, newWorkspace],
+              creating: false,
+              error: null
+            }));
+          },
+          error: (error: Error) => {
+            patchState(store, { creating: false, error: error.message });
+          }
+        })
+      )
+    },
+
     createWorkspace(name: string, description?: string) {
       patchState(store, { creating: true });
       return workspaceService.createWorkspace(name, description).pipe(
@@ -95,6 +89,7 @@ export const WorkspaceStore = signalStore(
         })
       )
     },
+
     updateWorkspace(id: string, name: string, description?: string) {
       patchState(store, { updating: true })
       return workspaceService.updateWorkspace(id, name, description).pipe(

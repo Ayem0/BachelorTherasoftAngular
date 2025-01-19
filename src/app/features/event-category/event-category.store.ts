@@ -31,17 +31,6 @@ export const EventCategoryStore = signalStore(
                 patchState(store, { loading: false });
                 return of(store.eventCategories().get(workspaceId)!);
             }
-            if (workspaceStore.workspacesDetails().has(workspaceId)) {
-                const eventCategories = workspaceStore.workspacesDetails().get(workspaceId)!.eventCategories;
-                const updatedeventCategories = new Map(store.eventCategories());
-                updatedeventCategories.set(workspaceId, eventCategories);
-                patchState(store, {
-                    eventCategories: updatedeventCategories,
-                    loading: false,
-                    error: null
-                });
-                return of(eventCategories);
-            }
             return eventCategoryService.getEventCategoryByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (eventCategories) => {

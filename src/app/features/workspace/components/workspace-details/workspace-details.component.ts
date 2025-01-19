@@ -41,7 +41,7 @@ export class WorkspaceDetailsComponent implements OnInit {
   public isLoading = signal(true);
 
   public ngOnInit(): void {
-    if (this.workspaceId) this.workspaceStore.getWorkspaceDetailsById(this.workspaceId).subscribe({
+    if (this.workspaceId) this.workspaceStore.getWorkspaceById(this.workspaceId).subscribe({
       next: (workspace) => {
         this.workspace.set(workspace);
         this.isLoading.set(false);

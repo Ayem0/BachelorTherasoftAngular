@@ -31,17 +31,6 @@ export const TagStore = signalStore(
                 patchState(store, { loading: false });
                 return of(store.tags().get(workspaceId)!);
             }
-            if (workspaceStore.workspacesDetails().has(workspaceId)) {
-                const tags = workspaceStore.workspacesDetails().get(workspaceId)!.tags;
-                const updatedtags = new Map(store.tags());
-                updatedtags.set(workspaceId, tags);
-                patchState(store, {
-                    tags: updatedtags,
-                    loading: false,
-                    error: null
-                });
-                return of(tags);
-            }
             return tagService.getTagsByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (tags) => {

@@ -31,18 +31,6 @@ export const MemberStore = signalStore(
                 patchState(store, { loading: false });
                 return of(store.members().get(workspaceId)!);
             }
-            if (workspaceStore.workspacesDetails().has(workspaceId)) {
-                const members = workspaceStore.workspacesDetails().get(workspaceId)!.members;
-                console.log( workspaceStore.workspacesDetails().get(workspaceId))
-                const updatedmembers = new Map(store.members());
-                updatedmembers.set(workspaceId, members);
-                patchState(store, {
-                    members: updatedmembers,
-                    loading: false,
-                    error: null
-                });
-                return of(members);
-            }
             return memberService.getMembersByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (members) => {

@@ -1,11 +1,11 @@
-<div class="flex size-full pt-14">
+<div class="flex size-full">
     @if(!loading()) {
-        @if (locationDetails()) {
+        @if (location()) {
             <div class="flex size-full flex-col">
                 <div class="flex w-full flex-col px-4 md:px-6">
-                    <h1 class="text-4xl pb-4">{{ locationDetails()?.name}}</h1>
+                    <h1 class="text-4xl pb-4">{{ location()?.name}}</h1>
                     <div class="flex justify-between">
-                        <span>{{ locationDetails()?.description}}</span>
+                        <span>{{ location()?.description}}</span>
                         <button mat-flat-button>
                             <mat-icon>edit</mat-icon>
                             <span>Edit</span>

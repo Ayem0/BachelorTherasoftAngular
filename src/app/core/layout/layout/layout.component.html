@@ -7,16 +7,20 @@
         <mat-sidenav #leftSidebar autoFocus="false" [mode]="sidenavMode()" [fixedInViewport]="true" [fixedTopGap]="showOver() ? 0 :56" class="!w-48 !rounded-none">
             <app-navigation></app-navigation>
         </mat-sidenav>
-        <mat-sidenav-content class="!mr-0">
+        <mat-sidenav-content class="!mr-0 !flex">
             @if (isLoggedIn() && !userFirstName()) {
                 <div class="flex items-center justify-center size-full"> 
                     <app-initial-login></app-initial-login>
                 </div>
             } @else {
-                @if(showOver()) {
-                    <app-header/>
-                }
-                <router-outlet/>
+                <div class="flex flex-1 flex-col mt-14 relative">
+                    @if(showOver()) {
+                        <app-header/>
+                    }
+                    <div class="absolute inset-0">
+                        <router-outlet/>
+                    </div>
+                </div>
             }
         </mat-sidenav-content>
     </mat-sidenav-container>

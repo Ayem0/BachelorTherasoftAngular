@@ -149,7 +149,6 @@ export class FullCalendarComponent implements AfterViewInit {
   }
 
   autoResize(arg: { view: ViewApi}) {
-    console.log("ici")
     let api = this.calendarComponent?.getApi();
     setTimeout(() => api?.updateSize(), 300);
   }

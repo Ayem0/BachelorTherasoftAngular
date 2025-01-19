@@ -28,23 +28,8 @@ export const WorkspaceRoleStore = signalStore(
         getWorkspaceRolesByWorkspaceId(workspaceId: string) : Observable<WorkspaceRole[]> {
             patchState(store, { loading: true });
             if (store.workspaceRoles().has(workspaceId)) {
-                console.log("la")
                 patchState(store, { loading: false });
                 return of(store.workspaceRoles().get(workspaceId)!);
-            }
-            console.log(workspaceStore.workspacesDetails().get(workspaceId))
-            if (workspaceStore.workspacesDetails().has(workspaceId)) {
-                console.log("ici")
-                const workspaceRoles = workspaceStore.workspacesDetails().get(workspaceId)!.workspaceRoles;
-                console.log(workspaceRoles)
-                const updatedWorkspaceRoles = new Map(store.workspaceRoles());
-                updatedWorkspaceRoles.set(workspaceId, workspaceRoles);
-                patchState(store, {
-                    workspaceRoles: updatedWorkspaceRoles,
-                    loading: false,
-                    error: null
-                });
-                return of(workspaceRoles);
             }
             return workspaceRoleService.getWorkspaceRolesByWorkspaceId(workspaceId).pipe(
                 tap({

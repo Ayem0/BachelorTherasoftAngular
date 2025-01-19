@@ -31,17 +31,6 @@ export const ParticipantCategoryStore = signalStore(
                 patchState(store, { loading: false });
                 return of(store.participantCategories().get(workspaceId)!);
             }
-            if (workspaceStore.workspacesDetails().has(workspaceId)) {
-                const participantCategories = workspaceStore.workspacesDetails().get(workspaceId)!.participantCategories;
-                const updatedParticipantCategories = new Map(store.participantCategories());
-                updatedParticipantCategories.set(workspaceId, participantCategories);
-                patchState(store, {
-                    participantCategories: updatedParticipantCategories,
-                    loading: false,
-                    error: null
-                });
-                return of(participantCategories);
-            }
             return participantCategoryService.getParticipantCategoryByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (participantCategories) => {

@@ -17,14 +17,12 @@ export class LocationDetailsComponent implements OnInit{
   private readonly route = inject(ActivatedRoute);
 
   public loading = this.locationStore.loading;
-  public locationDetails = signal<Place | null>(null);
-  public workspaceId = this.route.snapshot.paramMap.get('workspaceId');
-  public locationId = this.route.snapshot.paramMap.get('locationId');
+  public location = signal<Place | null>(null);
+  public locationId = this.route.snapshot.paramMap.get('id');
 
   public ngOnInit(): void {
-    console.log("JZEOJZOEZEZEJZKNA")
-    if (this.workspaceId && this.locationId) {
-      this.locationStore.getLocationDetailsById(this.workspaceId, this.locationId).subscribe(x => this.locationDetails.set(x));
+    if (this.locationId) {
+      this.locationStore.getLocationById(this.locationId).subscribe(x => this.location.set(x));
     } else {
       // TODO faire un redirect ou un truc du genre jsp
     }

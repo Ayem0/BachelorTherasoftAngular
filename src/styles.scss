@@ -219,3 +219,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .mat-mdc-notch-piece {
   border-right: 1px transparent;
 }
+// width of action column in mat-table
+.mat-column-action {
+  max-width: 56px;
+}
+// hover effect on mat-table
+.mat-mdc-row:hover .mat-mdc-cell {
+  cursor: pointer;
+  background-color: var(--mat-app-background-hover-color);
+}

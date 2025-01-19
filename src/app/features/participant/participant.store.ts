@@ -31,15 +31,6 @@ export const ParticipantStore = signalStore(
                 patchState(store, { loading: false });
                 return of(store.participants().get(workspaceId)!);
             }
-            if (workspaceStore.workspacesDetails().has(workspaceId)) {
-                const participants = workspaceStore.workspacesDetails().get(workspaceId)!.participants;
-                patchState(store, {
-                    participants: store.participants().set(workspaceId, participants),
-                    loading: false,
-                    error: null
-                });
-                return of(participants);
-            }
             return participantService.getParticipantByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (participants) => {

@@ -10,13 +10,15 @@ export class LocationService {
   private readonly http = inject(HttpClient);
   constructor() { }
 
-  public getLocationByWorkspaceId(workspaceId: string) {
+  public getLocationsByWorkspaceId(workspaceId: string) {
     return this.http.get<Place[]>(`${environment.apiUrl}/api/location/workspace?workspaceId=${workspaceId}`);
   }
 
-  public createLocation(workspaceId: string, name: string, description?: string, address?: string, city?: string, country?: string) {
-    console.log(workspaceId, name, description, address, city, country);
-    
+  public getById(id: string) {
+    return this.http.get<Place>(`${environment.apiUrl}/api/location?id=${id}`);
+  }
+
+  public createLocation(workspaceId: string, name: string, description?: string, address?: string, city?: string, country?: string) {    
     return this.http.post<Place>(`${environment.apiUrl}/api/location`, { workspaceId, name, description, address, city, country })
   }
 

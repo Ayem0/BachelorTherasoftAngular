@@ -41,20 +41,12 @@ export class LocationDialogComponent {
     city: new FormControl({ value: this.location()?.city || "", disabled: this.disabled() }),
     country: new FormControl({ value: this.location()?.country || "", disabled: this.disabled() }),
   });
-
-  // public form2 = this.fb.group({
-  //   name: [this.location()?.description, ]
-  //   description: new FormControl({ value: this.location()?.description || "", disabled: this.disabled() }),
-  //   address: new FormControl({ value: this.location()?.address || "", disabled: this.disabled() }),
-  //   city: new FormControl({ value: this.location()?.city || "", disabled: this.disabled() }),
-  //   country: new FormControl({ value: this.location()?.country || "", disabled: this.disabled() }),
-  // })
-
+  
   public submit() {
     if(this.form.valid && this.form.value && this.form.value.name) {
       const { name, description, address, city, country } = this.form.value;
       if (this.location()) {
-        this.locationStore.updateLocation(this.workspaceId(), this.location()!.id, name, description ?? undefined).pipe(
+        this.locationStore.updateLocation(this.location()!.id, name, description ?? undefined).pipe(
           tap(res => {
             this.dialogRef.close(res);
           }),
