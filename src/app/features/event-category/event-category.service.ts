@@ -11,7 +11,7 @@ export class EventCategoryService {
   constructor() { }
 
   public getEventCategoryByWorkspaceId(workspaceId: string) {
-    return this.http.get<EventCategory[]>(`${environment.apiUrl}/api/EventCategory/workspace?workspaceId=${workspaceId}`);
+    return this.http.get<EventCategory[]>(`${environment.apiUrl}/api/EventCategory/workspace`, { params: { workspaceId }});
   }
 
   public createEventCategory(

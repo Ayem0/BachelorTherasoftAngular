@@ -42,7 +42,6 @@ export class WorkspaceRoleDialogComponent {
       const { name, description } = this.form.value;
       if (this.workspaceRole()) {
         this.workspaceRoleStore.updateWorkspaceRole(
-          this.workspaceId, 
           this.workspaceRole()!.id, 
           name, 
           description ?? undefined

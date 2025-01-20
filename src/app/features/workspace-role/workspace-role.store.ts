@@ -1,12 +1,12 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Observable, of, tap } from 'rxjs';
-import { WorkspaceStore } from '../workspace/workspace.store';
 import { WorkspaceRole } from './workspace-role';
 import { WorkspaceRoleService } from './workspace-role.service';
 
 type WorkspaceRoleState = {
-    workspaceRoles: Map<string, WorkspaceRole[]>; // string is workspaceId
+    workspaceRoles: Map<string, WorkspaceRole>; // string is id
+    workspaceRoleIdsByWorkspaceId: Map<string, string[]>; // string id workspaceId string[] is workspacerole ids
     loading: boolean;
     updating: boolean;
     creating: boolean;
@@ -15,6 +15,7 @@ type WorkspaceRoleState = {
 
 const initialWorkspaceRoleState: WorkspaceRoleState = {
     workspaceRoles: new Map(),
+    workspaceRoleIdsByWorkspaceId: new Map(),
     loading: false,
     creating: false,
     updating: false,
@@ -24,20 +25,25 @@ const initialWorkspaceRoleState: WorkspaceRoleState = {
 export const WorkspaceRoleStore = signalStore(
     { providedIn: "root" },
     withState(initialWorkspaceRoleState),
-    withMethods((store, workspaceRoleService = inject(WorkspaceRoleService), workspaceStore = inject(WorkspaceStore)) => ({
+    withMethods((store, workspaceRoleService = inject(WorkspaceRoleService)) => ({
+
         getWorkspaceRolesByWorkspaceId(workspaceId: string) : Observable<WorkspaceRole[]> {
             patchState(store, { loading: true });
-            if (store.workspaceRoles().has(workspaceId)) {
+            if (store.workspaceRoleIdsByWorkspaceId().has(workspaceId)) {
+                const ids = store.workspaceRoleIdsByWorkspaceId().get(workspaceId)!;
                 patchState(store, { loading: false });
-                return of(store.workspaceRoles().get(workspaceId)!);
+                return of(ids.map(id => store.workspaceRoles().get(id)!));
             }
             return workspaceRoleService.getWorkspaceRolesByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (workspaceRoles) => {
+                        const updatedWorkspaceRoleIdsByWorkspaceId = new Map(store.workspaceRoleIdsByWorkspaceId());
+                        updatedWorkspaceRoleIdsByWorkspaceId.set(workspaceId, workspaceRoles.map(wr => wr.id));
                         const updatedWorkspaceRoles = new Map(store.workspaceRoles());
-                        updatedWorkspaceRoles.set(workspaceId, workspaceRoles);
+                        workspaceRoles.forEach(x => updatedWorkspaceRoles.set(x.id, x));
                         patchState(store, {
                             workspaceRoles: updatedWorkspaceRoles,
+                            workspaceRoleIdsByWorkspaceId: updatedWorkspaceRoleIdsByWorkspaceId,
                             loading: false,
                             error: null
                         });
@@ -60,10 +66,16 @@ export const WorkspaceRoleStore = signalStore(
             return workspaceRoleService.createWorkspaceRole(workspaceId, name, description).pipe(
                 tap({
                     next: (newWorkspaceRole) => {
+                        const updatedWorkspaceRoles = new Map(store.workspaceRoles());
+                        updatedWorkspaceRoles.set(newWorkspaceRole.id, newWorkspaceRole);
+                        let updatedworkspaceRoleIdsByWorkspaceId : Map<string, string[]> | null = null;
+                        if (store.workspaceRoleIdsByWorkspaceId().has(workspaceId)) {
+                            updatedworkspaceRoleIdsByWorkspaceId = new Map(store.workspaceRoleIdsByWorkspaceId());
+                            updatedworkspaceRoleIdsByWorkspaceId.set(workspaceId, [...store.workspaceRoleIdsByWorkspaceId().get(workspaceId)!, newWorkspaceRole.id]);
+                        } 
                         patchState(store, {
-                            workspaceRoles: store.workspaceRoles().set(workspaceId, store.workspaceRoles().has(workspaceId) 
-                                ? [newWorkspaceRole, ...store.workspaceRoles().get(workspaceId)!]
-                                : [newWorkspaceRole]),
+                            workspaceRoles: updatedWorkspaceRoles,
+                            workspaceRoleIdsByWorkspaceId: updatedworkspaceRoleIdsByWorkspaceId ?? store.workspaceRoleIdsByWorkspaceId(),
                             creating: false,
                             error: null
                         });
@@ -75,7 +87,6 @@ export const WorkspaceRoleStore = signalStore(
             )
         },
         updateWorkspaceRole(
-            workspaceId: string,
             id: string, 
             name: string,
             description?: string,
@@ -84,10 +95,10 @@ export const WorkspaceRoleStore = signalStore(
             return workspaceRoleService.updateWorkspaceRole(id, name, description).pipe(
                 tap({
                     next: (updatedWorkspaceRole) => {
+                        const updatedWorkspaceRoles = new Map(store.workspaceRoles());
+                        updatedWorkspaceRoles.set(updatedWorkspaceRole.id, updatedWorkspaceRole);
                         patchState(store, {
-                            workspaceRoles: store.workspaceRoles().set(workspaceId, store.workspaceRoles().has(workspaceId) 
-                                ? store.workspaceRoles().get(workspaceId)!.map(WorkspaceRole => WorkspaceRole.id === updatedWorkspaceRole.id ? updatedWorkspaceRole : WorkspaceRole)
-                                : [updatedWorkspaceRole]),
+                            workspaceRoles: updatedWorkspaceRoles,
                             updating: false,
                             error: null
                         });

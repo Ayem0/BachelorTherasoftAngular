@@ -6,7 +6,8 @@ import { Participant } from './participant';
 import { ParticipantService } from './participant.service';
 
 type ParticipantState = {
-    participants: Map<string, Participant[]>; // string is workspaceId
+    participants: Map<string, Participant>; // string is workspaceId
+    participantIdsByWorkspaceId: Map<string, string[]>,
     loading: boolean;
     updating: boolean;
     creating: boolean;
@@ -15,6 +16,7 @@ type ParticipantState = {
 
 const initialParticipantState: ParticipantState = {
     participants: new Map(),
+    participantIdsByWorkspaceId: new Map(),
     loading: false,
     creating: false,
     updating: false,
@@ -27,15 +29,21 @@ export const ParticipantStore = signalStore(
     withMethods((store, participantService = inject(ParticipantService), workspaceStore = inject(WorkspaceStore)) => ({
         getParticipantsByWorkspaceId(workspaceId: string) : Observable<Participant[]> {
             patchState(store, { loading: true });
-            if (store.participants().has(workspaceId)) {
+            if (store.participantIdsByWorkspaceId().has(workspaceId)) {
+                const ids = store.participantIdsByWorkspaceId().get(workspaceId)!;
                 patchState(store, { loading: false });
-                return of(store.participants().get(workspaceId)!);
+                return of(ids.map(x => store.participants().get(x)!));
             }
             return participantService.getParticipantByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (participants) => {
+                        const updatedParticipantIdsByWorkspaceId = new Map(store.participantIdsByWorkspaceId());
+                        updatedParticipantIdsByWorkspaceId.set(workspaceId, participants.map(wr => wr.id));
+                        const updatedParticipants = new Map(store.participants());
+                        participants.forEach(x => updatedParticipants.set(x.id, x));
                         patchState(store, {
-                            participants: store.participants().set(workspaceId, participants),
+                            participants: updatedParticipants,
+                            participantIdsByWorkspaceId: updatedParticipantIdsByWorkspaceId,
                             loading: false,
                             error: null
                         });
@@ -78,10 +86,16 @@ export const ParticipantStore = signalStore(
             ).pipe(
                 tap({
                     next: (newParticipant) => {
+                        const updatedParticiants = new Map(store.participants());
+                        updatedParticiants.set(newParticipant.id, newParticipant);
+                        let updatedparticipantIdsByWorkspaceId : Map<string, string[]> | null = null;
+                        if (store.participantIdsByWorkspaceId().has(workspaceId)) {
+                            updatedparticipantIdsByWorkspaceId = new Map(store.participantIdsByWorkspaceId());
+                            updatedparticipantIdsByWorkspaceId.set(workspaceId, [...store.participantIdsByWorkspaceId().get(workspaceId)!, newParticipant.id]);
+                        } 
                         patchState(store, {
-                            participants: store.participants().set(workspaceId, store.participants().has(workspaceId) 
-                                ? [newParticipant, ...store.participants().get(workspaceId)!]
-                                : [newParticipant]),
+                            participants: updatedParticiants,
+                            participantIdsByWorkspaceId: updatedparticipantIdsByWorkspaceId ?? store.participantIdsByWorkspaceId(),
                             creating: false,
                             error: null
                         });
@@ -93,7 +107,6 @@ export const ParticipantStore = signalStore(
             )
         },
         updateParticipant(
-            workspaceId: string, 
             id: string, 
             firstName: string,
             lastName: string,
@@ -122,10 +135,11 @@ export const ParticipantStore = signalStore(
             ).pipe(
                 tap({
                     next: (updatedParticipant) => {
+                        const updatedParticipants = new Map(store.participants());
+                        updatedParticipants.set(updatedParticipant.id, updatedParticipant);
+
                         patchState(store, {
-                            participants: store.participants().set(workspaceId, store.participants().has(workspaceId) 
-                                ? store.participants().get(workspaceId)!.map(Participant => Participant.id === updatedParticipant.id ? updatedParticipant : Participant)
-                                : [updatedParticipant]),
+                            participants: updatedParticipants,
                             updating: false,
                             error: null
                         });

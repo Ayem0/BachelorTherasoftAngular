@@ -11,7 +11,7 @@ export class MemberService {
   constructor() { }
 
   public getMembersByWorkspaceId(workspaceId: string) {
-    return this.http.get<Member[]>(`${environment.apiUrl}/api/member/workspace`, { params: { workspaceId }});
+    return this.http.get<Member[]>(`${environment.apiUrl}/api/member`, { params: { workspaceId }});
   }
 
   public createMember(
@@ -24,13 +24,9 @@ export class MemberService {
     );
   }
 
-  public updateMember(
-    workspaceId: string,
-    id: string,
-    roles: string[]
-  ) {
+  public updateMember(id: string, roles: string[]) {
     return this.http.put<Member>(`${environment.apiUrl}/api/member?`, 
-      { roles }, { params: { workspaceId, id } })
+      { roles }, { params: { id } })
   }
 
   public getMemberDetailsById(id: string) {

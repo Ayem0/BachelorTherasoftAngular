@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { ActivatedRoute } from '@angular/router';
 import { Place } from '../../location';
@@ -7,7 +8,8 @@ import { LocationStore } from '../../location.store';
 @Component({
   selector: 'app-location-details',
   imports: [
-    MatIcon
+    MatIcon,
+    MatButton
   ],
   templateUrl: './location-details.component.html',
   styleUrl: './location-details.component.scss'

@@ -1,4 +1,4 @@
-import { Component, inject, input, Signal, viewChild } from '@angular/core';
+import { Component, inject, Signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -6,8 +6,6 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { debounceTime } from 'rxjs';
 // import { participantDialogComponent } from '../../../participant/components/participant-dialog/participant-dialog.component';
-import { ParticipantStore } from '../../../participant/participant.store';
-import { Participant } from '../../participant';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +14,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
+import { ParticipantStore } from '../../../participant/participant.store';
+import { Participant } from '../../participant';
 import { ParticipantDialogComponent } from '../participant-dialog/participant-dialog.component';
 
 @Component({
@@ -69,7 +69,7 @@ export class ParticipantListComponent {
   public openDialog(participant?: Partial<Participant>) {
     this.matDialog.open(ParticipantDialogComponent, { data: { workspaceId: this.workspaceId(), participant: participant}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
-        this.dataSource.data = this.participantStore.participants().get(this.workspaceId()) ?? [];
+        this.dataSource.data = this.participantStore.participantIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.participantStore.participants().get(x)!) ?? [];
       } 
     });
   }

@@ -11,7 +11,7 @@ export class TagService {
   constructor() { }
 
   public getTagsByWorkspaceId(workspaceId: string) {
-    return this.http.get<Tag[]>(`${environment.apiUrl}/api/tag/workspace?workspaceId=${workspaceId}`);
+    return this.http.get<Tag[]>(`${environment.apiUrl}/api/tag/workspace`, { params: { workspaceId }});
   }
 
   public createTag(
@@ -33,7 +33,7 @@ export class TagService {
     icon: string,
     description?: string,
   ) {
-    return this.http.put<Tag>(`${environment.apiUrl}/api/tag?`, 
+    return this.http.put<Tag>(`${environment.apiUrl}/api/tag`, 
       { id, name, color, icon, description }, { params: { id: id } })
   }
 

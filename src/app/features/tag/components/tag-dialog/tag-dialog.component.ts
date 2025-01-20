@@ -45,7 +45,6 @@ export class TagDialogComponent {
       const { name, color, icon, description } = this.form.value;
       if (this.tag()) {
         this.tagStore.updateTag(
-          this.workspaceId, 
           this.tag()!.id, 
           name, 
           color, 

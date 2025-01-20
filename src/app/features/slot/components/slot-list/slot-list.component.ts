@@ -47,7 +47,7 @@ export class SlotListComponent {
   private sort = viewChild.required(MatSort);
 
   public dataSource = new MatTableDataSource<Slot>([]);
-  public displayedColumns: string[] = ['firstName', 'lastName', 'email', 'phoneNumber', 'description', 'address', 'city', 'country', 'dateOfBirth', 'action'];
+  public displayedColumns: string[] = ['name', 'description', 'startTime', 'endTime', 'startDate', 'endDate', 'action'];
 
   public ngOnInit(): void {
     this.slotStore.getSlotsByWorkspaceId(this.workspaceId()).subscribe(slots => {
@@ -69,7 +69,7 @@ export class SlotListComponent {
   public openDialog(slot?: Partial<Slot>) {
     this.matDialog.open(SlotDialogComponent, { data: { workspaceId: this.workspaceId(), slot: slot}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
-        this.dataSource.data = this.slotStore.slots().get(this.workspaceId()) ?? [];
+        this.dataSource.data = this.slotStore.slotIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.slotStore.slots().get(x)!) ?? [];
       } 
     });
   }

@@ -69,7 +69,7 @@ export class WorkspaceRoleListComponent {
   public openDialog(workspaceRole?: Partial<WorkspaceRole>) {
     this.matDialog.open(WorkspaceRoleDialogComponent, { data: { workspaceId: this.workspaceId(), workspaceRole: workspaceRole}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
-        this.dataSource.data = this.WorkspaceRoleStore.workspaceRoles().get(this.workspaceId()) ?? [];
+        this.dataSource.data = this.WorkspaceRoleStore.workspaceRoleIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.WorkspaceRoleStore.workspaceRoles().get(x)!) ?? [];
       } 
     });
   }

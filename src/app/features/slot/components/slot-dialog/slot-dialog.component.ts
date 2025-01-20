@@ -92,7 +92,6 @@ public form = new FormGroup({
       const { name, description, startDate, endDate, startTime, endTime, eventCategoryIds, repetitionInterval, repetitionNumber, repetitionEndDate } = this.form.value;
       if (this.slot()) {
         this.slotStore.updateSlot(
-          this.workspaceId(), 
           this.slot()!.id, 
           name, 
           startDate, 

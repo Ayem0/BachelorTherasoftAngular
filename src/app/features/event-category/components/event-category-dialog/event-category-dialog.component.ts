@@ -44,7 +44,6 @@ export class EventCategoryDialogComponent {
       const { name, color, icon, description } = this.form.value;
       if (this.eventCategory()) {
         this.eventCategoryStore.updateEventCategory(
-          this.workspaceId(), 
           this.eventCategory()!.id, 
           name, 
           color, 

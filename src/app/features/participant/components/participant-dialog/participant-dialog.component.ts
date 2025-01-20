@@ -69,7 +69,6 @@ export class ParticipantDialogComponent implements OnInit {
       const { firstName, lastName, participantCategory, description, email, phoneNumber, address, city, country, dateOfBirth } = this.form.value;
       if (this.participant()) {
         this.participantStore.updateParticipant(
-          this.workspaceId(), 
           this.participant()!.id, 
           firstName, 
           lastName, 

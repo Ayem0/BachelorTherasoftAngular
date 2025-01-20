@@ -11,7 +11,7 @@ export class ParticipantService {
   constructor() { }
 
   public getParticipantByWorkspaceId(workspaceId: string) {
-    return this.http.get<Participant[]>(`${environment.apiUrl}/api/participant/workspace?workspaceId=${workspaceId}`);
+    return this.http.get<Participant[]>(`${environment.apiUrl}/api/participant/workspace`, { params: { workspaceId }});
   }
 
   public createParticipant(

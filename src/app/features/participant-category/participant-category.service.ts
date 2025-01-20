@@ -1,7 +1,7 @@
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { ParticipantCategory } from './participant-category';
-import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class ParticipantCategoryService {
   constructor() { }
 
   public getParticipantCategoryByWorkspaceId(workspaceId: string) {
-    return this.http.get<ParticipantCategory[]>(`${environment.apiUrl}/api/participantCategory/workspace?workspaceId=${workspaceId}`);
+    return this.http.get<ParticipantCategory[]>(`${environment.apiUrl}/api/participantCategory/workspace`, { params: { workspaceId }});
   }
 
   public createParticipantCategory(

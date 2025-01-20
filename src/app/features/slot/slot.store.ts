@@ -7,7 +7,8 @@ import { Slot } from './slot';
 import { SlotService } from './slot.service';
 
 type SlotState = {
-    slots: Map<string, Slot[]>; // string is workspaceId
+    slots: Map<string, Slot>; // string is id
+    slotIdsByWorkspaceId: Map<string, string[]>,
     loading: boolean;
     updating: boolean;
     creating: boolean;
@@ -15,6 +16,7 @@ type SlotState = {
 }
 
 const initialSlotState: SlotState = {
+    slotIdsByWorkspaceId: new Map(),
     slots: new Map(),
     loading: false,
     creating: false,
@@ -28,15 +30,21 @@ export const SlotStore = signalStore(
     withMethods((store, slotService = inject(SlotService), workspaceStore = inject(WorkspaceStore)) => ({
         getSlotsByWorkspaceId(workspaceId: string) : Observable<Slot[]> {
             patchState(store, { loading: true });
-            if (store.slots().has(workspaceId)) {
+            if (store.slotIdsByWorkspaceId().has(workspaceId)) {
+                const ids = store.slotIdsByWorkspaceId().get(workspaceId)!;
                 patchState(store, { loading: false });
-                return of(store.slots().get(workspaceId)!);
+                return of(ids.map(x => store.slots().get(x)!));
             }
             return slotService.getSlotsByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (slots) => {
+                        const updatedSlotIdsByWorkspaceId = new Map(store.slotIdsByWorkspaceId());
+                        updatedSlotIdsByWorkspaceId.set(workspaceId, slots.map(wr => wr.id));
+                        const updatedSlots = new Map(store.slots());
+                        slots.forEach(x => updatedSlots.set(x.id, x));
                         patchState(store, {
-                            slots: store.slots().set(workspaceId, slots),
+                            slots: updatedSlots,
+                            slotIdsByWorkspaceId: updatedSlotIdsByWorkspaceId,
                             loading: false,
                             error: null
                         });
@@ -78,11 +86,18 @@ export const SlotStore = signalStore(
                 repetitionEndDate,
             ).pipe(
                 tap({
-                    next: (newslot) => {
+                    next: (newSlot) => {
+                        const updatedSlots = new Map(store.slots());
+                        updatedSlots.set(newSlot.id, newSlot);
+                        let updatedSlotIdsByWorkspaceId : Map<string, string[]> | null = null;
+                        if (store.slotIdsByWorkspaceId().has(workspaceId)) {
+                            updatedSlotIdsByWorkspaceId = new Map(store.slotIdsByWorkspaceId());
+                            updatedSlotIdsByWorkspaceId.set(workspaceId, [...store.slotIdsByWorkspaceId().get(workspaceId)!, newSlot.id]);
+                        } 
+
                         patchState(store, {
-                            slots: store.slots().set(workspaceId, store.slots().has(workspaceId) 
-                                ? [newslot, ...store.slots().get(workspaceId)!]
-                                : [newslot]),
+                            slots: updatedSlots,
+                            slotIdsByWorkspaceId: updatedSlotIdsByWorkspaceId ?? store.slotIdsByWorkspaceId(),
                             creating: false,
                             error: null
                         });
@@ -94,7 +109,6 @@ export const SlotStore = signalStore(
             )
         },
         updateSlot(
-            workspaceId: string, 
             id: string, 
             name: string,
             startDate: Date | string,
@@ -123,10 +137,10 @@ export const SlotStore = signalStore(
             ).pipe(
                 tap({
                     next: (updatedslot) => {
+                        const updatedSlots = new Map(store.slots());
+                        updatedSlots.set(updatedslot.id, updatedslot);
                         patchState(store, {
-                            slots: store.slots().set(workspaceId, store.slots().has(workspaceId) 
-                                ? store.slots().get(workspaceId)!.map(slot => slot.id === updatedslot.id ? updatedslot : slot)
-                                : [updatedslot]),
+                            slots: updatedSlots,
                             updating: false,
                             error: null
                         });

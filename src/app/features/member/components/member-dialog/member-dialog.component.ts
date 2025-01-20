@@ -51,7 +51,6 @@ export class MemberDialogComponent implements OnInit {
     if(this.form.valid && this.form.value) {
       const { roles } = this.form.value;
         this.memberStore.updateMember(
-          this.workspaceId(), 
           this.member().id, 
           roles ?? []
         ).pipe(

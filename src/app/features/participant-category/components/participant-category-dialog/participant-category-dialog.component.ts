@@ -45,7 +45,6 @@ export class ParticipantCategoryDialogComponent {
       const { name, color, icon, description } = this.form.value;
       if (this.participantCategory()) {
         this.participantCategoryStore.updateParticipantCategory(
-          this.workspaceId, 
           this.participantCategory()!.id, 
           name, 
           color, 

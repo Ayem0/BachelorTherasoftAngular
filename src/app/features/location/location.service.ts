@@ -11,11 +11,11 @@ export class LocationService {
   constructor() { }
 
   public getLocationsByWorkspaceId(workspaceId: string) {
-    return this.http.get<Place[]>(`${environment.apiUrl}/api/location/workspace?workspaceId=${workspaceId}`);
+    return this.http.get<Place[]>(`${environment.apiUrl}/api/location/workspace`, { params: { workspaceId }});
   }
 
   public getById(id: string) {
-    return this.http.get<Place>(`${environment.apiUrl}/api/location?id=${id}`);
+    return this.http.get<Place>(`${environment.apiUrl}/api/location`, { params: { id }});
   }
 
   public createLocation(workspaceId: string, name: string, description?: string, address?: string, city?: string, country?: string) {    

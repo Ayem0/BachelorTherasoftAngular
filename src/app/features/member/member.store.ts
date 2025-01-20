@@ -6,7 +6,8 @@ import { Member } from './member';
 import { MemberService } from './member.service';
 
 type MemberState = {
-    members: Map<string, Member[]>; // string is workspaceId
+    members: Map<string, Member>; // string is id,
+    memberIdsByWorkspaceId: Map<string, string[]>,
     loading: boolean;
     updating: boolean;
     creating: boolean;
@@ -15,6 +16,7 @@ type MemberState = {
 
 const initialMemberState: MemberState = {
     members: new Map(),
+    memberIdsByWorkspaceId: new Map(),
     loading: false,
     creating: false,
     updating: false,
@@ -27,17 +29,21 @@ export const MemberStore = signalStore(
     withMethods((store, memberService = inject(MemberService), workspaceStore = inject(WorkspaceStore)) => ({
         getMembersByWorkspaceId(workspaceId: string) : Observable<Member[]> {
             patchState(store, { loading: true });
-            if (store.members().has(workspaceId)) {
+            if (store.memberIdsByWorkspaceId().has(workspaceId)) {
+                const ids = store.memberIdsByWorkspaceId().get(workspaceId)!;
                 patchState(store, { loading: false });
-                return of(store.members().get(workspaceId)!);
+                return of(ids.map(x => store.members().get(x)!));
             }
             return memberService.getMembersByWorkspaceId(workspaceId).pipe(
                 tap({
                     next: (members) => {
+                        const updatedMemberIdsByWorkspaceId = new Map(store.memberIdsByWorkspaceId());
+                        updatedMemberIdsByWorkspaceId.set(workspaceId, members.map(wr => wr.id));
                         const updatedMembers = new Map(store.members());
-                        updatedMembers.set(workspaceId, members);
+                        members.forEach(x => updatedMembers.set(x.id, x));
                         patchState(store, {
                             members: updatedMembers,
+                            memberIdsByWorkspaceId: updatedMemberIdsByWorkspaceId,
                             loading: false,
                             error: null
                         });
@@ -59,11 +65,18 @@ export const MemberStore = signalStore(
             patchState(store, { creating: true });
             return memberService.createMember(workspaceId, name, description).pipe(
                 tap({
-                    next: (newmember) => {
+                    next: (newMember) => {
+                        const updatedMembers = new Map(store.members());
+                        updatedMembers.set(newMember.id, newMember);
+                        let updatedMemberIdsByWorkspaceId : Map<string, string[]> | null = null;
+                        if (store.memberIdsByWorkspaceId().has(workspaceId)) {
+                            updatedMemberIdsByWorkspaceId = new Map(store.memberIdsByWorkspaceId());
+                            updatedMemberIdsByWorkspaceId.set(workspaceId, [...store.memberIdsByWorkspaceId().get(workspaceId)!, newMember.id]);
+                        } 
+
                         patchState(store, {
-                            members: store.members().set(workspaceId, store.members().has(workspaceId) 
-                                ? [newmember, ...store.members().get(workspaceId)!]
-                                : [newmember]),
+                            members: updatedMembers,
+                            memberIdsByWorkspaceId: updatedMemberIdsByWorkspaceId ?? store.memberIdsByWorkspaceId(),
                             creating: false,
                             error: null
                         });
@@ -75,18 +88,17 @@ export const MemberStore = signalStore(
             )
         },
         updateMember(
-            workspaceId: string,
             id: string, 
             roles: string[]
         ) {
             patchState(store, { updating: true })
-            return memberService.updateMember(workspaceId, id, roles).pipe(
+            return memberService.updateMember(id, roles).pipe(
                 tap({
-                    next: (updatedmember) => {
+                    next: (updatedMember) => {
+                        const updatedMembers = new Map(store.members());
+                        updatedMembers.set(updatedMember.id, updatedMember);
                         patchState(store, {
-                            members: store.members().set(workspaceId, store.members().has(workspaceId) 
-                                ? store.members().get(workspaceId)!.map(member => member.id === updatedmember.id ? updatedmember : member)
-                                : [updatedmember]),
+                            members: updatedMembers,
                             updating: false,
                             error: null
                         });

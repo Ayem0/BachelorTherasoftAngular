@@ -69,7 +69,7 @@ export class TagListComponent {
   public openDialog(tag?: Partial<Tag>) {
     this.matDialog.open(TagDialogComponent, { data: { workspaceId: this.workspaceId(), tag: tag}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
-        this.dataSource.data = this.tagStore.tags().get(this.workspaceId()) ?? [];
+        this.dataSource.data = this.tagStore.tagIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.tagStore.tags().get(x)!) ?? [];
       } 
     });
   }

@@ -1,4 +1,4 @@
-import { Component, inject, input, Signal, viewChild } from '@angular/core';
+import { Component, inject, Signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -6,8 +6,6 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { debounceTime } from 'rxjs';
 // import { participant-categoryDialogComponent } from '../../../participant-category/components/participant-category-dialog/participant-category-dialog.component';
-import { ParticipantCategoryStore } from '../../../participant-category/participant-category.store';
-import {ParticipantCategory } from '../../participant-category';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +14,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
+import { ParticipantCategoryStore } from '../../../participant-category/participant-category.store';
+import { ParticipantCategory } from '../../participant-category';
 import { ParticipantCategoryDialogComponent } from '../participant-category-dialog/participant-category-dialog.component';
 
 @Component({
@@ -70,8 +70,12 @@ export class ParticipantCategoryListComponent {
   public openDialog(participantCategory?: Partial<ParticipantCategory>) {
     this.matDialog.open(ParticipantCategoryDialogComponent, { data: { workspaceId: this.workspaceId(), participantCategory: participantCategory}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
-        this.dataSource.data = this.participantCategoryStore.participantCategories().get(this.workspaceId()) ?? [];
-      } 
+        const ids = this.participantCategoryStore.participantCategoryIdsByWorkspaceId().get(this.workspaceId())!;
+        const data = ids?.map(x => this.participantCategoryStore.participantCategories().get(x)!);
+        console.log(ids);
+        console.log(data);
+        this.dataSource.data = data;
+      }   
     });
   }
 }

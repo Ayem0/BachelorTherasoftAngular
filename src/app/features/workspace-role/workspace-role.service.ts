@@ -11,7 +11,7 @@ export class WorkspaceRoleService {
   constructor() { }
 
   public getWorkspaceRolesByWorkspaceId(workspaceId: string) {
-    return this.http.get<WorkspaceRole[]>(`${environment.apiUrl}/api/WorkspaceRole/workspace?workspaceId=${workspaceId}`);
+    return this.http.get<WorkspaceRole[]>(`${environment.apiUrl}/api/WorkspaceRole/workspace`, { params: { workspaceId }});
   }
 
   public createWorkspaceRole(

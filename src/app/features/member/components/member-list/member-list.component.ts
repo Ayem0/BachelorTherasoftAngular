@@ -71,7 +71,7 @@ export class MemberListComponent {
   public openDialog(Member?: Partial<Member>) {
     this.matDialog.open(MemberDialogComponent, { data: { workspaceId: this.workspaceId, Member: Member}, width: '500px' }).afterClosed().subscribe(x => {
       if (x) {
-        this.dataSource.data = this.memberStore.members().get(this.workspaceId()) ?? [];
+        this.dataSource.data = this.memberStore.memberIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.memberStore.members().get(x)!) ?? [];
       } 
     });
   }
