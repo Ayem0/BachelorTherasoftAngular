@@ -35,7 +35,9 @@
 
                 <ng-container matColumnDef="icon">
                     <mat-header-cell *matHeaderCellDef mat-sort-header> Icon </mat-header-cell>
-                    <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]"> {{ event.icon }} </mat-cell>
+                    <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]"> 
+                        <mat-icon>{{ event.icon }}</mat-icon> 
+                    </mat-cell>
                 </ng-container>
     
                 <ng-container matColumnDef="description">

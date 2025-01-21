@@ -26,11 +26,11 @@ import { AreaStore } from '../../area.store';
 export class AreaDialogComponent {
   private readonly areaStore = inject(AreaStore);
   private readonly dialogRef = inject(MatDialogRef<AreaDialogComponent>);
-  private readonly matDialogData : { workspaceId: Signal<string>, area: Area | null } = inject(MAT_DIALOG_DATA);
+  private readonly matDialogData : { locationId: Signal<string>, area: Area | null } = inject(MAT_DIALOG_DATA);
   private readonly fb = inject(FormBuilder);
 
   public area = signal<Area | null>(this.matDialogData.area);
-  public workspaceId = this.matDialogData.workspaceId;
+  public locationId = this.matDialogData.locationId;
   public isUpdate = computed(() => !!this.area());
   public disabled = computed(() => this.areaStore.updating() || this.areaStore.creating());
 
@@ -51,7 +51,7 @@ export class AreaDialogComponent {
     if(this.form.valid && this.form.value && this.form.value.name) {
       const { name, description } = this.form.value;
       if (this.area()) {
-        this.areaStore.updateArea(this.workspaceId(), this.area()!.id, name, description ?? undefined).pipe(
+        this.areaStore.updateArea(this.area()!.id, name, description ?? undefined).pipe(
           tap(res => {
             this.dialogRef.close(res);
           }),
@@ -61,7 +61,7 @@ export class AreaDialogComponent {
           })
         ).subscribe();
       } else {
-        this.areaStore.createArea(this.workspaceId(), name, description ?? undefined).pipe(
+        this.areaStore.createArea(this.locationId(), name, description ?? undefined).pipe(
           tap(res => {
             this.dialogRef.close(res);
           }),

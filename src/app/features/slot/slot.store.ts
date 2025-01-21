@@ -93,15 +93,14 @@ export const SlotStore = signalStore(
                         if (store.slotIdsByWorkspaceId().has(workspaceId)) {
                             updatedSlotIdsByWorkspaceId = new Map(store.slotIdsByWorkspaceId());
                             updatedSlotIdsByWorkspaceId.set(workspaceId, [...store.slotIdsByWorkspaceId().get(workspaceId)!, newSlot.id]);
-                        } 
-
+                        }
                         patchState(store, {
                             slots: updatedSlots,
                             slotIdsByWorkspaceId: updatedSlotIdsByWorkspaceId ?? store.slotIdsByWorkspaceId(),
                             creating: false,
                             error: null
                         });
-                    },
+                    },  
                     error: (error: Error) => {
                         patchState(store, { creating: false, error: error.message });
                     }

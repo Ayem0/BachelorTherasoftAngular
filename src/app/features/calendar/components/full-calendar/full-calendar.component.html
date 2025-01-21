@@ -1,6 +1,19 @@
+
+
 <div class="flex size-full">
-    <div class="left-0 top-0 right-0 bottom-0 size-full">
-    
-        <full-calendar #calendar [options]="calendarOptions()"></full-calendar>
-    </div>
+    <mat-sidenav-container [hasBackdrop]="showOver()" [style.flex]="'1 0 auto'" class="z-50 !flex">
+        <mat-sidenav #sidebar autoFocus="false" [mode]="sidenavMode()" [fixedInViewport]="true" [fixedTopGap]="showOver() ? 0 :56" class="!w-48 !rounded-none">
+            <div>HELLO WORLD
+                <mat-calendar [(selected)]="selected"></mat-calendar>
+            </div>
+        </mat-sidenav>
+        <mat-sidenav-content class="!mr-0 !flex size-full">
+            <button mat-icon-button aria-label="TODO" (click)="toggleSidebar()">
+                <mat-icon>{{ isSidebarOpen() ? "arrow_back_ios" : "arrow_forward_ios" }} </mat-icon>
+              </button>
+            <div class="left-0 top-0 right-0 bottom-0 size-full">
+                <full-calendar #calendar [options]="calendarOptions()"></full-calendar>
+            </div>
+        </mat-sidenav-content>
+    </mat-sidenav-container>
 </div>

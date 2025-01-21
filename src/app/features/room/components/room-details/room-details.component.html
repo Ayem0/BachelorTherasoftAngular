@@ -1,14 +1,13 @@
 <div class="flex size-full">
     @if(!loading()) {
-        @if (location()) {
+        @if (room()) {
             <div class="flex size-full flex-col px-4 md:px-6">
                 <div class="flex w-full flex-col">
-                    <h1 class="text-4xl pb-4">{{ location()?.name}}</h1>
+                    <h1 class="text-4xl pb-4">{{ room()?.name}}</h1>
                     <div class="flex justify-between">
-                        <span>{{ location()?.description}}</span>   
+                        <span>{{ room()?.description}}</span>   
                     </div>
                 </div>
-                <app-area-list [locationId]="this.locationId()! "></app-area-list>
             </div>
         }
     }

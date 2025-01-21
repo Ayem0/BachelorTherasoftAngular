@@ -1,1 +1,15 @@
-<p>location-details works!</p>
+<div class="flex size-full">
+    @if(!loading()) {
+        @if (area()) {
+            <div class="flex size-full flex-col px-4 md:px-6">
+                <div class="flex w-full flex-col">
+                    <h1 class="text-4xl pb-4">{{ area()?.name}}</h1>
+                    <div class="flex justify-between">
+                        <span>{{ area()?.description}}</span>   
+                    </div>
+                </div>
+                <app-room-list [areaId]="this.areaId()! "></app-room-list>
+            </div>
+        }
+    }
+</div>

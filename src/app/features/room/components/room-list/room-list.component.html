@@ -12,48 +12,31 @@
     </div>
     <div class="flex flex-1 flex-col">
         <div class="overflow-auto h-96">
-            @if (eventCategoryStore.loading()) {
+            @if (loading()) {
                 <div class="flex size-full items-center justify-center">
                     <mat-spinner diameter="50"></mat-spinner>
-                </div>
-            } @else if (eventCategoryStore.error()) {
-                <div class="flex size-full items-center justify-center">
-                    <span>{{ eventCategoryStore.error() }}</span>
                 </div>
             } 
             <mat-table [dataSource]="dataSource" matSort class="w-full">
         
                 <ng-container matColumnDef="name">
                     <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>
-                    <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]"> {{ event.name}} </mat-cell>
-                </ng-container>
-
-                <ng-container matColumnDef="color">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header> Color </mat-header-cell>
-                    <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]"> {{ event.color }} </mat-cell>
-                </ng-container>
-
-                <ng-container matColumnDef="icon">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header> Icon </mat-header-cell>
-                    <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]">
-                        <mat-icon>{{ event.icon }}</mat-icon>  
-                    </mat-cell>
+                    <mat-cell *matCellDef="let room" [routerLink]="['/room', room.id]"> {{room.name}} </mat-cell>
                 </ng-container>
     
                 <ng-container matColumnDef="description">
                     <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
-                    <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]"> {{ event.description }} </mat-cell>
+                    <mat-cell *matCellDef="let room" [routerLink]="['/room', room.id]"> {{room.description }} </mat-cell>
                 </ng-container>
-
 
                 <ng-container matColumnDef="action">
                     <mat-header-cell *matHeaderCellDef></mat-header-cell>
-                    <mat-cell *matCellDef="let event">
-                        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="event actions" (click)="$event.stopPropagation()">
+                    <mat-cell *matCellDef="let room">
+                        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="room actions" (click)="$event.stopPropagation()">
                             <mat-icon>more_vert</mat-icon>
                         </button>
                         <mat-menu #menu="matMenu">
-                            <button mat-menu-item (click)="openDialog(event)">
+                            <button mat-menu-item (click)="openDialog(room)">
                                 <mat-icon>edit</mat-icon>
                                 <span>Edit</span>
                             </button>
@@ -71,7 +54,7 @@
         <mat-paginator
             [pageSizeOptions]="[5, 10, 20]"
             showFirstLastButtons
-            aria-label="Select page of events">
+            aria-label="Select page of rooms">
         </mat-paginator>
     </div>
 </div>

@@ -10,19 +10,19 @@ export class AreaService {
   private readonly http = inject(HttpClient);
   constructor() { }
 
-  public getAreasByLocationId(workspaceId: string, locationId: string) {
-    return this.http.get<Area[]>(`${environment.apiUrl}/api/areas/location?workspaceId=${workspaceId}locationId=${locationId}`);
+  public getAreasByLocationId(id: string) {
+    return this.http.get<Area[]>(`${environment.apiUrl}/api/area/location`, { params: { id}});
   }
 
   public createArea(locationId: string, name: string, description?: string) {    
-    return this.http.post<Area>(`${environment.apiUrl}/api/areas`, { locationId, name, description })
+    return this.http.post<Area>(`${environment.apiUrl}/api/area`, { locationId, name, description })
   }
 
   public updateArea(id: string, newName?: string, newDescription?: string) {
-    return this.http.put<Area>(`${environment.apiUrl}/api/areas`, { newName, newDescription }, { params: { id: id } })
+    return this.http.put<Area>(`${environment.apiUrl}/api/area`, { newName, newDescription }, { params: { id: id } })
   }
 
-  public getAreaDetailsById(id: string) {
-    return this.http.get<Area>(`${environment.apiUrl}/api/areas/details`, { params: { id: id } });
+  public getById(id: string) {
+    return this.http.get<Area>(`${environment.apiUrl}/api/area`, { params: { id: id } });
   }
 }

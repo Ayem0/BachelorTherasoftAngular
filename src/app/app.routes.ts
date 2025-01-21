@@ -110,6 +110,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/participant/components/participant-details/participant-details.component').then(c => c.ParticipantDetailsComponent),
         canActivate: [authGuard]
     },
+    {
+        path: "area/:id",
+        loadComponent: () => import('./features/area/components/area-details/area-details.component').then(c => c.AreaDetailsComponent),
+        canActivate: [authGuard]
+    },
+    {
+        path: "room/:id",
+        loadComponent: () => import('./features/room/components/room-details/room-details.component').then(c => c.RoomDetailsComponent),
+        canActivate: [authGuard]
+    },
     { path: "**", loadComponent: () => import('./features/not-found/not-found.component').then(c => c.NotFoundComponent) },
 
 ];
