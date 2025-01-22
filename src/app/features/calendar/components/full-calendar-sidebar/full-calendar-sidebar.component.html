@@ -1,5 +1,5 @@
 <div class="flex flex-col overflow-hidden">
-    <mat-calendar [(selected)]="selectedDate"></mat-calendar>
+    <mat-calendar [(selected)]="selectedDate" (selectedChange)="rangeChanged($event)"></mat-calendar>
     <mat-form-field appearance="outline">
         <mat-label>Workspaces</mat-label>
         <mat-select multiple="true" placeholder="Workspace">

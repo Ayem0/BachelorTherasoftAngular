@@ -1,16 +1,14 @@
-import { AfterViewInit, Component, computed, inject, model, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatIcon } from '@angular/material/icon';
+import { DateRange, MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { FullCalendarComponent as FullCalendar, FullCalendarModule } from '@fullcalendar/angular';
-import { CalendarOptions, DateSelectArg, EventApi, EventClickArg, ViewApi } from '@fullcalendar/core';
+import { CalendarOptions, DateSelectArg, DatesSetArg, EventApi, EventClickArg, ViewApi } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import { SonnerService } from '../../../../shared/services/sonner/sonner.service';
-import { CalendarService } from '../../services/calendar.service';
 import { LayoutService } from '../../../../core/layout/layout/layout.service';
+import { ViewMode } from '../../models/calendar';
 import { FullCalendarHeaderComponent } from "../full-calendar-header/full-calendar-header.component";
 import { FullCalendarSidebarComponent } from '../full-calendar-sidebar/full-calendar-sidebar.component';
 
@@ -27,48 +25,31 @@ import { FullCalendarSidebarComponent } from '../full-calendar-sidebar/full-cale
     templateUrl: './full-calendar.component.html',
     styleUrl: './full-calendar.component.scss'
 })
-export class FullCalendarComponent implements AfterViewInit, OnInit {
-  private readonly sonner = inject(SonnerService);
-  private readonly calendarService = inject(CalendarService);
+export class FullCalendarComponent implements OnInit {
   private readonly layoutService = inject(LayoutService);
-
-
-
+  
   private calendar = viewChild.required(FullCalendar);
   private sidebar = viewChild.required(MatSidenav);
-
-
-  public isSideBarOpen = signal(false);
-  public selectedDate = signal(new Date())
-
-  // TODO a connecter avec le reste 
-  // ezez
-  public calendarApi = computed(() => this.calendar().getApi())
-
-  public showOver = computed(() => this.layoutService.windowWidth() < 1280);
-  public sidenavMode = computed(() => this.showOver() ? 'over' : 'push');
-
+  test = 0;
   
-  calendarOptions = signal<CalendarOptions>({
-    customButtons: {
-      customPrev: {
-        icon: ' material-icons',
-        hint: "arrow_back_ios_new",
-        themeIcon: "material-icons",
-        click: () => this.previous()
-      },
-      customNext: {
-        icon: 'arrow_back_ios_new',
-        click: () => this.next()
-      }
-    },
+  public isSideBarOpen = signal(false);
+  public selectedDate = signal(new DateRange(new Date("2020-2-1"), new Date("2020-1-1")))
+  public calendarApi = computed(() => this.calendar().getApi());
+  public dateTitle = signal("");
+  public viewMode = signal<ViewMode>('timeGridWeek');
+  public showOver = computed(() => this.layoutService.windowWidth() < 1024);
+  public sidenavMode = computed(() => this.showOver() ? 'over' : 'push');
+  public currentEvents = signal<EventApi[]>([]);
+  public todayDisable = signal(true);
+
+  public calendarOptions = signal<CalendarOptions>({
     plugins: [
       interactionPlugin,
       dayGridPlugin,
       timeGridPlugin,
     ],
     headerToolbar: false,
-    initialView: 'timeGridWeek',
+    initialView: 'timeGridWeek', // TODO A CHANGER PAR UN TRUC TYPER CLEAN REGARDER CALENDAR.TS
     weekends: true,
     editable: true,
     selectable: true,
@@ -95,19 +76,20 @@ export class FullCalendarComponent implements AfterViewInit, OnInit {
     windowResize: this.autoResize.bind(this),
     expandRows: true,
     scrollTime: this.getCurrentDateInput(),
-    height: "100%"
-
-    // dayHeaderFormat: {
-    //   weekday: 'short',
-    //   day: "2-digit"
-    // }
-    /* you can update a remote database when these fire:
-    eventAdd:
-    eventChange:
-    eventRemove:
-    */
+    height: "100%",
+    datesSet: this.onDatesSet.bind(this),
   });
-  currentEvents = signal<EventApi[]>([]);
+
+  public ngOnInit(): void {
+    this.sidebar().openedChange.subscribe(x => this.isSideBarOpen.set(x));
+  }
+
+  onDatesSet(args: DatesSetArg) {
+    this.dateTitle.set(args.view.title);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    this.todayDisable.set(today >= args.view.currentStart && today < args.view.currentEnd);
+  }
 
   getCurrentDateInput() {
     const date = new Date();
@@ -115,14 +97,6 @@ export class FullCalendarComponent implements AfterViewInit, OnInit {
       hour: date.getHours(),
       minute: date.getMinutes()
     };
-  }
-
-  public ngOnInit(): void {
-    this.sidebar().openedChange.subscribe(x => this.isSideBarOpen.set(x))
-  }
-
-  ngAfterViewInit(): void {
-    this.calendarService.setCalendar(this.calendar());
   }
 
   handleWeekendsToggle() {
@@ -159,18 +133,30 @@ export class FullCalendarComponent implements AfterViewInit, OnInit {
     this.currentEvents.set(events);
   }
 
+  viewModeChange(mode: ViewMode) {
+    this.calendarApi().changeView(mode);
+  }
+
   previous() {
-    let api = this.calendar().getApi();
-    api?.prev();
+    this.calendarApi().prev();
   }
 
   next() {
-    let api = this.calendar().getApi();
-    api?.next();
+    this.calendarApi().next();
   }
 
   autoResize(arg: { view: ViewApi}) {
-    let api = this.calendar().getApi();
-    setTimeout(() => api?.updateSize(), 300);
+    setTimeout(() => this.calendarApi().updateSize(), 300);
   }
+
+  setToday() {
+    this.calendarApi().today();
+  }
+
+  setDate(date: DateRange<Date>){
+    if (date.end && date.start) {
+      console.log("ici")
+      this.calendarApi().formatRange(date.start, date.end, {})
+    }
+  } 
 }

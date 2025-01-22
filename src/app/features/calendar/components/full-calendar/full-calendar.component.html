@@ -3,11 +3,23 @@
 <div class="flex size-full">
     <mat-sidenav-container [hasBackdrop]="showOver()" [style.flex]="'1 0 auto'" class="z-50 !flex">
         <mat-sidenav #sidebar [(opened)]="isSideBarOpen" autoFocus="false" [mode]="sidenavMode()" [fixedInViewport]="true" [fixedTopGap]="56" class="!w-64 !rounded-none">
-            <app-full-calendar-sidebar [(selectedDate)]="selectedDate"></app-full-calendar-sidebar>
+            <app-full-calendar-sidebar 
+                [(selectedDate)]="selectedDate"
+                (selectedDateChange)="setDate($event)">
+            </app-full-calendar-sidebar>
         </mat-sidenav>
         <mat-sidenav-content class="!mr-0 !flex size-full">
             <div class="left-0 top-0 right-0 bottom-0 flex flex-col size-full">
-                <app-full-calendar-header [(isSideBarOpen)]="isSideBarOpen"></app-full-calendar-header>
+                <app-full-calendar-header 
+                    (todayChange)="setToday()"
+                    [todayDisable]="todayDisable()"
+                    (nextChange)="next()"
+                    (prevChange)="previous()"
+                    [dateTitle]="dateTitle()" 
+                    [(isSideBarOpen)]="isSideBarOpen" 
+                    [(viewMode)]="viewMode" 
+                    (viewModeChange)="viewModeChange($event)">
+                </app-full-calendar-header>
                 <full-calendar #calendar [options]="calendarOptions()"></full-calendar>
             </div>
         </mat-sidenav-content>
