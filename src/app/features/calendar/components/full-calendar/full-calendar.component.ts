@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, inject, model, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, model, OnInit, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIcon } from '@angular/material/icon';
@@ -10,38 +10,45 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { SonnerService } from '../../../../shared/services/sonner/sonner.service';
 import { CalendarService } from '../../services/calendar.service';
+import { LayoutService } from '../../../../core/layout/layout/layout.service';
+import { FullCalendarHeaderComponent } from "../full-calendar-header/full-calendar-header.component";
+import { FullCalendarSidebarComponent } from '../full-calendar-sidebar/full-calendar-sidebar.component';
 
 @Component({
     selector: 'app-calendar',
     imports: [
-      FullCalendarModule,
-      MatSidenavModule,
-      MatButtonModule,
-      MatIcon,
-      MatDatepickerModule
-    ],
+    FullCalendarModule,
+    MatSidenavModule,
+    MatButtonModule,
+    MatDatepickerModule,
+    FullCalendarHeaderComponent,
+    FullCalendarSidebarComponent
+],
     templateUrl: './full-calendar.component.html',
     styleUrl: './full-calendar.component.scss'
 })
-export class FullCalendarComponent implements AfterViewInit {
+export class FullCalendarComponent implements AfterViewInit, OnInit {
   private readonly sonner = inject(SonnerService);
   private readonly calendarService = inject(CalendarService);
+  private readonly layoutService = inject(LayoutService);
 
-  private calendarComponent = viewChild.required(FullCalendar);
+
+
+  private calendar = viewChild.required(FullCalendar);
   private sidebar = viewChild.required(MatSidenav);
 
-  selected = model<Date | null>(null);
 
-  public isSidebarOpen = computed(() => this.sidebar().opened);
-  public windowWidth = signal<number>(window.innerWidth);
-  public showOver = computed(() => this.windowWidth() < 1280);
+  public isSideBarOpen = signal(false);
+  public selectedDate = signal(new Date())
+
+  // TODO a connecter avec le reste 
+  // ezez
+  public calendarApi = computed(() => this.calendar().getApi())
+
+  public showOver = computed(() => this.layoutService.windowWidth() < 1280);
   public sidenavMode = computed(() => this.showOver() ? 'over' : 'push');
 
-  public toggleSidebar() {
-    this.sidebar().toggle();
-  }
-
-  calendarVisible = signal(true);
+  
   calendarOptions = signal<CalendarOptions>({
     customButtons: {
       customPrev: {
@@ -60,10 +67,7 @@ export class FullCalendarComponent implements AfterViewInit {
       dayGridPlugin,
       timeGridPlugin,
     ],
-    headerToolbar: {
-      left: 'title',
-      right: 'today customPrev,customNext timeGridDay,timeGridWeek,dayGridMonth'
-    },
+    headerToolbar: false,
     initialView: 'timeGridWeek',
     weekends: true,
     editable: true,
@@ -113,14 +117,12 @@ export class FullCalendarComponent implements AfterViewInit {
     };
   }
 
-  ngAfterViewInit(): void {
-    if(this.calendarComponent) {
-      this.calendarService.setCalendar(this.calendarComponent());
-    }
+  public ngOnInit(): void {
+    this.sidebar().openedChange.subscribe(x => this.isSideBarOpen.set(x))
   }
 
-  handleCalendarToggle() {
-    this.calendarVisible.update((bool) => !bool);
+  ngAfterViewInit(): void {
+    this.calendarService.setCalendar(this.calendar());
   }
 
   handleWeekendsToggle() {
@@ -158,17 +160,17 @@ export class FullCalendarComponent implements AfterViewInit {
   }
 
   previous() {
-    let api = this.calendarComponent().getApi();
+    let api = this.calendar().getApi();
     api?.prev();
   }
 
   next() {
-    let api = this.calendarComponent().getApi();
+    let api = this.calendar().getApi();
     api?.next();
   }
 
   autoResize(arg: { view: ViewApi}) {
-    let api = this.calendarComponent().getApi();
+    let api = this.calendar().getApi();
     setTimeout(() => api?.updateSize(), 300);
   }
 }
