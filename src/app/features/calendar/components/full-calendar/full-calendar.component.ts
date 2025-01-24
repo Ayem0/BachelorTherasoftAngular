@@ -1,39 +1,48 @@
 import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { DateRange, MatDatepickerModule } from '@angular/material/datepicker';
+import { DateRange, DefaultMatCalendarRangeStrategy, MAT_DATE_RANGE_SELECTION_STRATEGY, MatDatepickerModule, MatRangeDateSelectionModel } from '@angular/material/datepicker';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { FullCalendarComponent as FullCalendar, FullCalendarModule } from '@fullcalendar/angular';
-import { CalendarOptions, DateSelectArg, DatesSetArg, EventApi, EventClickArg, ViewApi } from '@fullcalendar/core';
+import { CalendarOptions, DateRangeInput, DateSelectArg, DatesSetArg, EventApi, EventClickArg, ViewApi } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import dayjs from 'dayjs';
 import { LayoutService } from '../../../../core/layout/layout/layout.service';
 import { ViewMode } from '../../models/calendar';
 import { FullCalendarHeaderComponent } from "../full-calendar-header/full-calendar-header.component";
-import { FullCalendarSidebarComponent } from '../full-calendar-sidebar/full-calendar-sidebar.component';
 
 @Component({
     selector: 'app-calendar',
     imports: [
-    FullCalendarModule,
-    MatSidenavModule,
-    MatButtonModule,
-    MatDatepickerModule,
-    FullCalendarHeaderComponent,
-    FullCalendarSidebarComponent
-],
+      FullCalendarModule,
+      MatSidenavModule,
+      MatButtonModule,
+      MatDatepickerModule,
+      FullCalendarHeaderComponent,
+      // FullCalendarSidebarComponent
+    ],
+    providers: [
+            {
+              provide: MAT_DATE_RANGE_SELECTION_STRATEGY,
+              useClass: DefaultMatCalendarRangeStrategy
+            },
+            DefaultMatCalendarRangeStrategy,
+            MatRangeDateSelectionModel
+        ],
     templateUrl: './full-calendar.component.html',
     styleUrl: './full-calendar.component.scss'
 })
 export class FullCalendarComponent implements OnInit {
   private readonly layoutService = inject(LayoutService);
-  
+  private readonly selectionStrategy = inject(DefaultMatCalendarRangeStrategy<Date>);
+  private readonly selectionModel = inject(MatRangeDateSelectionModel<Date>);
+
   private calendar = viewChild.required(FullCalendar);
   private sidebar = viewChild.required(MatSidenav);
-  test = 0;
   
   public isSideBarOpen = signal(false);
-  public selectedDate = signal(new DateRange(new Date("2020-2-1"), new Date("2020-1-1")))
+  public selectedDate = signal(new DateRange<Date>(new Date(), new Date()))
   public calendarApi = computed(() => this.calendar().getApi());
   public dateTitle = signal("");
   public viewMode = signal<ViewMode>('timeGridWeek');
@@ -49,7 +58,7 @@ export class FullCalendarComponent implements OnInit {
       timeGridPlugin,
     ],
     headerToolbar: false,
-    initialView: 'timeGridWeek', // TODO A CHANGER PAR UN TRUC TYPER CLEAN REGARDER CALENDAR.TS
+    initialView: this.viewMode(), // TODO A CHANGER PAR UN TRUC TYPER CLEAN REGARDER CALENDAR.TS
     weekends: true,
     editable: true,
     selectable: true,
@@ -59,7 +68,7 @@ export class FullCalendarComponent implements OnInit {
     eventClick: this.handleEventClick.bind(this),
     eventsSet: this.handleEvents.bind(this),
     allDaySlot: false,
-    locale: "fr",
+    // locale: "fr",
     // titleFormat: "",
     slotDuration: "00:05:00",
     firstDay: 1,
@@ -78,14 +87,46 @@ export class FullCalendarComponent implements OnInit {
     scrollTime: this.getCurrentDateInput(),
     height: "100%",
     datesSet: this.onDatesSet.bind(this),
+    initialDate: this.selectedDate().start ?? undefined 
   });
 
   public ngOnInit(): void {
     this.sidebar().openedChange.subscribe(x => this.isSideBarOpen.set(x));
   }
 
+  selectedChange(selectedDate: Date) {
+    const selection = this.selectionModel.selection, newSelection = this.selectionStrategy.selectionFinished(
+        selectedDate,
+        selection
+    );
+    console.log(selection)
+    this.selectionModel.updateSelection(newSelection, this);
+
+    this.selectedDate.set(new DateRange<Date>(newSelection.start, newSelection.end));
+    if (this.selectionModel.isComplete()) {
+      this.calendarApi().gotoDate(newSelection.start)
+    }
+}
+
+  rangeChanged(selectedDate: Date) {
+    const selection = this.selectionModel.selection,
+      newSelection = this.selectionStrategy.selectionFinished(
+        selectedDate,
+        selection
+      );
+
+    this.selectionModel.updateSelection(newSelection, this);
+    this.selectedDate.set(new DateRange<Date>(
+      newSelection.start,
+      newSelection.end
+    ));
+  }
+
+
   onDatesSet(args: DatesSetArg) {
     this.dateTitle.set(args.view.title);
+    const endDate = dayjs(args.end).subtract(1, 'minute').toDate()
+    this.selectedDate.set(new DateRange(args.start, endDate))
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     this.todayDisable.set(today >= args.view.currentStart && today < args.view.currentEnd);
@@ -153,10 +194,13 @@ export class FullCalendarComponent implements OnInit {
     this.calendarApi().today();
   }
 
-  setDate(date: DateRange<Date>){
-    if (date.end && date.start) {
-      console.log("ici")
-      this.calendarApi().formatRange(date.start, date.end, {})
+  setDate(date: DateRange<Date> ){
+    const rangeInput : DateRangeInput =  {
+      start: date.start ?? undefined,
+      end: date.end ?? undefined
     }
+    this.selectedDate.set(date)
+    this.calendarApi().changeView(this.calendarApi().view.type, rangeInput)
+    this.calendarApi().gotoDate(date.start!)
   } 
 }

@@ -27,16 +27,14 @@ export class LayoutComponent implements AfterViewInit {
   private readonly authService = inject(AuthService);
   private readonly layoutService = inject(LayoutService);
   
-  public leftSideBar = viewChild.required(MatSidenav);
+  private readonly leftSideBar = viewChild.required(MatSidenav);
 
   public isLoggedIn = this.authService.isLoggedIn;
   public userFirstName = computed(() => this.authService.currentUserInfo()?.firstName);
   public showOver = computed(() => this.layoutService.windowWidth() < 1280);
   public sidenavMode = computed(() => this.showOver() ? 'over' : 'push');
 
-
   public ngAfterViewInit(): void {
     this.sidebarService.setSideBar(this.leftSideBar());
   }
-
 }
