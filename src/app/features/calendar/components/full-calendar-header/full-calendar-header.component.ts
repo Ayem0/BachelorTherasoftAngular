@@ -1,18 +1,22 @@
-import { Component, input, model, OnInit, output, viewChild } from '@angular/core';
+import {
+  Component,
+  input,
+  model,
+  OnInit,
+  output,
+  viewChild,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { ViewMode } from '../../models/calendar';
 
 @Component({
   selector: 'app-full-calendar-header',
-  imports: [
-    MatButtonModule,
-    MatIcon,
-    MatSelectModule
-  ],
+  imports: [MatButtonModule, MatIcon, MatSelectModule, MatSlideToggle],
   templateUrl: './full-calendar-header.component.html',
-  styleUrl: './full-calendar-header.component.scss'
+  styleUrl: './full-calendar-header.component.scss',
 })
 export class FullCalendarHeaderComponent implements OnInit {
   public viewModeSelect = viewChild.required(MatSelect);
@@ -29,7 +33,9 @@ export class FullCalendarHeaderComponent implements OnInit {
   public todayDisable = input.required<boolean>();
 
   public ngOnInit(): void {
-    this.viewModeSelect().selectionChange.subscribe(x =>this.viewMode.set(x.value))
+    this.viewModeSelect().selectionChange.subscribe((x) =>
+      this.viewMode.set(x.value)
+    );
   }
 
   public toggleSidebar() {

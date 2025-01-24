@@ -56,7 +56,7 @@ export class SlotDialogComponent implements OnInit {
   public useRepetition = false;
   public disabled = computed(() => this.slotStore.updating() || this.slotStore.creating());
 
-public form = new FormGroup({
+  public form = new FormGroup({
     name: new FormControl({ value: this.slot()?.name || "", disabled: this.disabled() }, [Validators.required]),
     description: new FormControl({ value: this.slot()?.description, disabled: this.disabled() }),
     startDate: new FormControl({ value: this.slot()?.startDate || "", disabled: this.disabled() }, [Validators.required]),

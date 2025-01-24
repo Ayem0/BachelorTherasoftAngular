@@ -180,6 +180,7 @@ $dark: mat.define-theme((
   @include mat.datepicker-theme($light);
   @include mat.timepicker-theme($light);
   @include mat.slide-toggle-theme($light);
+  @include mat.expansion-theme($light);
 }
 
 .dark {
@@ -204,6 +205,7 @@ $dark: mat.define-theme((
   @include mat.datepicker-color($dark);
   @include mat.timepicker-color($dark);
   @include mat.slide-toggle-color($dark);
+  @include mat.expansion-color($dark);
 }
 
 // Global styles
@@ -229,6 +231,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   background-color: var(--mat-app-background-hover-color);
 }
 
-:host {
 
+// TODO voir si utilisé
+.mat-expansion-panel-header.mat-expanded {
+  height: 48px !important;
 }

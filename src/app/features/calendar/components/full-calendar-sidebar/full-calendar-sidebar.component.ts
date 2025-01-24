@@ -1,15 +1,10 @@
 import { Component, inject, model, signal } from '@angular/core';
 import { DateRange, DefaultMatCalendarRangeStrategy, MAT_DATE_RANGE_SELECTION_STRATEGY, MatCalendar, MatRangeDateSelectionModel } from '@angular/material/datepicker';
-import { MatFormField, MatLabel, MatOption, MatSelect } from '@angular/material/select';
 
 @Component({
     selector: 'app-full-calendar-sidebar',
     imports: [
         MatCalendar,
-        MatSelect,
-        MatFormField,
-        MatOption,
-        MatLabel
     ],
     providers: [
         {
