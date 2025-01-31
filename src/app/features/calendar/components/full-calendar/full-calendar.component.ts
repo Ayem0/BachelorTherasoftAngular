@@ -22,14 +22,18 @@ import {
   DatesSetArg,
   EventApi,
   EventClickArg,
+  EventInput,
+  EventSourceFuncArg,
   ViewApi,
 } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import dayjs from 'dayjs';
+import { AuthService } from '../../../../core/auth/services/auth.service';
 import { LayoutService } from '../../../../core/layout/layout/layout.service';
 import { Event } from '../../../event/models/event';
+import { EventStore } from '../../../event/services/event.store';
 import { ViewMode } from '../../models/calendar';
 import { FullCalendarEventDialogComponent } from '../full-calendar-event-dialog/full-calendar-event-dialog.component';
 import { FullCalendarHeaderComponent } from '../full-calendar-header/full-calendar-header.component';
@@ -51,7 +55,9 @@ import { FullCalendarHeaderComponent } from '../full-calendar-header/full-calend
 })
 export class FullCalendarComponent implements OnInit {
   private readonly layoutService = inject(LayoutService);
+  private readonly eventStore = inject(EventStore);
   private readonly matDialog = inject(MatDialog);
+  private readonly authService = inject(AuthService);
 
   private readonly fullCalendar = viewChild.required(FullCalendar);
   private readonly sidebar = viewChild.required(MatSidenav);
@@ -93,6 +99,7 @@ export class FullCalendarComponent implements OnInit {
       },
     ],
     nowIndicator: true,
+    events: this.fetch.bind(this),
     handleWindowResize: true,
     windowResize: this.autoResize.bind(this),
     expandRows: true,
@@ -102,6 +109,33 @@ export class FullCalendarComponent implements OnInit {
     initialDate: this.selectedDate(),
     showNonCurrentDates: false,
   });
+
+  fetch(
+    arg: EventSourceFuncArg,
+    successCallback: (eventInputs: EventInput[]) => void,
+    failureCallback: (error: Error) => void
+  ) {
+    this.eventStore
+      .getEventsByUserId(
+        this.authService.currentUserInfo()!.id,
+        arg.start,
+        arg.end
+      )
+      .subscribe({
+        next: (events) => {
+          const fullCalendarEvents = events.map((event) => ({
+            id: event.id,
+            start: event.startDate,
+            end: event.endDate,
+          }));
+          successCallback(fullCalendarEvents);
+        },
+        error: (error) => {
+          console.error('Failed to fetch events:', error);
+          failureCallback(error);
+        },
+      });
+  }
 
   public ngOnInit(): void {
     this.sidebar().openedChange.subscribe((x) => this.isSideBarOpen.set(x));
@@ -144,6 +178,7 @@ export class FullCalendarComponent implements OnInit {
   handleDateSelect(selectInfo: DateSelectArg) {
     this.matDialog
       .open(FullCalendarEventDialogComponent, {
+        hasBackdrop: false,
         data: { startDate: selectInfo.start, endDate: selectInfo.end },
       })
       .afterClosed()
@@ -152,8 +187,7 @@ export class FullCalendarComponent implements OnInit {
           this.calendarApi().addEvent(x);
         }
       });
-    const calendarApi = selectInfo.view.calendar;
-    calendarApi.unselect(); // clear date selection // TODO voir a quoi sa sert
+    // this.calendarApi().unselect(); // clear date selection // TODO voir a quoi sa sert
   }
 
   handleEventClick(clickInfo: EventClickArg) {

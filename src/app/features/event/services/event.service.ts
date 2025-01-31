@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { Interval } from '../../../shared/models/interval';
-import { Month } from '../../../shared/models/month';
 import { Event } from '../models/event';
 
 @Injectable({
@@ -79,31 +78,25 @@ export class EventService {
     );
   }
 
-  public getEventsByRoomId(
-    id: string,
-    month: number,
-    year: number,
-    day?: number,
-    week?: number
-  ) {
+  public getEventsByRoomId(id: string, start: Date, end: Date) {
+    const startDate = start.toString();
+    const endDate = end.toString();
     return this.http.get<Event[]>(`${environment.apiUrl}/api/event/room`, {
       params: {
         id: id,
-        day: day || 0,
-        week: week || 0,
-        month: month,
-        year: year,
+        start: startDate,
+        end: endDate,
       },
     });
   }
 
-  public getAgenda(month: Month, year: number, day?: number, week?: number) {
-    return this.http.get<Event[]>(`${environment.apiUrl}/api/event/agenda`, {
+  public getEventsByUser(start: Date, end: Date) {
+    const startDate = start.toJSON();
+    const endDate = end.toJSON();
+    return this.http.get<Event[]>(`${environment.apiUrl}/api/event/user`, {
       params: {
-        day: day || 0,
-        week: week || 0,
-        month: month,
-        year: year,
+        start: startDate,
+        end: endDate,
       },
     });
   }
