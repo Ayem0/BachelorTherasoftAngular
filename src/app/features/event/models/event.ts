@@ -17,5 +17,6 @@ export interface Event {
   repetitionEndDate?: Date;
   participants: Participant[];
   eventCategory: EventCategory;
+  workspaceId: string;
   tags: Tag[];
 }

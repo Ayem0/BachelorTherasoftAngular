@@ -175,11 +175,13 @@ export class FullCalendarComponent implements OnInit {
     }));
   }
 
-  handleDateSelect(selectInfo: DateSelectArg) {
+  private handleDateSelect(selectInfo: DateSelectArg) {
+    this.calendarApi().unselect(); // clear date selectionÒ
     this.matDialog
       .open(FullCalendarEventDialogComponent, {
-        hasBackdrop: false,
+        // hasBackdrop: false,
         data: { startDate: selectInfo.start, endDate: selectInfo.end },
+        width: '500px',
       })
       .afterClosed()
       .subscribe((x: Event) => {
@@ -187,10 +189,9 @@ export class FullCalendarComponent implements OnInit {
           this.calendarApi().addEvent(x);
         }
       });
-    // this.calendarApi().unselect(); // clear date selection // TODO voir a quoi sa sert
   }
 
-  handleEventClick(clickInfo: EventClickArg) {
+  private handleEventClick(clickInfo: EventClickArg) {
     if (
       confirm(
         `Are you sure you want to delete the event '${clickInfo.event.title}'`

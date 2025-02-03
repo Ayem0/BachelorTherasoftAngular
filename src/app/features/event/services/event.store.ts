@@ -22,6 +22,67 @@ type EventState = {
   error: string | null;
 };
 
+function searchMap(
+  id: string,
+  start: Date,
+  end: Date,
+  map: Map<string, Map<number, Map<number, Map<number, string[]>>>>
+) {
+  let date = new Date(start);
+  const ids: string[] = [];
+  while (date <= end) {
+    const year = date.getFullYear();
+    const day = date.getDate();
+    const month = date.getMonth();
+    if (map.get(id)?.get(year)?.get(month)?.has(day)) {
+      ids.push(...map.get(id)!.get(year)!.get(month)!.get(day)!);
+      date = dayjs(date).add(1, 'day').toDate();
+    } else {
+      return null;
+    }
+  }
+  return ids;
+}
+
+function updateMap(
+  id: string,
+  start: Date,
+  end: Date,
+  events: Event[],
+  map: Map<string, Map<number, Map<number, Map<number, string[]>>>>
+) {
+  let date = new Date(start);
+  while (date <= end) {
+    const year = date.getFullYear();
+    const day = date.getDate();
+    const month = date.getMonth();
+    if (!map.has(id)) {
+      map.set(id, new Map());
+    }
+    const idMap = map.get(id)!; // userid or roomid
+    if (!idMap.has(year)) {
+      idMap.set(year, new Map());
+    }
+    const yearMap = idMap.get(year)!;
+    if (!yearMap.has(month)) {
+      yearMap.set(month, new Map());
+    }
+    const monthMap = yearMap.get(month)!;
+    monthMap.set(
+      day,
+      events
+        .filter(
+          (x) =>
+            dayjs(x.startDate).format('YYYY/MM/DD') ===
+            dayjs(date).format('YYYY/MM/DD')
+        )
+        .map((x) => x.id)
+    );
+    date = dayjs(date).add(1, 'day').toDate();
+  }
+  return map;
+}
+
 const initialEventState: EventState = {
   events: new Map(),
   eventIdsByUserId: new Map(),
@@ -37,7 +98,7 @@ export const EventStore = signalStore(
   withState(initialEventState),
   withMethods((store, eventService = inject(EventService)) => ({
     getEventsByUserId(id: string, start: Date, end: Date) {
-      const ids = this.lookMap(id, start, end, store.eventIdsByUserId());
+      const ids = searchMap(id, start, end, store.eventIdsByUserId());
       return ids
         ? of(ids.map((id) => store.events().get(id)!))
         : eventService.getEventsByUser(start, end).pipe(
@@ -46,7 +107,7 @@ export const EventStore = signalStore(
               events.forEach((event) => {
                 updatedEvents.set(event.id, event);
               });
-              const updatedEventIdsByUserId = this.updateMap(
+              const updatedEventIdsByUserId = updateMap(
                 id,
                 start,
                 end,
@@ -62,13 +123,13 @@ export const EventStore = signalStore(
     },
 
     getEventsByRoomId(id: string, start: Date, end: Date) {
-      const ids = this.lookMap(id, start, end, store.eventIdsByRoomId());
+      const ids = searchMap(id, start, end, store.eventIdsByRoomId());
       return ids
         ? of(ids.map((id) => store.events().get(id)!))
         : eventService.getEventsByRoomId(id, start, end).pipe(
             tap((events) => {
               const updatedEvents = new Map(store.events());
-              const updatedEventIdsByRoomId = this.updateMap(
+              const updatedEventIdsByRoomId = updateMap(
                 id,
                 start,
                 end,
@@ -85,109 +146,6 @@ export const EventStore = signalStore(
             })
           );
     },
-
-    lookMap(
-      id: string,
-      start: Date,
-      end: Date,
-      map: Map<string, Map<number, Map<number, Map<number, string[]>>>>
-    ) {
-      let date = new Date(start);
-      const ids: string[] = [];
-      while (date <= end) {
-        const year = date.getFullYear();
-        const day = date.getDate();
-        const month = date.getMonth();
-        if (map.get(id)?.get(year)?.get(month)?.has(day)) {
-          ids.push(...map.get(id)!.get(year)!.get(month)!.get(day)!);
-          date = dayjs(date).add(1, 'day').toDate();
-        } else {
-          return null;
-        }
-      }
-      return ids;
-    },
-
-    updateMap(
-      id: string,
-      start: Date,
-      end: Date,
-      events: Event[],
-      map: Map<string, Map<number, Map<number, Map<number, string[]>>>>
-    ) {
-      let date = new Date(start);
-      while (date <= end) {
-        const year = date.getFullYear();
-        const day = date.getDate();
-        const month = date.getMonth();
-        if (!map.has(id)) {
-          map.set(id, new Map());
-        }
-        const idMap = map.get(id)!; // userid or roomid
-        if (!idMap.has(year)) {
-          idMap.set(year, new Map());
-        }
-        const yearMap = idMap.get(year)!;
-        if (!yearMap.has(month)) {
-          yearMap.set(month, new Map());
-        }
-        const monthMap = yearMap.get(month)!;
-        monthMap.set(
-          day,
-          events
-            .filter(
-              (x) =>
-                dayjs(x.startDate).format('YYYY/MM/DD') ===
-                dayjs(date).format('YYYY/MM/DD')
-            )
-            .map((x) => x.id)
-        );
-        date = dayjs(date).add(1, 'day').toDate();
-      }
-      return map;
-    },
-
-    // getEventsByRoomId(
-    //   roomId: string,
-    //   month: number,
-    //   year: number,
-    //   day?: number,
-    //   week?: number
-    // ): Observable<Event[]> {
-    //   patchState(store, { loading: true });
-    //   if (store.eventIdsByRoomId().has(roomId)) {
-    //     const ids = store.eventIdsByRoomId().get(roomId)!;
-    //     patchState(store, { loading: false });
-    //     return of(ids.map((x) => store.events().get(x)!));
-    //   }
-    //   return eventService
-    //     .getEventsByRoomId(roomId, month, year, day, week)
-    //     .pipe(
-    //       tap({
-    //         next: (events) => {
-    //           const updatedeventIdsByRoomId = new Map(store.eventIdsByRoomId());
-    //           updatedeventIdsByRoomId.set(
-    //             roomId,
-    //             events.map((x) => x.id)
-    //           );
-    //           const updatedEvents = new Map(store.events());
-    //           events.forEach((x) => updatedEvents.set(x.id, x));
-    //           patchState(store, {
-    //             events: updatedEvents,
-    //             eventIdsByRoomId: updatedeventIdsByRoomId,
-    //             loading: false,
-    //             error: null,
-    //           });
-    //         },
-    //         error: (error: Error) => {
-    //           patchState(store, {
-    //             loading: false,
-    //             error: error.message,
-    //           });
-    //         },
-    //       })
-    //     );
-    // },
 
     // createEvent(
     //   roomId: string,
