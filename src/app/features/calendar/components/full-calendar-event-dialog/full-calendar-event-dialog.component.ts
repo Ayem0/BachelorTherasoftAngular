@@ -18,6 +18,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
+import { Interval } from '../../../../shared/models/interval';
 import { Repetition } from '../../../../shared/models/repetition';
 import { EventCategory } from '../../../event-category/event-category';
 import { EventCategoryStore } from '../../../event-category/event-category.store';
@@ -34,7 +35,7 @@ import { EventStore } from '../../../event/services/event.store';
     MatInputModule,
     MatDatepickerModule,
     MatProgressSpinner,
-    MatButtonModule
+    MatButtonModule,
   ],
   templateUrl: './full-calendar-event-dialog.component.html',
   styleUrl: './full-calendar-event-dialog.component.scss',
@@ -59,38 +60,91 @@ export class FullCalendarEventDialogComponent {
   public eventCategories = signal<EventCategory[]>([]);
 
   public form = new FormGroup({
-    description: new FormControl({
-      value: this.event()?.description,
-      disabled: this.disabled(),
-    }),
-    startDate: new FormControl(
-      { value: this.event()?.startDate || this.matDialogData.start, disabled: this.disabled() },
-      [Validators.required]
+    description: new FormControl<string | undefined>(
+      {
+        value: this.event()?.description,
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
     ),
-    endDate: new FormControl(
-      { value: this.event()?.endDate || this.matDialogData.end, disabled: this.disabled() },
-      [Validators.required]
+    startDate: new FormControl<Date>(
+      {
+        value:
+          this.event()?.startDate || this.matDialogData.start || new Date(),
+        disabled: this.disabled(),
+      },
+      { nonNullable: true, validators: [Validators.required] }
     ),
-    eventCategoryIds: new FormControl({
-      value: this.event()?.eventCategory,
-      disabled: this.disabled(),
-    }),
-    workspaceId: new FormControl({
-      value: this.event()?.workspaceId,
-      disabled: this.disabled(),
-    }),
-    repetitionInterval: new FormControl({
-      value: this.event()?.repetitionInterval,
-      disabled: this.disabled(),
-    }),
-    repetitionNumber: new FormControl({
-      value: this.event()?.repetitionNumber,
-      disabled: this.disabled(),
-    }),
-    repetitionEndDate: new FormControl({
-      value: this.event()?.repetitionEndDate,
-      disabled: this.disabled(),
-    }),
+    endDate: new FormControl<Date>(
+      {
+        value: this.event()?.endDate || this.matDialogData.end || new Date(),
+        disabled: this.disabled(),
+      },
+      { nonNullable: true, validators: [Validators.required] }
+    ),
+    eventCategoryId: new FormControl<string>(
+      {
+        value: this.event()?.eventCategoryId || '',
+        disabled: this.disabled(),
+      },
+      { nonNullable: true, validators: [Validators.required] }
+    ),
+    workspaceId: new FormControl<string>(
+      {
+        value: this.event()?.workspaceId || '',
+        disabled: this.disabled(),
+      },
+      { nonNullable: true, validators: [Validators.required] }
+    ),
+    roomId: new FormControl<string>(
+      {
+        value: this.event()?.roomId ?? '',
+        disabled: this.disabled(),
+      },
+      { nonNullable: true, validators: [Validators.required] }
+    ),
+    tagIds: new FormControl<string[]>(
+      {
+        value: this.event()?.tagIds ?? [],
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
+    participantIds: new FormControl<string[]>(
+      {
+        value: this.event()?.participantIds ?? [],
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
+    userIds: new FormControl<string[]>(
+      {
+        value: this.event()?.userIds ?? [],
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
+    repetitionInterval: new FormControl<Interval | undefined>(
+      {
+        value: this.event()?.repetitionInterval,
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
+    repetitionNumber: new FormControl<number | undefined>(
+      {
+        value: this.event()?.repetitionNumber,
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
+    repetitionEndDate: new FormControl<Date | undefined>(
+      {
+        value: this.event()?.repetitionEndDate,
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
   });
 
   public close() {
@@ -107,5 +161,14 @@ export class FullCalendarEventDialogComponent {
     this.matDialog.open(RepetitionComponent, { data: repetition });
   }
 
-  public submit() {}
+  public submit() {
+    if (this.form.valid) {
+      const req = this.form.getRawValue();
+      if (this.event()) {
+        this.eventStore.updateEvent(this.event()!.id, req);
+      } else {
+        this.eventStore.createEvent(req);
+      }
+    }
+  }
 }

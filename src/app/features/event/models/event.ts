@@ -1,22 +1,20 @@
-import { User } from '../../../core/auth/models/auth';
 import { Interval } from '../../../shared/models/interval';
-import { EventCategory } from '../../event-category/event-category';
-import { Participant } from '../../participant/participant';
-import { Room } from '../../room/room';
-import { Tag } from '../../tag/tag';
 
-export interface Event {
+export interface Event extends EventRequest {
   id: string;
+}
+
+export interface EventRequest {
   description?: string;
-  users: User[];
+  userIds: string[];
   startDate: Date;
   endDate: Date;
-  room: Room;
+  roomId: string;
   repetitionInterval?: Interval;
   repetitionNumber?: number;
   repetitionEndDate?: Date;
-  participants: Participant[];
-  eventCategory: EventCategory;
+  participantIds: string[];
+  eventCategoryId: string;
   workspaceId: string;
-  tags: Tag[];
+  tagIds: string[];
 }

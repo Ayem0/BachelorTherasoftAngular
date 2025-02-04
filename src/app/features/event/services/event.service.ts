@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
-import { Interval } from '../../../shared/models/interval';
-import { Event } from '../models/event';
+import { Event, EventRequest } from '../models/event';
 
 @Injectable({
   providedIn: 'root',
@@ -16,63 +15,37 @@ export class EventService {
     });
   }
 
-  public createEvent(
-    roomId: string,
-    startDate: Date,
-    endDate: Date,
-    eventCategoryId: string,
-    participantIds: string[],
-    tagIds: string[],
-    userIds: string[],
-    description?: string,
-    repetitionInterval?: Interval,
-    repetitionNumber?: number,
-    repetitionEndDate?: Date
-  ) {
+  public createEvent(event: EventRequest) {
     return this.http.post<Event>(`${environment.apiUrl}/api/event`, {
-      roomId: roomId,
-      startDate: startDate,
-      endDate: endDate,
-      participantIds: participantIds,
-      eventCategoryId: eventCategoryId,
-      tagIds: tagIds,
-      userIds: userIds,
-      description: description,
-      repetitionInterval: repetitionInterval,
-      repetitionNumber: repetitionNumber,
-      repetitionEndDate: repetitionEndDate,
+      roomId: event.roomId,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      participantIds: event.participantIds,
+      eventCategoryId: event.eventCategoryId,
+      tagIds: event.tagIds,
+      userIds: event.userIds,
+      description: event.description,
+      repetitionInterval: event.repetitionInterval,
+      repetitionNumber: event.repetitionNumber,
+      repetitionEndDate: event.repetitionEndDate,
     });
   }
 
-  public updateEvent(
-    id: string,
-    roomId: string,
-    startDate: Date,
-    endDate: Date,
-    eventCategoryId: string,
-    participantIds: string[],
-    tagIds: string[],
-    userIds: string[],
-    description?: string,
-    repetitionInterval?: Interval,
-    repetitionNumber?: number,
-    repetitionEndDate?: Date
-  ) {
+  public updateEvent(id: string, event: EventRequest) {
     return this.http.put<Event>(
       `${environment.apiUrl}/api/event`,
       {
-        id: id,
-        roomId: roomId,
-        startDate: startDate,
-        endDate: endDate,
-        eventCategoryId: eventCategoryId,
-        participantIds: participantIds,
-        tagIds: tagIds,
-        userIds: userIds,
-        description: description,
-        repetitionInterval: repetitionInterval,
-        repetitionNumber: repetitionNumber,
-        repetitionEndDate: repetitionEndDate,
+        roomId: event.roomId,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        eventCategoryId: event.eventCategoryId,
+        participantIds: event.participantIds,
+        tagIds: event.tagIds,
+        userIds: event.userIds,
+        description: event.description,
+        repetitionInterval: event.repetitionInterval,
+        repetitionNumber: event.repetitionNumber,
+        repetitionEndDate: event.repetitionEndDate,
       },
       { params: { id: id } }
     );
