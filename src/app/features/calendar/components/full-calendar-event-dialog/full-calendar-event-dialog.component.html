@@ -16,9 +16,6 @@
         <mat-label>Description</mat-label>
         <textarea matInput placeholder="Description" formControlName="description"></textarea>
       </mat-form-field>
-      <mat-form-field>
-        <input matInput type="datetime-local" placeholder="start date">
-      </mat-form-field>
       
       <div class="flex flex-row gap-2">
         <mat-form-field appearance="outline" [hideRequiredMarker]="true">
@@ -28,7 +25,18 @@
           <mat-datepicker-toggle matIconSuffix [for]="startDate"></mat-datepicker-toggle>
           <mat-datepicker #startDate></mat-datepicker>
         </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Start time</mat-label>
+          <input matInput
+            [matTimepicker]="startTime"
+            formControlName="startDate">
+          <mat-timepicker #startTime/>
+          <mat-timepicker-toggle [for]="startTime" matSuffix/>
+        </mat-form-field>
   
+      </div>
+      <div class="flex flex-row gap-2">
         <mat-form-field appearance="outline" [hideRequiredMarker]="true">
           <mat-label>End date</mat-label>
           <input matInput [matDatepicker]="endDate" formControlName="endDate">
@@ -36,9 +44,17 @@
           <mat-datepicker-toggle matIconSuffix [for]="endDate"></mat-datepicker-toggle>
           <mat-datepicker #endDate></mat-datepicker>
         </mat-form-field> 
+
+        <mat-form-field appearance="outline">
+          <mat-label>End time</mat-label>
+          <input matInput
+            [matTimepicker]="endTime"
+            formControlName="endDate">
+          <mat-timepicker #endTime/>
+          <mat-timepicker-toggle [for]="endTime" matSuffix/>
+        </mat-form-field>
       </div>
   
-      <app-date-time-picker></app-date-time-picker>
       <!-- <mat-slide-toggle [(ngModel)]="useRepetition" [ngModelOptions]="{standalone: true}">Use repetition</mat-slide-toggle>
       
       @if (useRepetition) {

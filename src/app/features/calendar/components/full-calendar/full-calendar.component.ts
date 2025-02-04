@@ -180,7 +180,7 @@ export class FullCalendarComponent implements OnInit {
     this.matDialog
       .open(FullCalendarEventDialogComponent, {
         // hasBackdrop: false,
-        data: { startDate: selectInfo.start, endDate: selectInfo.end },
+        data: { start: selectInfo.start, end: selectInfo.end },
         width: '500px',
       })
       .afterClosed()

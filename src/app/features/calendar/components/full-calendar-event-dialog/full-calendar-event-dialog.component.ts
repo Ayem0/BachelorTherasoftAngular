@@ -17,7 +17,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTimepickerModule } from '@angular/material/timepicker';
-import { DateTimePickerComponent } from '../../../../shared/components/date-time-picker/date-time-picker.component';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
 import { Repetition } from '../../../../shared/models/repetition';
 import { EventCategory } from '../../../event-category/event-category';
@@ -35,8 +34,7 @@ import { EventStore } from '../../../event/services/event.store';
     MatInputModule,
     MatDatepickerModule,
     MatProgressSpinner,
-    MatButtonModule,
-    DateTimePickerComponent,
+    MatButtonModule
   ],
   templateUrl: './full-calendar-event-dialog.component.html',
   styleUrl: './full-calendar-event-dialog.component.scss',
@@ -50,8 +48,8 @@ export class FullCalendarEventDialogComponent {
   private readonly eventCategoryStore = inject(EventCategoryStore);
   private readonly matDialogData: {
     event: Event | null;
-    startDate: Date | null;
-    endDate: Date | null;
+    start: Date | null;
+    end: Date | null;
   } = inject(MAT_DIALOG_DATA);
   public event = signal(this.matDialogData.event);
   public disabled = computed(
@@ -66,11 +64,11 @@ export class FullCalendarEventDialogComponent {
       disabled: this.disabled(),
     }),
     startDate: new FormControl(
-      { value: this.event()?.startDate, disabled: this.disabled() },
+      { value: this.event()?.startDate || this.matDialogData.start, disabled: this.disabled() },
       [Validators.required]
     ),
     endDate: new FormControl(
-      { value: this.event()?.endDate, disabled: this.disabled() },
+      { value: this.event()?.endDate || this.matDialogData.end, disabled: this.disabled() },
       [Validators.required]
     ),
     eventCategoryIds: new FormControl({
