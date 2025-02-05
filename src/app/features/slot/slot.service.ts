@@ -1,58 +1,48 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 import { environment } from '../../../environments/environment';
-import { Interval } from '../../shared/models/interval';
-import { Slot } from './slot';
+import { Slot, SlotRequest } from './slot';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SlotService {
   private readonly http = inject(HttpClient);
-  constructor() { }
+  constructor() {}
 
   public getSlotsByWorkspaceId(workspaceId: string) {
-    return this.http.get<Slot[]>(`${environment.apiUrl}/api/slot/workspace`, { params: { workspaceId }});
+    return this.http.get<Slot[]>(`${environment.apiUrl}/api/slot/workspace`, {
+      params: { workspaceId },
+    });
   }
 
-  public createSlot(
-    workspaceId: string,
-    name: string,
-    startDate: Date | string,
-    endDate: Date | string,
-    startTime: Date | string,
-    endTime: Date | string,
-    eventCategoryIds: string[],
-    description?: string,
-    repetitionInterval?: Interval,
-    repetitionNumber?: number,
-    repetitionEndDate?: Date | string,
-  ) {
-    const formatedStartTime = dayjs(startTime).format("HH:mm:ss.SSS") + "000";
-    const formatedEndTime = dayjs(endTime).format("HH:mm:ss.SSS") + "000";
-    const formatedStartDate = dayjs(startDate).format("YYYY-MM-DD");
-    const formatedEndDate = dayjs(endDate).format("YYYY-MM-DD");
-    console.log(formatedStartDate, formatedEndDate, formatedStartTime, formatedEndTime) 
-    return this.http.post<Slot>(`${environment.apiUrl}/api/slot`, 
-      { workspaceId, name, startDate: formatedStartDate, endDate: formatedEndDate, startTime: formatedStartTime, endTime: formatedEndTime, eventCategoryIds, description, repetitionInterval, repetitionNumber, repetitionEndDate }
+  public createSlot(workspaceId: string, req: SlotRequest) {
+    const formatedStartTime =
+      dayjs(req.startTime).format('HH:mm:ss.SSS') + '000';
+    const formatedEndTime = dayjs(req.endTime).format('HH:mm:ss.SSS') + '000';
+    const formatedStartDate = dayjs(req.startDate).format('YYYY-MM-DD');
+    const formatedEndDate = dayjs(req.endDate).format('YYYY-MM-DD');
+    return this.http.post<Slot>(`${environment.apiUrl}/api/slot`, {
+      workspaceId: workspaceId,
+      name: req.name,
+      startDate: formatedStartDate,
+      endDate: formatedEndDate,
+      startTime: formatedStartTime,
+      endTime: formatedEndTime,
+      eventCategoryIds: req.eventCategoryIds,
+      description: req.description,
+      repetitionInterval: req.repetitionInterval,
+      repetitionNumber: req.repetitionNumber,
+      repetitionEndDate: req.repetitionEndDate,
+    });
+  }
+
+  public updateSlot(id: string, slot: SlotRequest) {
+    return this.http.put<Slot>(
+      `${environment.apiUrl}/api/slot`,
+      { slot },
+      { params: { id: id } }
     );
-  }
-
-  public updateSlot(
-    id: string,
-    name: string,
-    startDate: Date | string,
-    endDate: Date | string,
-    startTime: Date | string,
-    endTime: Date | string,
-    eventCategoryIds: string[],
-    description?: string,
-    repetitionInterval?: Interval,
-    repetitionNumber?: number,
-    repetitionEndDate?: Date | string,
-  ) {
-    return this.http.put<Slot>(`${environment.apiUrl}/api/slot`, 
-      { id, name, startDate, endDate, startTime, endTime, eventCategoryIds, description, repetitionInterval, repetitionNumber, repetitionEndDate }, { params: { id: id } })
   }
 }

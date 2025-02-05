@@ -1,9 +1,17 @@
-import { Slot } from "../slot/slot";
+import { FormControl } from '@angular/forms';
 
-export interface Room {
-    id: string,
-    name: string,
-    description?: string,
-    slots: Slot[],
-    events: Event[],
+export interface Room extends RoomRequest {
+  id: string;
+  slotIds: string[];
+  eventIds: string[];
+}
+
+export interface RoomRequest {
+  name: string;
+  description?: string;
+}
+
+export interface RoomForm {
+  name: FormControl<string>;
+  description?: FormControl<string>;
 }

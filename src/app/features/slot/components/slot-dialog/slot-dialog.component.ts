@@ -23,11 +23,10 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { catchError, of, tap } from 'rxjs';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
-import { Interval } from '../../../../shared/models/interval';
 import { Repetition } from '../../../../shared/models/repetition';
 import { EventCategory } from '../../../event-category/event-category';
 import { EventCategoryStore } from '../../../event-category/event-category.store';
-import { Slot } from '../../slot';
+import { Slot, SlotForm } from '../../slot';
 import { SlotStore } from '../../slot.store';
 
 @Component({
@@ -58,7 +57,6 @@ export class SlotDialogComponent implements OnInit {
   private readonly matDialogData: { workspaceId: string; slot: Slot | null } =
     inject(MAT_DIALOG_DATA);
 
-  public repetitionInterval = Interval;
   public workspaceId = signal(this.matDialogData.workspaceId).asReadonly();
   public slot = signal<Slot | null>(this.matDialogData.slot).asReadonly();
   public isUpdate = computed(() => !!this.slot());
@@ -68,47 +66,68 @@ export class SlotDialogComponent implements OnInit {
     () => this.slotStore.updating() || this.slotStore.creating()
   );
 
-  public form = new FormGroup({
+  public form = new FormGroup<SlotForm>({
     name: new FormControl(
       { value: this.slot()?.name || '', disabled: this.disabled() },
-      [Validators.required]
+      { nonNullable: true, validators: [Validators.required] }
     ),
-    description: new FormControl({
-      value: this.slot()?.description,
-      disabled: this.disabled(),
-    }),
+    description: new FormControl(
+      {
+        value: this.slot()?.description,
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
     startDate: new FormControl(
-      { value: this.slot()?.startDate || '', disabled: this.disabled() },
-      [Validators.required]
+      {
+        value: this.slot()?.startDate || new Date(),
+        disabled: this.disabled(),
+      },
+      { nonNullable: true, validators: [Validators.required] }
     ),
     endDate: new FormControl(
-      { value: this.slot()?.endDate, disabled: this.disabled() },
-      [Validators.required]
+      { value: this.slot()?.endDate || new Date(), disabled: this.disabled() },
+      { nonNullable: true, validators: [Validators.required] }
     ),
     startTime: new FormControl(
-      { value: this.slot()?.startTime || '', disabled: this.disabled() },
-      [Validators.required]
+      {
+        value: this.slot()?.startTime || new Date(),
+        disabled: this.disabled(),
+      },
+      { nonNullable: true, validators: [Validators.required] }
     ),
     endTime: new FormControl(
-      { value: this.slot()?.endTime || '', disabled: this.disabled() },
-      [Validators.required]
+      { value: this.slot()?.endTime || new Date(), disabled: this.disabled() },
+      { nonNullable: true, validators: [Validators.required] }
     ),
-    eventCategoryIds: new FormControl({
-      value: this.slot()?.eventCategoryIds,
-      disabled: this.disabled(),
-    }),
-    repetitionInterval: new FormControl({
-      value: this.slot()?.repetitionInterval,
-      disabled: this.disabled(),
-    }),
-    repetitionNumber: new FormControl({
-      value: this.slot()?.repetitionNumber,
-      disabled: this.disabled(),
-    }),
-    repetitionEndDate: new FormControl({
-      value: this.slot()?.repetitionEndDate,
-      disabled: this.disabled(),
-    }),
+    eventCategoryIds: new FormControl(
+      {
+        value: this.slot()?.eventCategoryIds || [],
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
+    repetitionInterval: new FormControl(
+      {
+        value: this.slot()?.repetitionInterval,
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
+    repetitionNumber: new FormControl(
+      {
+        value: this.slot()?.repetitionNumber,
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
+    repetitionEndDate: new FormControl(
+      {
+        value: this.slot()?.repetitionEndDate,
+        disabled: this.disabled(),
+      },
+      { nonNullable: true }
+    ),
   });
 
   public ngOnInit(): void {
@@ -139,33 +158,10 @@ export class SlotDialogComponent implements OnInit {
       this.form.value.startTime &&
       this.form.value.endTime
     ) {
-      const {
-        name,
-        description,
-        startDate,
-        endDate,
-        startTime,
-        endTime,
-        eventCategoryIds,
-        repetitionInterval,
-        repetitionNumber,
-        repetitionEndDate,
-      } = this.form.value;
+      const slotRequest = this.form.getRawValue();
       if (this.slot()) {
         this.slotStore
-          .updateSlot(
-            this.slot()!.id,
-            name,
-            startDate,
-            endDate,
-            startTime,
-            endTime,
-            eventCategoryIds ?? [],
-            repetitionInterval ?? undefined,
-            repetitionNumber ?? undefined,
-            repetitionEndDate ?? undefined,
-            description ?? undefined
-          )
+          .updateSlot(this.slot()!.id, slotRequest)
           .pipe(
             tap((res) => {
               this.dialogRef.close(res);
@@ -178,19 +174,7 @@ export class SlotDialogComponent implements OnInit {
           .subscribe();
       } else {
         this.slotStore
-          .createSlot(
-            this.workspaceId(),
-            name,
-            startDate,
-            endDate,
-            startTime,
-            endTime,
-            eventCategoryIds ?? [],
-            repetitionInterval ?? undefined,
-            repetitionNumber ?? undefined,
-            repetitionEndDate ?? undefined,
-            description ?? undefined
-          )
+          .createSlot(this.workspaceId(), slotRequest)
           .pipe(
             tap((res) => {
               this.dialogRef.close(res);
