@@ -1,43 +1,35 @@
-
-
 <div class="flex size-full">
     <mat-sidenav-container [hasBackdrop]="showOver()" [style.flex]="'1 0 auto'" class="z-50 !flex">
-        <mat-sidenav #sidebar [(opened)]="isSideBarOpen" autoFocus="false" [mode]="sidenavMode()" [fixedInViewport]="true" [fixedTopGap]="56" class="!w-64 !rounded-none">
+        <mat-sidenav #sidebar [(opened)]="isSideBarOpen" autoFocus="false" [mode]="sidenavMode()"
+            [fixedInViewport]="true" [fixedTopGap]="56" class="!w-64 !rounded-none">
             <div class="flex flex-col overflow-hidden">
                 <div class="flex justify-between w-full px-2">
-                    <button mat-icon-button>
-                        <mat-icon>settings</mat-icon>
-                    </button>
+
                     @if(isSideBarOpen()) {
-                        <button mat-icon-button (click)="toggleSidebar()">
-                            <mat-icon>arrow_menu_close</mat-icon>
-                        </button>
+                    <button mat-icon-button (click)="toggleSidebar()">
+                        <mat-icon>menu</mat-icon>
+                    </button>
                     }
+                    <button mat-flat-button>
+                        <mat-icon>add</mat-icon>
+                        Create
+                    </button>
                 </div>
-                <mat-calendar #calendar
-                    [(selected)]="selectedDate" 
-                    (selectedChange)="selectedChange($event)"
-                    >
+                <mat-calendar #calendar [(selected)]="selectedDate" (selectedChange)="selectedChange($event)">
                 </mat-calendar>
                 <mat-expansion-panel class="!shadow-none">
                     <mat-expansion-panel-header>
-                      <mat-panel-title> Workspaces </mat-panel-title>
+                        <mat-panel-title> Workspaces </mat-panel-title>
                     </mat-expansion-panel-header>
                     <p>This is the primary content of the panel.</p>
-                  </mat-expansion-panel>
-            </div>  
+                </mat-expansion-panel>
+            </div>
         </mat-sidenav>
         <mat-sidenav-content class="!mr-0 !flex size-full">
             <div class="left-0 top-0 right-0 bottom-0 flex flex-col size-full">
-                <app-full-calendar-header 
-                    (todayChange)="setToday()"
-                    [todayDisable]="todayDisable()"
-                    (nextChange)="next()"
-                    (prevChange)="previous()"
-                    [dateTitle]="dateTitle()" 
-                    [(isSideBarOpen)]="isSideBarOpen" 
-                    [(viewMode)]="viewMode" 
-                    (viewModeChange)="viewModeChange($event)">
+                <app-full-calendar-header (todayChange)="setToday()" [todayDisable]="todayDisable()"
+                    (nextChange)="next()" (prevChange)="previous()" [dateTitle]="dateTitle()"
+                    [(isSideBarOpen)]="isSideBarOpen" [(viewMode)]="viewMode" (viewModeChange)="viewModeChange($event)">
                 </app-full-calendar-header>
                 <full-calendar #fullCalendar [options]="calendarOptions()"></full-calendar>
             </div>

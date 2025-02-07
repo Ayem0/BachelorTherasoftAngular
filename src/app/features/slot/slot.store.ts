@@ -1,6 +1,11 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Observable, of, tap } from 'rxjs';
+import {
+  addModelToParentMap,
+  updateModelMap,
+  updateParentMap,
+} from '../../shared/utils/utils.store';
 import { Slot, SlotRequest } from './slot';
 import { SlotService } from './slot.service';
 
@@ -36,15 +41,12 @@ export const SlotStore = signalStore(
       return slotService.getSlotsByWorkspaceId(workspaceId).pipe(
         tap({
           next: (slots) => {
-            const updatedSlotIdsByWorkspaceId = new Map(
-              store.slotIdsByWorkspaceId()
-            );
-            updatedSlotIdsByWorkspaceId.set(
+            const updatedSlotIdsByWorkspaceId = updateParentMap(
+              store.slotIdsByWorkspaceId(),
               workspaceId,
-              slots.map((wr) => wr.id)
+              slots
             );
-            const updatedSlots = new Map(store.slots());
-            slots.forEach((x) => updatedSlots.set(x.id, x));
+            const updatedSlots = updateModelMap(store.slots(), slots);
             patchState(store, {
               slots: updatedSlots,
               slotIdsByWorkspaceId: updatedSlotIdsByWorkspaceId,
@@ -66,23 +68,15 @@ export const SlotStore = signalStore(
       return slotService.createSlot(workspaceId, req).pipe(
         tap({
           next: (newSlot) => {
-            const updatedSlots = new Map(store.slots());
-            updatedSlots.set(newSlot.id, newSlot);
-            let updatedSlotIdsByWorkspaceId: Map<string, string[]> | null =
-              null;
-            if (store.slotIdsByWorkspaceId().has(workspaceId)) {
-              updatedSlotIdsByWorkspaceId = new Map(
-                store.slotIdsByWorkspaceId()
-              );
-              updatedSlotIdsByWorkspaceId.set(workspaceId, [
-                ...store.slotIdsByWorkspaceId().get(workspaceId)!,
-                newSlot.id,
-              ]);
-            }
+            const updatedSlots = updateModelMap(store.slots(), [newSlot]);
+            const updatedSlotIdsByWorkspaceId = addModelToParentMap(
+              store.slotIdsByWorkspaceId(),
+              workspaceId,
+              newSlot
+            );
             patchState(store, {
               slots: updatedSlots,
-              slotIdsByWorkspaceId:
-                updatedSlotIdsByWorkspaceId ?? store.slotIdsByWorkspaceId(),
+              slotIdsByWorkspaceId: updatedSlotIdsByWorkspaceId,
               creating: false,
               error: null,
             });
@@ -98,8 +92,7 @@ export const SlotStore = signalStore(
       return slotService.updateSlot(id, slotRequest).pipe(
         tap({
           next: (updatedslot) => {
-            const updatedSlots = new Map(store.slots());
-            updatedSlots.set(updatedslot.id, updatedslot);
+            const updatedSlots = updateModelMap(store.slots(), [updatedslot]);
             patchState(store, {
               slots: updatedSlots,
               updating: false,

@@ -1,6 +1,11 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Observable, of, tap } from 'rxjs';
+import {
+  addModelToParentMap,
+  updateModelMap,
+  updateParentMap,
+} from '../../shared/utils/utils.store';
 import { Tag, TagRequest } from './tag';
 import { TagService } from './tag.service';
 
@@ -36,15 +41,12 @@ export const TagStore = signalStore(
       return tagService.getTagsByWorkspaceId(workspaceId).pipe(
         tap({
           next: (tags) => {
-            const updatedTagIdsByWorkspaceId = new Map(
-              store.tagIdsByWorkspaceId()
-            );
-            updatedTagIdsByWorkspaceId.set(
+            const updatedTagIdsByWorkspaceId = updateParentMap(
+              store.tagIdsByWorkspaceId(),
               workspaceId,
-              tags.map((wr) => wr.id)
+              tags
             );
-            const updatedTags = new Map(store.tags());
-            tags.forEach((x) => updatedTags.set(x.id, x));
+            const updatedTags = updateModelMap(store.tags(), tags);
             patchState(store, {
               tags: updatedTags,
               tagIdsByWorkspaceId: updatedTagIdsByWorkspaceId,
@@ -66,20 +68,15 @@ export const TagStore = signalStore(
       return tagService.createTag(workspaceId, tagRequest).pipe(
         tap({
           next: (newtag) => {
-            const updatedTags = new Map(store.tags());
-            updatedTags.set(newtag.id, newtag);
-            let updatedTagIdsByWorkspaceId: Map<string, string[]> | null = null;
-            if (store.tagIdsByWorkspaceId().has(workspaceId)) {
-              updatedTagIdsByWorkspaceId = new Map(store.tagIdsByWorkspaceId());
-              updatedTagIdsByWorkspaceId.set(workspaceId, [
-                ...store.tagIdsByWorkspaceId().get(workspaceId)!,
-                newtag.id,
-              ]);
-            }
+            const updatedTags = updateModelMap(store.tags(), [newtag]);
+            const updatedTagIdsByWorkspaceId = addModelToParentMap(
+              store.tagIdsByWorkspaceId(),
+              workspaceId,
+              newtag
+            );
             patchState(store, {
               tags: updatedTags,
-              tagIdsByWorkspaceId:
-                updatedTagIdsByWorkspaceId ?? store.tagIdsByWorkspaceId(),
+              tagIdsByWorkspaceId: updatedTagIdsByWorkspaceId,
               creating: false,
               error: null,
             });
@@ -95,8 +92,7 @@ export const TagStore = signalStore(
       return tagService.updateTag(id, tagRequest).pipe(
         tap({
           next: (updatedTag) => {
-            const updatedTags = new Map(store.tags());
-            updatedTags.set(updatedTag.id, updatedTag);
+            const updatedTags = updateModelMap(store.tags(), [updatedTag]);
             patchState(store, {
               tags: updatedTags,
               updating: false,

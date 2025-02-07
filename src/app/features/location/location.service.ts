@@ -1,32 +1,56 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Place } from './location';
+import { LocationRequest, Place } from './location';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LocationService {
   private readonly http = inject(HttpClient);
-  constructor() { }
+  constructor() {}
 
   public getLocationsByWorkspaceId(workspaceId: string) {
-    return this.http.get<Place[]>(`${environment.apiUrl}/api/location/workspace`, { params: { workspaceId }});
+    return this.http.get<Place[]>(
+      `${environment.apiUrl}/api/location/workspace`,
+      { params: { workspaceId } }
+    );
   }
 
   public getById(id: string) {
-    return this.http.get<Place>(`${environment.apiUrl}/api/location`, { params: { id }});
+    return this.http.get<Place>(`${environment.apiUrl}/api/location`, {
+      params: { id },
+    });
   }
 
-  public createLocation(workspaceId: string, name: string, description?: string, address?: string, city?: string, country?: string) {    
-    return this.http.post<Place>(`${environment.apiUrl}/api/location`, { workspaceId, name, description, address, city, country })
+  public createLocation(workspaceId: string, req: LocationRequest) {
+    return this.http.post<Place>(`${environment.apiUrl}/api/location`, {
+      workspaceId,
+      name: req.name,
+      description: req.description,
+      address: req.address,
+      city: req.city,
+      country: req.country,
+    });
   }
 
-  public updateLocation(id: string, newName?: string, newDescription?: string) {
-    return this.http.put<Place>(`${environment.apiUrl}/api/location`, { newName, newDescription }, { params: { id: id } })
+  public updateLocation(id: string, req: LocationRequest) {
+    return this.http.put<Place>(
+      `${environment.apiUrl}/api/location`,
+      {
+        name: req.name,
+        description: req.description,
+        address: req.address,
+        city: req.city,
+        country: req.country,
+      },
+      { params: { id: id } }
+    );
   }
 
-  public getLocationDetailsById(workspaceId: string, locationId: string) {
-    return this.http.get<Place>(`${environment.apiUrl}/api/location/details`, { params: { workspaceId, locationId } });
+  public getLocationDetailsById(id: string) {
+    return this.http.get<Place>(`${environment.apiUrl}/api/location/details`, {
+      params: { id: id },
+    });
   }
 }

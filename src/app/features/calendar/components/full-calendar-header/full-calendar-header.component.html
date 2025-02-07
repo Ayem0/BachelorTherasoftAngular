@@ -1,28 +1,32 @@
 <div class="flex w-full justify-between overflow-hidden pr-2">
     <div class="flex items-center gap-2">
         @if (!isSideBarOpen()) {
-            <button mat-icon-button aria-label="TODO" (click)="toggleSidebar()">
-                <mat-icon>more_vert</mat-icon>
-            </button>
+        <button mat-icon-button aria-label="TODO" (click)="toggleSidebar()">
+            <mat-icon>menu</mat-icon>
+        </button>
         }
         <span class="text-2xl">{{ dateTitle() }}</span>
     </div>
     <div class="flex items-center gap-2">
-        
-        <button mat-stroked-button aria-label="TODO" [disabled]="todayDisable()" (click)="todayChange.emit()">Today</button>
+
+        <button mat-stroked-button aria-label="TODO" [disabled]="todayDisable()"
+            (click)="todayChange.emit()">Today</button>
         <button mat-icon-button aria-label="TODO" (click)="prevChange.emit()">
             <mat-icon>arrow_back_ios_new</mat-icon>
         </button>
         <button mat-icon-button aria-label="TODO" (click)="nextChange.emit()">
             <mat-icon>arrow_forward_ios</mat-icon>
         </button>
-        <mat-form-field appearance="outline" class="w-24">
+        <!-- <mat-form-field appearance="outline" class="w-24">
             <mat-select [value]="viewMode()">
                 <mat-option value="timeGridDay">Day</mat-option>
                 <mat-option value="timeGridWeek">Week</mat-option>
                 <mat-option value="dayGridMonth">Month</mat-option>
             </mat-select>
-        </mat-form-field>
+        </mat-form-field> -->
+        <button mat-icon-button>
+            <mat-icon>settings</mat-icon>
+        </button>
         <mat-slide-toggle></mat-slide-toggle>
     </div>
 </div>

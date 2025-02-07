@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import dayjs from 'dayjs';
 import { of, tap } from 'rxjs';
+import { updateModelMap } from '../../../shared/utils/utils.store';
 import { Event, EventRequest } from '../models/event';
 import { EventService } from './event.service';
 
@@ -41,10 +42,7 @@ export const EventStore = signalStore(
         ? of(ids.map((id) => store.events().get(id)!))
         : eventService.getEventsByUser(start, end).pipe(
             tap((events) => {
-              const updatedEvents = new Map(store.events());
-              events.forEach((event) => {
-                updatedEvents.set(event.id, event);
-              });
+              const updatedEvents = updateModelMap(store.events(), events);
               const updatedEventIdsByUserId = updateMap(
                 id,
                 start,
@@ -66,7 +64,7 @@ export const EventStore = signalStore(
         ? of(ids.map((id) => store.events().get(id)!))
         : eventService.getEventsByRoomId(id, start, end).pipe(
             tap((events) => {
-              const updatedEvents = new Map(store.events());
+              const updatedEvents = updateModelMap(store.events(), events);
               const updatedEventIdsByRoomId = updateMap(
                 id,
                 start,
@@ -74,9 +72,6 @@ export const EventStore = signalStore(
                 events,
                 store.eventIdsByRoomId()
               );
-              events.forEach((event) => {
-                updatedEvents.set(event.id, event);
-              });
               patchState(store, {
                 events: updatedEvents,
                 eventIdsByRoomId: updatedEventIdsByRoomId,
@@ -90,8 +85,7 @@ export const EventStore = signalStore(
       return eventService.createEvent(event).pipe(
         tap({
           next: (newEvent) => {
-            const updatedEvents = new Map(store.events());
-            updatedEvents.set(newEvent.id, newEvent);
+            const updatedEvents = updateModelMap(store.events(), [newEvent]);
             const updatedEventIdsByRoomId = addEventToMap(
               [newEvent.roomId],
               newEvent,
@@ -122,8 +116,9 @@ export const EventStore = signalStore(
       return eventService.updateEvent(id, event).pipe(
         tap({
           next: (updatedEvent) => {
-            const updatedEvents = new Map(store.events());
-            updatedEvents.set(updatedEvent.id, updatedEvent);
+            const updatedEvents = updateModelMap(store.events(), [
+              updatedEvent,
+            ]);
             patchState(store, {
               events: updatedEvents,
               updating: false,

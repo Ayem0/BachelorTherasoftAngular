@@ -1,6 +1,11 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Observable, of, tap } from 'rxjs';
+import {
+  addModelToParentMap,
+  updateModelMap,
+  updateParentMap,
+} from '../../shared/utils/utils.store';
 import { Room, RoomRequest } from './room';
 import { RoomService } from './room.service';
 
@@ -74,15 +79,12 @@ export const RoomStore = signalStore(
       return roomService.getRoomsByWorkspaceId(workspaceId).pipe(
         tap({
           next: (rooms) => {
-            const updatedRoomIdsByWorkspaceId = new Map(
-              store.roomIdsByWorkspaceId()
-            );
-            updatedRoomIdsByWorkspaceId.set(
+            const updatedRoomIdsByWorkspaceId = updateParentMap(
+              store.roomIdsByWorkspaceId(),
               workspaceId,
-              rooms.map((room) => room.id)
+              rooms
             );
-            const updatedRooms = new Map(store.rooms());
-            rooms.forEach((room) => updatedRooms.set(room.id, room));
+            const updatedRooms = updateModelMap(store.rooms(), rooms);
             patchState(store, {
               roomIdsByWorkspaceId: updatedRoomIdsByWorkspaceId,
               rooms: updatedRooms,
@@ -109,8 +111,7 @@ export const RoomStore = signalStore(
       return roomService.getById(id).pipe(
         tap({
           next: (room) => {
-            const updatedRooms = new Map(store.rooms());
-            updatedRooms.set(room.id, room);
+            const updatedRooms = updateModelMap(store.rooms(), [room]);
             patchState(store, {
               rooms: updatedRooms,
               loading: false,
@@ -127,25 +128,20 @@ export const RoomStore = signalStore(
       );
     },
 
-    createRoom(AreaId: string, roomRequest: RoomRequest) {
+    createRoom(areaId: string, roomRequest: RoomRequest) {
       patchState(store, { creating: true });
-      return roomService.createRoom(AreaId, roomRequest).pipe(
+      return roomService.createRoom(areaId, roomRequest).pipe(
         tap({
           next: (newRoom) => {
-            const updatedRooms = new Map(store.rooms());
-            updatedRooms.set(newRoom.id, newRoom);
-            let updatedRoomIdsByAreaId: Map<string, string[]> | null = null;
-            if (store.roomIdsByAreaId().has(AreaId)) {
-              updatedRoomIdsByAreaId = new Map(store.roomIdsByAreaId());
-              updatedRoomIdsByAreaId.set(AreaId, [
-                ...store.roomIdsByAreaId().get(AreaId)!,
-                newRoom.id,
-              ]);
-            }
+            const updatedRooms = updateModelMap(store.rooms(), [newRoom]);
+            const updatedRoomIdsByAreaId = addModelToParentMap(
+              store.roomIdsByWorkspaceId(),
+              areaId,
+              newRoom
+            );
             patchState(store, {
               rooms: updatedRooms,
-              roomIdsByAreaId:
-                updatedRoomIdsByAreaId ?? store.roomIdsByAreaId(),
+              roomIdsByAreaId: updatedRoomIdsByAreaId,
               creating: false,
               error: null,
             });
@@ -162,8 +158,7 @@ export const RoomStore = signalStore(
       return roomService.updateRoom(id, roomRequest).pipe(
         tap({
           next: (updatedRoom) => {
-            const updatedRooms = new Map(store.rooms());
-            updatedRooms.set(updatedRoom.id, updatedRoom);
+            const updatedRooms = updateModelMap(store.rooms(), [updatedRoom]);
             patchState(store, {
               rooms: updatedRooms,
               updating: false,

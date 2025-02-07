@@ -173,9 +173,9 @@ export class FullCalendarEventDialogComponent implements OnInit {
           })
         )
       )
-      .subscribe(({ categories, rooms }) => {
+      .subscribe(({ categories }) => {
         this.eventCategories.set(categories);
-        this.rooms.set(rooms);
+        console.log(this.eventCategories());
       });
   }
 

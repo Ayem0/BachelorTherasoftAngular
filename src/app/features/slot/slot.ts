@@ -32,18 +32,3 @@ export interface SlotForm {
   repetitionEndDate: FormControl<Date | undefined>;
   eventCategoryIds: FormControl<string[]>;
 }
-
-export interface EventRequestForm {
-  description: FormControl<string | undefined>;
-  startDate: FormControl<Date>;
-  endDate: FormControl<Date>;
-  eventCategoryId: FormControl<string>;
-  workspaceId: FormControl<string>;
-  roomId: FormControl<string>;
-  tagIds: FormControl<string[]>;
-  participantIds: FormControl<string[]>;
-  userIds: FormControl<string[]>;
-  repetitionInterval: FormControl<Interval | undefined>;
-  repetitionNumber: FormControl<number | undefined>;
-  repetitionEndDate: FormControl<Date | undefined>;
-}

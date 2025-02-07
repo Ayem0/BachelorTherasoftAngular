@@ -1,9 +1,8 @@
 import { FormControl } from '@angular/forms';
+import { Entity } from '../../../shared/models/entity';
 import { Interval } from '../../../shared/models/interval';
 
-export interface Event extends EventRequest {
-  id: string;
-}
+export interface Event extends EventRequest, Entity {}
 
 export interface EventRequest {
   description?: string;

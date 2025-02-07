@@ -1,43 +1,61 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { ParticipantCategory } from './participant-category';
+import {
+  ParticipantCategory,
+  ParticipantCategoryRequest,
+} from './participant-category';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ParticipantCategoryService {
   private readonly http = inject(HttpClient);
-  constructor() { }
+  constructor() {}
 
   public getParticipantCategoryByWorkspaceId(workspaceId: string) {
-    return this.http.get<ParticipantCategory[]>(`${environment.apiUrl}/api/participantCategory/workspace`, { params: { workspaceId }});
+    return this.http.get<ParticipantCategory[]>(
+      `${environment.apiUrl}/api/participantCategory/workspace`,
+      { params: { workspaceId } }
+    );
   }
 
   public createParticipantCategory(
     workspaceId: string,
-    name: string,
-    color: string,
-    icon: string,
-    description?: string,
+    req: ParticipantCategoryRequest
   ) {
-    return this.http.post<ParticipantCategory>(`${environment.apiUrl}/api/participantCategory`, 
-      { workspaceId, name, color, icon, description }
+    return this.http.post<ParticipantCategory>(
+      `${environment.apiUrl}/api/participantCategory`,
+      {
+        workspaceId,
+        name: req.name,
+        color: req.color,
+        icon: req.icon,
+        description: req.description,
+      }
     );
   }
 
   public updateParticipantCategory(
     id: string,
-    name: string,
-    color: string,
-    icon: string,
-    description?: string,
+    req: ParticipantCategoryRequest
   ) {
-    return this.http.put<ParticipantCategory>(`${environment.apiUrl}/api/ParticipantCategory?`, 
-      { id, name, color, icon, description }, { params: { id: id } })
+    return this.http.put<ParticipantCategory>(
+      `${environment.apiUrl}/api/ParticipantCategory?`,
+      {
+        name: req.name,
+        color: req.color,
+        icon: req.icon,
+        description: req.description,
+      },
+      { params: { id: id } }
+    );
   }
 
   public getParticipantCategoryDetailsById(id: string) {
-    return this.http.get<ParticipantCategory>(`${environment.apiUrl}/api/ParticipantCategory/details`, { params: { id: id } });
+    return this.http.get<ParticipantCategory>(
+      `${environment.apiUrl}/api/ParticipantCategory/details`,
+      { params: { id: id } }
+    );
   }
 }
