@@ -3,17 +3,21 @@ import { toast } from 'ngx-sonner';
 import { SocketService } from '../socket/socket.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SonnerService {
   private readonly socketService = inject(SocketService);
 
-  constructor() { 
-
-  }
+  constructor() {}
 
   public errorToast(err: string) {
-    console.log("SONNER ERROR: ", err);
+    console.log('SONNER ERROR: ', err);
     toast.error(err);
+  }
+
+  public showToast(message: string, description: string) {
+    toast.message(message, {
+      description: description,
+    });
   }
 }

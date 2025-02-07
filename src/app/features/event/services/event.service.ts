@@ -1,6 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import dayjs from 'dayjs';
+import { tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Event, EventRequest } from '../models/event';
 
 @Injectable({
@@ -8,6 +11,7 @@ import { Event, EventRequest } from '../models/event';
 })
 export class EventService {
   private readonly http = inject(HttpClient);
+  private readonly sonner = inject(SonnerService);
 
   public getById(id: string) {
     return this.http.get<Event>(`${environment.apiUrl}/api/event`, {
@@ -16,19 +20,29 @@ export class EventService {
   }
 
   public createEvent(event: EventRequest) {
-    return this.http.post<Event>(`${environment.apiUrl}/api/event`, {
-      roomId: event.roomId,
-      startDate: event.startDate,
-      endDate: event.endDate,
-      participantIds: event.participantIds,
-      eventCategoryId: event.eventCategoryId,
-      tagIds: event.tagIds,
-      userIds: event.userIds,
-      description: event.description,
-      repetitionInterval: event.repetitionInterval,
-      repetitionNumber: event.repetitionNumber,
-      repetitionEndDate: event.repetitionEndDate,
-    });
+    return this.http
+      .post<Event>(`${environment.apiUrl}/api/event`, {
+        roomId: event.roomId,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        participantIds: event.participantIds,
+        eventCategoryId: event.eventCategoryId,
+        tagIds: event.tagIds,
+        userIds: event.userIds,
+        description: event.description,
+        repetitionInterval: event.repetitionInterval,
+        repetitionNumber: event.repetitionNumber,
+        repetitionEndDate: event.repetitionEndDate,
+      })
+      .pipe(
+        tap({
+          next: () =>
+            this.sonner.showToast(
+              'Event has been created',
+              dayjs(event.startDate).format('dddd, MMMM DD, YYYY [at] HH:mm')
+            ),
+        })
+      );
   }
 
   public updateEvent(id: string, event: EventRequest) {

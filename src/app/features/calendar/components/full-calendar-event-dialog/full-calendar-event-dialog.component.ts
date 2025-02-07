@@ -17,7 +17,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTimepickerModule } from '@angular/material/timepicker';
-import { distinctUntilChanged, forkJoin, switchMap } from 'rxjs';
+import {
+  catchError,
+  distinctUntilChanged,
+  forkJoin,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
 import { Repetition } from '../../../../shared/models/repetition';
 import { EventCategory } from '../../../event-category/event-category';
@@ -173,8 +180,9 @@ export class FullCalendarEventDialogComponent implements OnInit {
           })
         )
       )
-      .subscribe(({ categories }) => {
+      .subscribe(({ categories, rooms }) => {
         this.eventCategories.set(categories);
+        this.rooms.set(rooms);
         console.log(this.eventCategories());
       });
   }
@@ -197,9 +205,31 @@ export class FullCalendarEventDialogComponent implements OnInit {
     if (this.form.valid) {
       const req = this.form.getRawValue();
       if (this.event()) {
-        this.eventStore.updateEvent(this.event()!.id, req);
+        this.eventStore
+          .updateEvent(this.event()!.id, req)
+          .pipe(
+            tap((res) => {
+              this.matDialogRef.close(res);
+            }),
+            catchError((err) => {
+              console.log(err);
+              return of();
+            })
+          )
+          .subscribe();
       } else {
-        this.eventStore.createEvent(req);
+        this.eventStore
+          .createEvent(req)
+          .pipe(
+            tap((res) => {
+              this.matDialogRef.close(res);
+            }),
+            catchError((err) => {
+              console.log(err);
+              return of();
+            })
+          )
+          .subscribe();
       }
     }
   }

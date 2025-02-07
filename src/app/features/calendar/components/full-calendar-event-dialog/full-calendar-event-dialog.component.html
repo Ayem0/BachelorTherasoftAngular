@@ -21,14 +21,14 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+    <mat-form-field appearance="outline" [hideRequiredMarker]="true">
         <mat-label>Room</mat-label>
         <mat-select placeholder="Room" formControlName="roomId">
-          @for (e of eventCategories(); track e.id) {
+          @for (e of rooms(); track e.id) {
             <mat-option [value]="e.id">{{e.name}}</mat-option>
           }
         </mat-select> 
-      </mat-form-field> -->
+      </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Description</mat-label>

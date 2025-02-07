@@ -142,7 +142,6 @@ export class FullCalendarComponent implements OnInit {
   }
 
   selectedChange(selectedDate: Date) {
-    console.log('SELECTED CHANGE');
     this.calendarApi().gotoDate(selectedDate);
   }
 
@@ -186,7 +185,12 @@ export class FullCalendarComponent implements OnInit {
       .afterClosed()
       .subscribe((x: Event) => {
         if (x) {
-          this.calendarApi().addEvent(x);
+          this.calendarApi().addEvent({
+            id: x.id,
+            start: x.startDate,
+            end: x.endDate,
+            interactive: false,
+          });
         }
       });
   }
@@ -261,7 +265,6 @@ export class FullCalendarComponent implements OnInit {
   }
 
   setDate(date: Date) {
-    console.log('SET DATE');
     this.selectedDate.set(date);
     this.calendarApi().gotoDate(date);
   }
