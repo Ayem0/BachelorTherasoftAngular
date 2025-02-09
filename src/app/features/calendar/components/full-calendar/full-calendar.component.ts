@@ -76,20 +76,16 @@ export class FullCalendarComponent implements OnInit {
   public calendarOptions = signal<CalendarOptions>({
     plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin],
     headerToolbar: false,
-    initialView: this.viewMode(),
-    weekends: true,
-    editable: true,
-    selectable: true,
-    selectMirror: true,
+    initialView: this.viewMode(), // initial view mode
+    weekends: true, // show hide weekends
+    editable: true, // can move events
+    selectable: true, // can
+    selectMirror: true, // show event getting created
     dayMaxEvents: true,
-    select: this.handleDateSelect.bind(this),
-    eventClick: this.handleEventClick.bind(this),
-    eventsSet: this.handleEvents.bind(this),
-    allDaySlot: false,
+    allDaySlot: false, // top space for all day slot
     // locale: "fr",
-    // titleFormat: "",
     slotDuration: '00:05:00',
-    firstDay: 1,
+    firstDay: 0, // first day print 0 = sunday
     slotLabelFormat: [
       {
         hour: '2-digit',
@@ -99,18 +95,21 @@ export class FullCalendarComponent implements OnInit {
       },
     ],
     nowIndicator: true,
-    events: this.fetch.bind(this),
     handleWindowResize: true,
-    windowResize: this.autoResize.bind(this),
     expandRows: true,
     scrollTime: this.getCurrentDateInput(),
     height: '100%',
-    datesSet: this.onDatesSet.bind(this),
     initialDate: this.selectedDate(),
     showNonCurrentDates: false,
+    select: this.handleDateSelect.bind(this),
+    eventClick: this.handleEventClick.bind(this),
+    eventsSet: this.handleEvents.bind(this),
+    events: this.fetch.bind(this),
+    windowResize: this.autoResize.bind(this),
+    datesSet: this.onDatesSet.bind(this),
   });
 
-  fetch(
+  private fetch(
     arg: EventSourceFuncArg,
     successCallback: (eventInputs: EventInput[]) => void,
     failureCallback: (error: Error) => void
@@ -157,6 +156,8 @@ export class FullCalendarComponent implements OnInit {
     /** Update the current month view if we change month */
     this.matCalendar().activeDate = this.selectedDate();
     this.matCalendar().updateTodaysDate();
+    /** update  */
+    this.eventStore;
   }
 
   getCurrentDateInput() {

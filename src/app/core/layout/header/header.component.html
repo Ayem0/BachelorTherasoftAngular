@@ -2,7 +2,7 @@
     <div class="flex justify-between">
         <div class="flex items-center gap-2">
             <button mat-icon-button aria-label="Menu" (click)="toggleMenu()">
-                <mat-icon>apps</mat-icon>
+                <mat-icon>menu</mat-icon>
             </button>
             <a routerLink="/" class="hidden sm:block text-2xl dark:text-white">Title</a>
         </div>
@@ -20,11 +20,11 @@
                     <span>Appearance</span>
                 </button>
                 <mat-menu #theme="matMenu">
-                    <button mat-menu-item aria-label="Dark" (click)="setTheme(themes.dark)">
+                    <button mat-menu-item aria-label="Dark" (click)="setTheme('dark')">
                         <mat-icon>dark_mode</mat-icon>
                         <span>Dark</span>
                     </button>
-                    <button mat-menu-item aria-label="Light" (click)="setTheme(themes.light)">
+                    <button mat-menu-item aria-label="Light" (click)="setTheme('light')">
                         <mat-icon>light_mode</mat-icon>
                         <span>Light</span>
                     </button>
@@ -35,11 +35,11 @@
                     <span>Language</span>
                 </button>
                 <mat-menu #language="matMenu">
-                    <button mat-menu-item aria-label="French" aria-label="French">
+                    <button mat-menu-item aria-label="French" aria-label="French" (click)="setLang('fr')">
                         <mat-icon>language_french</mat-icon>
                         <span>French</span>
                     </button>
-                    <button mat-menu-item aria-label="English" aria-label="English">
+                    <button mat-menu-item aria-label="English" aria-label="English" (click)="setLang('en')">
                         <mat-icon>language_gb_english</mat-icon>
                         <span>English</span>
                     </button>

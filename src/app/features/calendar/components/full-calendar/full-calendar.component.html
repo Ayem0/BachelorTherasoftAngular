@@ -2,19 +2,18 @@
     <mat-sidenav-container [hasBackdrop]="showOver()" [style.flex]="'1 0 auto'" class="z-50 !flex">
         <mat-sidenav #sidebar [(opened)]="isSideBarOpen" autoFocus="false" [mode]="sidenavMode()"
             [fixedInViewport]="true" [fixedTopGap]="56" class="!w-64 !rounded-none">
-            <div class="flex flex-col overflow-hidden">
-                <div class="flex justify-between w-full px-2">
-
-                    @if(isSideBarOpen()) {
+            <div class="flex flex-col overflow-hidden pt-2">
+                <!-- <div class="flex justify-between w-full px-2"> -->
+                <!-- @if(isSideBarOpen()) {
                     <button mat-icon-button (click)="toggleSidebar()">
                         <mat-icon>menu</mat-icon>
                     </button>
-                    }
-                    <button mat-flat-button>
-                        <mat-icon>add</mat-icon>
-                        Create
-                    </button>
-                </div>
+                    } -->
+                <button mat-flat-button class="mx-2">
+                    <mat-icon>add</mat-icon>
+                    Create
+                </button>
+                <!-- </div> -->
                 <mat-calendar #calendar [(selected)]="selectedDate" (selectedChange)="selectedChange($event)">
                 </mat-calendar>
                 <mat-expansion-panel class="!shadow-none">

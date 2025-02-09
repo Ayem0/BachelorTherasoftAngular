@@ -236,3 +236,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .mat-expansion-panel-header.mat-expanded {
   height: 48px !important;
 }
+
+
+.form-field-h40 {
+  @include mat.form-field-density(-3); // Adjust the value as needed
+  @include mat.form-field-overrides((
+    filled-with-label-container-padding-bottom: none,
+  ))
+}

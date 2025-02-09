@@ -1,5 +1,12 @@
 import { inject } from '@angular/core';
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withHooks,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
 import dayjs from 'dayjs';
 import { of, tap } from 'rxjs';
 import { updateModelMap } from '../../../shared/utils/utils.store';
@@ -35,6 +42,10 @@ const initialEventState: EventState = {
 export const EventStore = signalStore(
   { providedIn: 'root' },
   withState(initialEventState),
+  withHooks({
+    onInit: () => {},
+  }),
+  withComputed((store) => ({})),
   withMethods((store, eventService = inject(EventService)) => ({
     getEventsByUserId(id: string, start: Date, end: Date) {
       const ids = searchMap(id, start, end, store.eventIdsByUserId());
