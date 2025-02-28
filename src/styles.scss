@@ -181,6 +181,8 @@ $dark: mat.define-theme((
   @include mat.timepicker-theme($light);
   @include mat.slide-toggle-theme($light);
   @include mat.expansion-theme($light);
+  @include mat.tooltip-theme($light);
+  @include mat.badge-theme($light);
 }
 
 .dark {
@@ -206,6 +208,8 @@ $dark: mat.define-theme((
   @include mat.timepicker-color($dark);
   @include mat.slide-toggle-color($dark);
   @include mat.expansion-color($dark);
+  @include mat.tooltip-color($dark);
+  @include mat.badge-color($dark);
 }
 
 // Global styles

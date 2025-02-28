@@ -5,7 +5,7 @@ import {
   addModelToParentMap,
   updateModelMap,
   updateParentMap,
-} from '../../shared/utils/utils.store';
+} from '../../shared/utils/store.utils';
 import { Room, RoomRequest } from './room';
 import { RoomService } from './room.service';
 

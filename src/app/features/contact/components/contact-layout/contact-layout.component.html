@@ -1,0 +1,16 @@
+<div class="grid gap-2 grid-cols-2 md:grid-cols-3 h-full md:px-2">
+    <div class="border dark:border-[--mdc-outlined-card-outline-color] rounded-lg">
+        <div class="flex flex-row w-full items-center justify-between px-2 py-1 border-b border-gray-400">
+            <h2 class="text-2xl text-center">Contacts</h2>
+            <button mat-icon-button matTooltip="Add contact" (click)="openDialog()">
+                <mat-icon>person_add</mat-icon>
+            </button>
+        </div>
+        <div>
+            <app-contact-list [contacts]="contacts()" [isLoading]="isLoading()"></app-contact-list>
+        </div>
+    </div>
+    <div class="flex h-full border dark:border-[--mdc-outlined-card-outline-color] md:col-span-2 rounded-lg">
+        <h2>Activity</h2>
+    </div>
+</div>

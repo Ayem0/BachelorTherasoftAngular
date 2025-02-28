@@ -5,7 +5,7 @@ import {
   addModelToParentMap,
   updateModelMap,
   updateParentMap,
-} from '../../shared/utils/utils.store';
+} from '../../shared/utils/store.utils';
 import { WorkspaceRole, WorkspaceRoleRequest } from './workspace-role';
 import { WorkspaceRoleService } from './workspace-role.service';
 

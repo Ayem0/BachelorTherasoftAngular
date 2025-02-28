@@ -5,7 +5,7 @@ import {
   addModelToParentMap,
   updateModelMap,
   updateParentMap,
-} from '../../shared/utils/utils.store';
+} from '../../shared/utils/store.utils';
 import { Slot, SlotRequest } from './slot';
 import { SlotService } from './slot.service';
 

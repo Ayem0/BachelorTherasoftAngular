@@ -5,7 +5,7 @@ import {
   addModelToParentMap,
   updateModelMap,
   updateParentMap,
-} from '../../shared/utils/utils.store';
+} from '../../shared/utils/store.utils';
 import { Participant, ParticipantRequest } from './participant';
 import { ParticipantService } from './participant.service';
 

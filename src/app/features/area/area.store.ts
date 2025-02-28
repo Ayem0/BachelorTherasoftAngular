@@ -5,7 +5,7 @@ import {
   addModelToParentMap,
   updateModelMap,
   updateParentMap,
-} from '../../shared/utils/utils.store';
+} from '../../shared/utils/store.utils';
 import { Area, AreaRequest } from './area';
 import { AreaService } from './area.service';
 

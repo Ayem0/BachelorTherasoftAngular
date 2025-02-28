@@ -5,7 +5,7 @@ import {
   addModelToParentMap,
   updateModelMap,
   updateParentMap,
-} from '../../shared/utils/utils.store';
+} from '../../shared/utils/store.utils';
 import { EventCategory, EventCategoryRequest } from './event-category';
 import { EventCategoryService } from './event-category.service';
 

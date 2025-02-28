@@ -1,0 +1,26 @@
+<div class="flex flex-row justify-between">
+    <div>
+        <p>{{ name() }}</p>
+    </div>
+    <div>
+        <button mat-icon-button matTooltip="More" [matMenuTriggerFor]="contactMenu" aria-label="Action Menu">
+            <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #contactMenu>
+            <button mat-menu-item [matMenuTriggerFor]="workspace" aria-label="Add to workspace">
+                <span>Invite to workspace</span>
+            </button>
+            <mat-menu #workspace>
+                @if (isLoadingWorkspaces()) {
+                <mat-spinner diameter="24"></mat-spinner>
+                } @else {
+                @for (workspace of workspaces(); track workspace.id) {
+                <button mat-menu-item aria-label="Dark" (click)="inviteToWorkspace(workspace.id)">
+                    <span>{{ workspace.name }}</span>
+                </button>
+                }
+                }
+            </mat-menu>
+        </mat-menu>
+    </div>
+</div>

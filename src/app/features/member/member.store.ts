@@ -1,113 +1,91 @@
-import { inject } from '@angular/core';
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { Observable, of, tap } from 'rxjs';
-import { WorkspaceStore } from '../workspace/workspace.store';
+import { computed, inject } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withHooks,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { filter, pipe, switchMap, tap } from 'rxjs';
+import {
+  updateModelMap,
+  updateParentMap,
+} from '../../shared/utils/store.utils';
 import { Member } from './member';
 import { MemberService } from './member.service';
 
 type MemberState = {
-    members: Map<string, Member>; // string is id,
-    memberIdsByWorkspaceId: Map<string, string[]>,
-    loading: boolean;
-    updating: boolean;
-    creating: boolean;
-    error: string | null;
-}
+  members: Map<string, Member>;
+  memberIdsByWorkspaceId: Map<string, string[]>;
+  selectedWorkspaceId: string;
+  isLoading: boolean;
+};
 
 const initialMemberState: MemberState = {
-    members: new Map(),
-    memberIdsByWorkspaceId: new Map(),
-    loading: false,
-    creating: false,
-    updating: false,
-    error: null
+  members: new Map(),
+  memberIdsByWorkspaceId: new Map(),
+  selectedWorkspaceId: '',
+  isLoading: true,
 };
 
 export const MemberStore = signalStore(
-    { providedIn: "root" },
-    withState(initialMemberState),
-    withMethods((store, memberService = inject(MemberService), workspaceStore = inject(WorkspaceStore)) => ({
-        getMembersByWorkspaceId(workspaceId: string) : Observable<Member[]> {
-            patchState(store, { loading: true });
-            if (store.memberIdsByWorkspaceId().has(workspaceId)) {
-                const ids = store.memberIdsByWorkspaceId().get(workspaceId)!;
-                patchState(store, { loading: false });
-                return of(ids.map(x => store.members().get(x)!));
-            }
-            return memberService.getMembersByWorkspaceId(workspaceId).pipe(
-                tap({
-                    next: (members) => {
-                        const updatedMemberIdsByWorkspaceId = new Map(store.memberIdsByWorkspaceId());
-                        updatedMemberIdsByWorkspaceId.set(workspaceId, members.map(wr => wr.id));
-                        const updatedMembers = new Map(store.members());
-                        members.forEach(x => updatedMembers.set(x.id, x));
-                        patchState(store, {
-                            members: updatedMembers,
-                            memberIdsByWorkspaceId: updatedMemberIdsByWorkspaceId,
-                            loading: false,
-                            error: null
-                        });
-                    },
-                    error: (error: Error) => {
-                        patchState(store, {
-                            loading: false,
-                            error: error.message
-                        });
-                    }
-                })
-            );
-        },
-        createMember(
-            workspaceId: string, 
-            name: string,
-            description?: string,
-        ) {
-            patchState(store, { creating: true });
-            return memberService.createMember(workspaceId, name, description).pipe(
-                tap({
-                    next: (newMember) => {
-                        const updatedMembers = new Map(store.members());
-                        updatedMembers.set(newMember.id, newMember);
-                        let updatedMemberIdsByWorkspaceId : Map<string, string[]> | null = null;
-                        if (store.memberIdsByWorkspaceId().has(workspaceId)) {
-                            updatedMemberIdsByWorkspaceId = new Map(store.memberIdsByWorkspaceId());
-                            updatedMemberIdsByWorkspaceId.set(workspaceId, [...store.memberIdsByWorkspaceId().get(workspaceId)!, newMember.id]);
-                        } 
-
-                        patchState(store, {
-                            members: updatedMembers,
-                            memberIdsByWorkspaceId: updatedMemberIdsByWorkspaceId ?? store.memberIdsByWorkspaceId(),
-                            creating: false,
-                            error: null
-                        });
-                    },
-                    error: (error: Error) => {
-                        patchState(store, { creating: false, error: error.message });
-                    }
-                })
-            )
-        },
-        updateMember(
-            id: string, 
-            roles: string[]
-        ) {
-            patchState(store, { updating: true })
-            return memberService.updateMember(id, roles).pipe(
-                tap({
-                    next: (updatedMember) => {
-                        const updatedMembers = new Map(store.members());
-                        updatedMembers.set(updatedMember.id, updatedMember);
-                        patchState(store, {
-                            members: updatedMembers,
-                            updating: false,
-                            error: null
-                        });
-                    },
-                    error: (error: Error) => {
-                        patchState(store, { updating: false, error: error.message });
-                    }
-                })
-            );
-        }
-    })
-))
+  { providedIn: 'root' },
+  withState(initialMemberState),
+  withHooks((store) => ({
+    // TODO listen for socket events
+  })),
+  withComputed((store) => ({
+    membersBySelectedWorkspace: computed(
+      () =>
+        new MatTableDataSource<Member, MatPaginator>(
+          store.isLoading()
+            ? []
+            : store
+                .memberIdsByWorkspaceId()
+                .get(store.selectedWorkspaceId())!
+                .map((x) => store.members().get(x)!)
+        )
+    ),
+  })),
+  withMethods((store, memberService = inject(MemberService)) => ({
+    getMembersByWorkspaceId: rxMethod<string>(
+      pipe(
+        filter((id) => !store.memberIdsByWorkspaceId().has(id)),
+        tap(() => patchState(store, { isLoading: true })),
+        switchMap((id) =>
+          memberService.getMembersByWorkspaceId(id).pipe(
+            tap({
+              next: (members) => {
+                patchState(store, {
+                  members: updateModelMap(store.members(), members),
+                  memberIdsByWorkspaceId: updateParentMap(
+                    store.memberIdsByWorkspaceId(),
+                    id,
+                    members
+                  ),
+                  isLoading: false,
+                });
+              },
+              error: (err) => {
+                console.error(err);
+                // TODO handle error
+                patchState(store, {
+                  isLoading: false,
+                });
+              },
+            })
+          )
+        )
+      )
+    ),
+    setSelectedWorkspaceId(id: string): void {
+      patchState(store, {
+        selectedWorkspaceId: id,
+      });
+    },
+  }))
+);

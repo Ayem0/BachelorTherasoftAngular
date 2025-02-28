@@ -32,3 +32,17 @@ export function addModelToParentMap<T extends Entity>(
   }
   return map;
 }
+
+export function removeModelToParentMap(
+  map: Map<string, string[]>,
+  parentId: string,
+  modelIds: string[]
+) {
+  if (map.has(parentId)) {
+    map.set(
+      parentId,
+      map.get(parentId)!.filter((x) => !modelIds.includes(x))
+    );
+  }
+  return map;
+}

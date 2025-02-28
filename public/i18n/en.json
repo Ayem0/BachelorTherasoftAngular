@@ -1,6 +1,7 @@
 {
     "navigation": {
         "agenda": "Agenda",
-        "workspace": "Workspace"
+        "workspace": "Workspace",
+        "contacts": "Contacts"
     }
 }

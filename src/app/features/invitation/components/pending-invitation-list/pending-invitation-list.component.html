@@ -1,0 +1,5 @@
+<div class="grid grid-cols-3">
+    @for (item of invitations(); track item.id) {
+    <app-pending-invitation [invitation]="item"></app-pending-invitation>
+    }
+</div>

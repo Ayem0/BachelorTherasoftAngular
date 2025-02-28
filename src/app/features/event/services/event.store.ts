@@ -9,7 +9,7 @@ import {
 } from '@ngrx/signals';
 import dayjs from 'dayjs';
 import { of, tap } from 'rxjs';
-import { updateModelMap } from '../../../shared/utils/utils.store';
+import { updateModelMap } from '../../../shared/utils/store.utils';
 import { Event, EventRequest } from '../models/event';
 import { EventService } from './event.service';
 

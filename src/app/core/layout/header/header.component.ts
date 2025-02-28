@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
+import { NotificationMenuComponent } from '../../../features/notification/components/notification-menu/notification-menu.component';
 import { Theme } from '../../../features/theme/theme';
 import { ThemeService } from '../../../features/theme/theme.service';
 import { Lang } from '../../../shared/models/lang';
@@ -19,6 +20,7 @@ import { SidebarService } from '../sidebar/sidebar.service';
     MatMenuModule,
     MatTooltip,
     RouterLink,
+    NotificationMenuComponent,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',

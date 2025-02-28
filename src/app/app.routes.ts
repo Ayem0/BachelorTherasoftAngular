@@ -25,7 +25,7 @@ export const routes: Routes = [
     canActivate: [unauthGuard],
   },
   {
-    path: 'calendar',
+    path: 'agenda',
     loadComponent: () =>
       import(
         './features/calendar/components/full-calendar/full-calendar.component'
@@ -181,6 +181,14 @@ export const routes: Routes = [
       import(
         './features/room/components/room-details/room-details.component'
       ).then((c) => c.RoomDetailsComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'contact',
+    loadComponent: () =>
+      import(
+        './features/contact/components/contact-layout/contact-layout.component'
+      ).then((c) => c.ContactLayoutComponent),
     canActivate: [authGuard],
   },
   {

@@ -1,0 +1,19 @@
+<button mat-icon-button [matMenuTriggerFor]="notification" matTooltip="Notifications">
+    <mat-icon matBadge="1" matBadgeSize="large" aria-hidden="false">notifications</mat-icon>
+</button>
+<mat-menu #notification="matMenu" xPosition="before" yPosition="below" class="w-96">
+    <div class="cursor-default w-full" (keydown)="$event.stopPropagation();" tabindex="0" role="button"
+        (click)="$event.stopPropagation();">
+        <h1 class="pt-1 pb-3 text-lg text-center border-b dark:border-b-gray-600 dark:shadow-xl dark:text-white">
+            Notifications</h1>
+        <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center">
+            <mat-tab>
+                <ng-template matTabLabel>
+                    <span class="flex items-center" matBadge="3" matBadgeSize="large"
+                        matBadgeOverlap="false">Invitations</span>
+                </ng-template>
+                <app-invitation-list></app-invitation-list>
+            </mat-tab>
+        </mat-tab-group>
+    </div>
+</mat-menu>

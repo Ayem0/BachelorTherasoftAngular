@@ -12,7 +12,7 @@
             <a routerLink="/register" mat-flat-button aria-label="Register">Register</a>
             }
             <button matTooltip="Settings" mat-icon-button [matMenuTriggerFor]="settings" aria-label="Settings Menu">
-                <mat-icon>settings</mat-icon>
+                <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #settings="matMenu">
                 <button mat-menu-item [matMenuTriggerFor]="theme" aria-label="Theme Menu">
@@ -46,9 +46,8 @@
                 </mat-menu>
             </mat-menu>
             @if (isLoggedIn()) {
-            <button matTooltip="Notifications" mat-icon-button aria-label="Notifications">
-                <mat-icon>notifications</mat-icon>
-            </button>
+            <app-notification-menu></app-notification-menu>
+
             <button matTooltip="Messages" mat-icon-button aria-label="Messages">
                 <mat-icon>forum</mat-icon>
             </button>
@@ -56,7 +55,7 @@
             <button mat-icon-button [matMenuTriggerFor]="profile" aria-label="Profile Menu">
                 <mat-icon>account_circle</mat-icon>
             </button>
-            <mat-menu #profile="matMenu">
+            <mat-menu #profile>
                 <button mat-menu-item aria-label="Profile">
                     <mat-icon>account_box</mat-icon>
                     <span>Profile</span>
