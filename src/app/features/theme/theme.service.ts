@@ -1,22 +1,23 @@
 import { Injectable } from '@angular/core';
-import { themes } from './theme';
+import { Theme } from './theme';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ThemeService {
-  private readonly themeKey = "theme";
-  private currentTheme: themes | null = null;
+  private readonly themeKey = 'theme';
+  private currentTheme: Theme | null = null;
 
+  /** Initial load of the theme */
   public loadTheme() {
     const localTheme = this.getTheme();
-    if (localTheme && localTheme === themes.dark || localTheme === themes.light) {
+    if ((localTheme && localTheme === 'dark') || localTheme === 'light') {
       this.setTheme(localTheme);
     } else {
       if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        this.setTheme(themes.dark)
+        this.setTheme('dark');
       } else {
-        this.setTheme(themes.light)
+        this.setTheme('light');
       }
     }
   }
@@ -27,10 +28,10 @@ export class ThemeService {
   }
 
   /** Set or remove dark mode */
-  public setTheme(theme: themes) {
+  public setTheme(theme: Theme) {
     if (!this.currentTheme || this.currentTheme != theme) {
       const html = document.documentElement;
-      const classToRemove = theme === themes.dark ? themes.light : themes.dark;
+      const classToRemove = theme === 'dark' ? 'light' : 'dark';
       html.classList.remove(classToRemove);
       html.classList.add(theme);
       this.currentTheme = theme;
@@ -38,4 +39,3 @@ export class ThemeService {
     }
   }
 }
-

@@ -1,38 +1,40 @@
-import { afterNextRender, Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
-import { ThemeService } from '../../../features/theme/theme.service';
-import { SidebarService } from '../sidebar/sidebar.service';
 import { Router, RouterLink } from '@angular/router';
+import { NotificationMenuComponent } from '../../../features/notification/components/notification-menu/notification-menu.component';
+import { Theme } from '../../../features/theme/theme';
+import { ThemeService } from '../../../features/theme/theme.service';
+import { Lang } from '../../../shared/models/lang';
+import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { AuthService } from '../../auth/services/auth.service';
-import { themes } from '../../../features/theme/theme';
-import { AsyncPipe } from '@angular/common';
+import { SidebarService } from '../sidebar/sidebar.service';
 
 @Component({
   selector: 'app-header',
-  standalone: true,
   imports: [
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
     MatTooltip,
     RouterLink,
-    AsyncPipe
+    NotificationMenuComponent,
   ],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
-export class HeaderComponent  {
+export class HeaderComponent {
   private readonly themeService = inject(ThemeService);
   private readonly sidebarService = inject(SidebarService);
   private readonly authService = inject(AuthService);
+  private readonly translateService = inject(TranslateService);
   private readonly router = inject(Router);
 
-  public themes = themes;
+  public isLoggedIn = this.authService.isLoggedIn;
 
-  public setTheme(theme: themes) {
+  public setTheme(theme: Theme) {
     this.themeService.setTheme(theme);
   }
 
@@ -40,15 +42,15 @@ export class HeaderComponent  {
     this.sidebarService.toggleSideBar();
   }
 
-  public logout() {
-    this.authService.logout().subscribe(res => {
-      if (res) {
-        this.router.navigateByUrl("login");
-      }
-    });
+  public setLang(lang: Lang) {
+    this.translateService.setLang(lang);
   }
 
-  public isAuthenticated() {
-    return this.authService.isAuthenticated();
+  public logout() {
+    this.authService.logout().subscribe((res) => {
+      if (res) {
+        this.router.navigateByUrl('login');
+      }
+    });
   }
 }

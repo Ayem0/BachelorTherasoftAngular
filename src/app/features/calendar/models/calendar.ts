@@ -1,6 +1,1 @@
-export enum Interval {
-    day,
-    wekk,
-    month,
-    year
-}
+export type ViewMode = 'timeGridDay' | 'timeGridWeek' | 'dayGridMonth';

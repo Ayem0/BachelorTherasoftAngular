@@ -159,7 +159,8 @@ $dark: mat.define-theme((
 
 :root {
   --mat-app-background-hover-color: #e6e6e6;
-  @include mat.core();
+  @include mat.elevation-classes();
+  @include mat.app-background();
   @include mat.button-theme($light);
   @include mat.icon-theme($light);
   @include mat.icon-button-theme($light);
@@ -176,6 +177,12 @@ $dark: mat.define-theme((
   @include mat.select-theme($light);
   @include mat.option-theme($light);
   @include mat.dialog-theme($light);
+  @include mat.datepicker-theme($light);
+  @include mat.timepicker-theme($light);
+  @include mat.slide-toggle-theme($light);
+  @include mat.expansion-theme($light);
+  @include mat.tooltip-theme($light);
+  @include mat.badge-theme($light);
 }
 
 .dark {
@@ -197,6 +204,12 @@ $dark: mat.define-theme((
   @include mat.select-color($dark);
   @include mat.option-color($dark);
   @include mat.dialog-color($dark);
+  @include mat.datepicker-color($dark);
+  @include mat.timepicker-color($dark);
+  @include mat.slide-toggle-color($dark);
+  @include mat.expansion-color($dark);
+  @include mat.tooltip-color($dark);
+  @include mat.badge-color($dark);
 }
 
 // Global styles
@@ -211,4 +224,27 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 // fix border on mat-form-outlined with labels 
 .mat-mdc-notch-piece {
   border-right: 1px transparent;
+}
+// width of action column in mat-table
+.mat-column-action {
+  max-width: 56px;
+}
+// hover effect on mat-table
+.mat-mdc-row:hover .mat-mdc-cell {
+  cursor: pointer;
+  background-color: var(--mat-app-background-hover-color);
+}
+
+
+// TODO voir si utilisé
+.mat-expansion-panel-header.mat-expanded {
+  height: 48px !important;
+}
+
+
+.form-field-h40 {
+  @include mat.form-field-density(-3); // Adjust the value as needed
+  @include mat.form-field-overrides((
+    filled-with-label-container-padding-bottom: none,
+  ))
 }

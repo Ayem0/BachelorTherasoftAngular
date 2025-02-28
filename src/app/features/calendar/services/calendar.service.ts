@@ -15,9 +15,7 @@ export class CalendarService {
 
     const api = this.calendar?.getApi()
     if (api) {
-      console.log("icidsdsdsdd");
       setTimeout(() => api.updateSize(), 400);
     }
-    console.log("icidd");
   }
 }

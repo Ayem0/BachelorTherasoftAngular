@@ -1,47 +1,27 @@
-import { Inject, inject, Injectable, makeStateKey, Optional, PLATFORM_ID, TransferState } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, catchError, map, of, take, tap } from 'rxjs';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { User } from '../models/auth';
-import { isPlatformServer } from '@angular/common';
+import { SocketService } from '../../../shared/services/socket/socket.service';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly platform = inject(PLATFORM_ID);
-  private readonly transferState = inject(TransferState);
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
-
-  constructor(
-    @Optional() @Inject('SERVER_COOKIES') private serverCookies: any
-  ) {
-    const USER_STATE_KEY = makeStateKey<User | null>('currentUser');
-    if (isPlatformServer(this.platform)) {
-      console.log("Server")
-      this.me().pipe(
-        take(1),
-        tap((res) => {
-          this.transferState.set(USER_STATE_KEY, res);
-        })
-      ).subscribe();
-    } else {
-      console.log("Client")
-      this.currentUserSubject.next(this.transferState.get(USER_STATE_KEY, null));
-    }
-  }
+  private readonly socket = inject(SocketService);
+  private currentUser = signal<User | null >(null);
+  public currentUserInfo = computed(() => this.currentUser()); 
+  public isLoggedIn = computed(() => !!this.currentUser());
 
   public login(email: string, password: string) {
     return this.http.post(`${environment.apiUrl}/login`, { email, password }, { params: { useCookies: true }, observe: "response" })
       .pipe(
-        tap(res => {
+        tap(async res => {
           if(res.ok) {
-            this.currentUserSubject.next({
-              id: "oe",
-              email: "test@test.com"
-            });
+            await firstValueFrom(this.getUserInfo());
           }
         }),
         map(res => res.ok),
@@ -61,7 +41,8 @@ export class AuthService {
     return this.http.post(`${environment.apiUrl}/api/auth/logout`, {}, { observe: "response" }).pipe(
       tap(res => {
         if (res.ok) {
-          this.currentUserSubject.next(null);
+          this.currentUser.set(null);
+          this.socket.endConnection();
         }
       }),
       map(res => res.ok),
@@ -69,36 +50,26 @@ export class AuthService {
     )
   }
 
-  private createHeadersWithCookies(): HttpHeaders {
-    if (isPlatformServer(this.platform) && this.serverCookies) {
-      const cookieString = Object.entries(this.serverCookies)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('; ');
-
-      return new HttpHeaders({
-        Cookie: cookieString,
-      });
-    }
-    return new HttpHeaders();
-  }
-
-  /** Get user info */
-  private me() {
-    const headers = this.createHeadersWithCookies();
-    console.log(headers)
-    return this.http.get<User>(`http://localhost:8080/api/auth/me`, { headers }).pipe(
-      tap(user => this.currentUserSubject.next(user)),
-      catchError((err) => {
-        console.log(err)
-        this.currentUserSubject.next(null);
+  public getUserInfo() {
+    return this.http.get<User>(`${environment.apiUrl}/api/user`).pipe(
+      tap(user => {
+        this.currentUser.set(user)
+        this.socket.startConnection();
+      }),
+      catchError(() => {
+        this.currentUser.set(null);
         return of(null);
       })
     );
   }
 
-  public isAuthenticated() {
-    return this.currentUser$.pipe(
-      map(user => !!user)
+  public updateUserInfo(firstname: string, lastname: string) {
+    return this.http.put<User>(`${environment.apiUrl}/api/user`, { firstname, lastname }).pipe(
+      tap(user => this.currentUser.set(user)),
+      catchError((err) => {
+        console.log(err);
+        return of(null)
+      })
     );
   }
 }

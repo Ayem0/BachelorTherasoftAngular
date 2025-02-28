@@ -1,5 +1,5 @@
 
-<div class="flex size-full pt-14">
+<div class="flex size-full">
 @if(!isLoading()) {
     @if (workspace() != null) {
         <div class="flex size-full flex-col">
@@ -13,39 +13,18 @@
                     </button>
                 </div>
             </div>
-            <div class="flex size-full p-4 md:p-6">
-                <mat-tab-group class="flex size-full">
-                    <mat-tab label="Overview"></mat-tab>
-                    <mat-tab label="Members">
-                        <div class="pt-2">
-                            <mat-table [dataSource]="users">
-                                <!-- First Name Column -->
-                                <ng-container matColumnDef="firstName">
-                                <mat-header-cell *matHeaderCellDef> First Name </mat-header-cell>
-                                <mat-cell *matCellDef="let user"> {{user.firstName}} </mat-cell>
-                                </ng-container>
-                            
-                                <!-- Last Name Column -->
-                                <ng-container matColumnDef="lastName">
-                                <mat-header-cell *matHeaderCellDef> Last Name </mat-header-cell>
-                                <mat-cell *matCellDef="let user"> {{user.lastName }} </mat-cell>
-                                </ng-container>
-                            
-                                <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-                            </mat-table>
-                            <mat-paginator
-                                            [pageSizeOptions]="[5, 10, 20]"
-                                            showFirstLastButtons
-                                            aria-label="Select page of users">
-                            </mat-paginator>
-                        </div>
-                    </mat-tab>
+            <div class="flex flex-col size-full p-4 md:p-6">
+                <mat-tab-group [selectedIndex]="selectedIndex" (selectedTabChange)="tabChanged($event)">
+                    <mat-tab label="Members"></mat-tab>
                     <mat-tab label="Locations"></mat-tab>
                     <mat-tab label="Participants"></mat-tab>
                     <mat-tab label="Participant Categories"></mat-tab>
                     <mat-tab label="Event Categories"></mat-tab>
+                    <mat-tab label="Roles"></mat-tab>
+                    <mat-tab label="Slots"></mat-tab>
+                    <mat-tab label="Tags"></mat-tab>
                 </mat-tab-group>
+                <router-outlet [routerOutletData]="workspace()!.id"/>
             </div>
         </div>
     } @else {

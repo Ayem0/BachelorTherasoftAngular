@@ -1,0 +1,99 @@
+<div class="flex size-full flex-col">
+    <div class="flex w-full justify-between items-center pt-4">
+        <mat-form-field appearance="outline">
+            <input matInput type="text" [formControl]="search">
+            <mat-label>Search</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+        <button mat-flat-button (click)="openDialog()">
+            <mat-icon>add</mat-icon>
+            <span>Add</span>
+        </button>
+    </div>
+    <div class="flex flex-1 flex-col">
+        <div class="overflow-auto h-96">
+            @if (participantStore.loading()) {
+                <div class="flex size-full items-center justify-center">
+                    <mat-spinner diameter="50"></mat-spinner>
+                </div>
+            } @else if (participantStore.error()) {
+                <div class="flex size-full items-center justify-center">
+                    <span>{{ participantStore.error() }}</span>
+                </div>
+            } 
+            <mat-table [dataSource]="dataSource" matSort class="w-full">
+        
+                <ng-container matColumnDef="firstName">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> First name </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.firstName}} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="lastName">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Last name </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.lastName }} </mat-cell>
+                </ng-container>
+    
+                <ng-container matColumnDef="description">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.description }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="email">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Email </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.email }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="phoneNumber">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Phone number </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.phoneNumber }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="address">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Address </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.address }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="city">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> City </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.city }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="country">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Country </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.country }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="dateOfBirth">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Date of birth </mat-header-cell>
+                    <mat-cell *matCellDef="let participant" [routerLink]="['/participant', participant.id]"> {{ participant.country }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="action">
+                    <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                    <mat-cell *matCellDef="let participant">
+                        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="participant actions" (click)="$event.stopPropagation()">
+                            <mat-icon>more_vert</mat-icon>
+                        </button>
+                        <mat-menu #menu="matMenu">
+                            <button mat-menu-item (click)="openDialog(participant)">
+                                <mat-icon>edit</mat-icon>
+                                <span>Edit</span>
+                            </button>
+                            <button mat-menu-item>
+                                <mat-icon>delete</mat-icon>
+                                <span>Delete</span>
+                            </button>
+                        </mat-menu>
+                    </mat-cell>
+                </ng-container>
+                <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row> 
+            </mat-table>
+        </div>
+        <mat-paginator
+            [pageSizeOptions]="[5, 10, 20]"
+            showFirstLastButtons
+            aria-label="Select page of participants">
+        </mat-paginator>
+    </div>
+</div>

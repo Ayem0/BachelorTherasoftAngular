@@ -1,0 +1,10 @@
+@if (isLoading()) {
+<div class="flex justify-center items-center">
+    <mat-spinner diameter="24"></mat-spinner>
+</div>
+}
+<div>
+    @for (item of contacts(); track item.id) {
+    <app-contact [contact]="item"></app-contact>
+    }
+</div>

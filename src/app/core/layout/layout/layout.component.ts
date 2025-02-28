@@ -1,49 +1,40 @@
-import { afterNextRender, AfterViewInit, Component, computed, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, viewChild } from '@angular/core';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
-import { fromEvent, map } from 'rxjs';
-import { SidebarService } from '../sidebar/sidebar.service';
 import { RouterOutlet } from '@angular/router';
 import { NgxSonnerToaster } from 'ngx-sonner';
+import { InitialLoginComponent } from "../../auth/components/initial-login/initial-login.component";
+import { AuthService } from '../../auth/services/auth.service';
 import { HeaderComponent } from '../header/header.component';
 import { NavigationComponent } from '../navigation/navigation.component';
+import { SidebarService } from '../sidebar/sidebar.service';
+import { LayoutService } from './layout.service';
 
 @Component({
-  selector: 'app-layout',
-  standalone: true,
-  imports: [
+    selector: 'app-layout',
+    imports: [
     RouterOutlet,
     NgxSonnerToaster,
     HeaderComponent,
     MatSidenavModule,
-    NavigationComponent
-  ],
-  templateUrl: './layout.component.html',
-  styleUrl: './layout.component.scss'
+    NavigationComponent,
+    InitialLoginComponent
+],
+    templateUrl: './layout.component.html',
+    styleUrl: './layout.component.scss'
 })
 export class LayoutComponent implements AfterViewInit {
-  @ViewChild('leftSidebar') public leftSidebar!: MatSidenav;
-
-  title = 'BachelorTherasoftAngular';
-
   private readonly sidebarService = inject(SidebarService);
+  private readonly authService = inject(AuthService);
+  private readonly layoutService = inject(LayoutService);
+  
+  private readonly leftSideBar = viewChild.required(MatSidenav);
 
-  public windowWidth = signal<number>(0);
-  public showOver = computed(() => this.windowWidth() < 1280);
+  public isLoggedIn = this.authService.isLoggedIn;
+  public userFirstName = computed(() => this.authService.currentUserInfo()?.firstName);
+  public showOver = computed(() => this.layoutService.windowWidth() < 1280);
   public sidenavMode = computed(() => this.showOver() ? 'over' : 'push');
-  constructor() {
-    afterNextRender(() => {
-      this.windowWidth.set(window.innerWidth)
-      fromEvent(window, 'resize').pipe(
-        map(() => window.innerWidth),
-      ).subscribe(width => {
-          this.windowWidth.set(width);
-      });
-    });
-  }
-
 
   public ngAfterViewInit(): void {
-    this.sidebarService.setSideBar(this.leftSidebar);
+    this.sidebarService.setSideBar(this.leftSideBar());
   }
-
 }

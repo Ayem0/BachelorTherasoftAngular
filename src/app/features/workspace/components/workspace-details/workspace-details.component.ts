@@ -1,47 +1,58 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { WorkspaceService } from '../../services/workspace.service';
-import { Workspace } from '../../models/workspace';
-import { ActivatedRoute } from '@angular/router';
-import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { User } from '../../../../core/auth/models/auth';
+import { MatIcon } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { Workspace } from '../../workspace';
+import { WorkspaceStore } from '../../workspace.store';
 
 @Component({
-  selector: 'app-workspace-details',
-  standalone: true,
-  imports: [
+    selector: 'app-workspace-details',
+    imports: [
     MatIcon,
     MatButtonModule,
     MatTabsModule,
-    MatTableModule, 
-    MatPaginatorModule
-  ],
-  templateUrl: './workspace-details.component.html',
-  styleUrl: './workspace-details.component.scss'
+    MatTableModule,
+    RouterOutlet
+],
+    templateUrl: './workspace-details.component.html',
+    styleUrl: './workspace-details.component.scss'
 })
 export class WorkspaceDetailsComponent implements OnInit {
-  private readonly workspaceService = inject(WorkspaceService);
+  private readonly workspaceStore = inject(WorkspaceStore);
   private readonly route = inject(ActivatedRoute);
-  
+  private readonly router = inject(Router);
+
+  private routes = [
+    './members',
+    './locations',
+    './participants',
+    './participant-categories',
+    './event-categories',
+    './roles',
+    './slots',
+    './tags'
+  ];
+
+  public selectedIndex = this.routes.indexOf(`./${this.router.url.split('/').pop()!}`);
   public workspace = signal<Workspace | null>(null);
+  public workspaceId = this.route.snapshot.paramMap.get('id');
   public isLoading = signal(true);
-  public displayedColumns: string[] = ['firstName', 'lastName'];
-  public users = new MatTableDataSource<Partial<User>>([]);
 
   public ngOnInit(): void {
-    const workspaceId = this.route.snapshot.paramMap.get('id');
-    if (workspaceId) this.workspaceService.getWorkspaceDetailsById(workspaceId).subscribe({
+    if (this.workspaceId) this.workspaceStore.getWorkspaceById(this.workspaceId).subscribe({
       next: (workspace) => {
         this.workspace.set(workspace);
-        this.users.data = workspace.users;
         this.isLoading.set(false);
       },
       error: () => {
         this.isLoading.set(false);
       }
     })
+  }
+
+  public tabChanged(event: MatTabChangeEvent) {
+    this.router.navigate([this.routes[event.index]], { relativeTo: this.route });
   }
 }

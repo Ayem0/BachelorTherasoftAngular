@@ -1,0 +1,84 @@
+<div class="flex size-full flex-col">
+    <div class="flex w-full justify-between items-center pt-4">
+        <mat-form-field appearance="outline">
+            <input matInput type="text" [formControl]="search">
+            <mat-label>Search</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+        <button mat-flat-button (click)="openDialog()">
+            <mat-icon>add</mat-icon>
+            <span>Add</span>
+        </button>
+    </div>
+    <div class="flex flex-1 flex-col">
+        <div class="overflow-auto h-96">
+            @if (slotStore.loading()) {
+                <div class="flex size-full items-center justify-center">
+                    <mat-spinner diameter="50"></mat-spinner>
+                </div>
+            } @else if (slotStore.error()) {
+                <div class="flex size-full items-center justify-center">
+                    <span>{{ slotStore.error() }}</span>
+                </div>
+            } 
+            <mat-table [dataSource]="dataSource" matSort class="w-full">
+        
+                <ng-container matColumnDef="name">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>
+                    <mat-cell *matCellDef="let slot" [routerLink]="['/slot', slot.id]"> {{ slot.name}} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="description">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
+                    <mat-cell *matCellDef="let slot" [routerLink]="['/slot', slot.id]"> {{ slot.description }} </mat-cell>
+                </ng-container>
+    
+                <ng-container matColumnDef="startTime">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Start Time </mat-header-cell>
+                    <mat-cell *matCellDef="let slot" [routerLink]="['/slot', slot.id]"> {{ slot.startTime }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="endTime">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> End Time </mat-header-cell>
+                    <mat-cell *matCellDef="let slot" [routerLink]="['/slot', slot.id]"> {{ slot.endTime }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="startDate">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Start Date </mat-header-cell>
+                    <mat-cell *matCellDef="let slot" [routerLink]="['/slot', slot.id]"> {{ slot.startDate }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="endDate">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> End Date </mat-header-cell>
+                    <mat-cell *matCellDef="let slot" [routerLink]="['/slot', slot.id]"> {{ slot.endDate }} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="action">
+                    <mat-header-cell *matHeaderCellDef class="w-14"></mat-header-cell>
+                    <mat-cell *matCellDef="let participant">
+                        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="action menu" (click)="$event.stopPropagation()">
+                            <mat-icon>more_vert</mat-icon>
+                        </button>
+                        <mat-menu #menu="matMenu">
+                            <button mat-menu-item (click)="openDialog(participant)">
+                                <mat-icon>edit</mat-icon>
+                                <span>Edit</span>
+                            </button>
+                            <button mat-menu-item>
+                                <mat-icon>delete</mat-icon>
+                                <span>Delete</span>
+                            </button>
+                        </mat-menu>
+                    </mat-cell>
+                </ng-container>
+                <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row> 
+            </mat-table>
+        </div>
+        <mat-paginator
+            [pageSizeOptions]="[5, 10, 20]"
+            showFirstLastButtons
+            aria-label="Select page of participants">
+        </mat-paginator>
+    </div>
+</div>

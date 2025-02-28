@@ -12,29 +12,26 @@ import { AuthService } from '../../services/auth.service';
 import { SonnerService } from '../../../../shared/services/sonner/sonner.service';
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatButtonModule,
-    MatProgressSpinner,
-    RouterLink
-  ],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+    selector: 'app-login',
+    imports: [
+        ReactiveFormsModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatButtonModule,
+        MatProgressSpinner,
+        RouterLink
+    ],
+    templateUrl: './login.component.html',
+    styleUrl: './login.component.scss'
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly sonnerService = inject(SonnerService);
   private readonly router = inject(Router);
 
-  /** Hide or show password signals */
   isHidden = signal(true);
-  /** Loading when submitting form */
   isLoading = signal(false);
 
   loginForm = new FormGroup({
@@ -42,21 +39,18 @@ export class LoginComponent {
     password: new FormControl({ value: "", disabled: this.isLoading() }, [Validators.required, Validators.minLength(10), Validators.maxLength(30)]),
   });
 
-  
-  /** Hide or show password */
   togglePassword(event: MouseEvent) {
     this.isHidden.set(!this.isHidden());
     event.stopPropagation();
   }
 
-  /** Submit login form */
   public submit() {
     this.isLoading.set(true);
     const { email, password } = this.loginForm.value;
     if (this.loginForm.valid && email && password) {
       this.authService.login(email, password).subscribe((res) => {
         if (res) {
-          this.router.navigateByUrl("home");
+          this.router.navigateByUrl("");
         } else {
           this.sonnerService.errorToast("Invalid credentials");
         }

@@ -1,0 +1,17 @@
+@if(!isLoaded()) {
+<div class="flex items-center justify-center">
+    <mat-spinner></mat-spinner>
+</div>
+} @else {
+<div class="h-96 overflow-y-scroll overflow-x-hidden flex-col">
+    @if (invitationsReceived().length === 0) {
+    <div class="flex h-full items-center justify-center">
+        <p>No invitations</p>
+    </div>
+    } @else {
+    @for (item of invitationsReceived(); track item.id) {
+    <app-invitation [invitation]="item"></app-invitation>
+    }
+    }
+</div>
+}
