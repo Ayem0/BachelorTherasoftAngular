@@ -33,3 +33,8 @@ export interface EventRequestForm {
   repetitionNumber: FormControl<number | undefined>;
   repetitionEndDate: FormControl<Date | undefined>;
 }
+
+export interface DateRange {
+  start: Date;
+  end: Date;
+}

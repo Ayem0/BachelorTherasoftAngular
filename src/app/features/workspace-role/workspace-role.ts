@@ -1,6 +1,7 @@
 import { FormControl } from '@angular/forms';
 
 export interface WorkspaceRole extends WorkspaceRoleRequest {
+  workspaceId: string;
   id: string;
 }
 

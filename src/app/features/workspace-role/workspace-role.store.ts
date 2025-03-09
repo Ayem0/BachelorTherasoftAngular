@@ -1,25 +1,29 @@
-import { inject } from '@angular/core';
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { Observable, of, tap } from 'rxjs';
+import { computed, inject } from '@angular/core';
 import {
-  addModelToParentMap,
-  updateModelMap,
-  updateParentMap,
-} from '../../shared/utils/store.utils';
+  patchState,
+  signalStore,
+  withComputed,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { filter, pipe, switchMap, tap } from 'rxjs';
 import { WorkspaceRole, WorkspaceRoleRequest } from './workspace-role';
 import { WorkspaceRoleService } from './workspace-role.service';
 
 type WorkspaceRoleState = {
-  workspaceRoles: Map<string, WorkspaceRole>; // string is id
-  workspaceRoleIdsByWorkspaceId: Map<string, string[]>; // string id workspaceId string[] is workspacerole ids
+  workspaceRoles: WorkspaceRole[];
+  selectedWorkspaceId: string;
+  loadedWorkspaceIds: Set<string>;
   loading: boolean;
   updating: boolean;
   creating: boolean;
 };
 
 const initialWorkspaceRoleState: WorkspaceRoleState = {
-  workspaceRoles: new Map(),
-  workspaceRoleIdsByWorkspaceId: new Map(),
+  workspaceRoles: [],
+  selectedWorkspaceId: '',
+  loadedWorkspaceIds: new Set(),
   loading: false,
   creating: false,
   updating: false,
@@ -28,68 +32,68 @@ const initialWorkspaceRoleState: WorkspaceRoleState = {
 export const WorkspaceRoleStore = signalStore(
   { providedIn: 'root' },
   withState(initialWorkspaceRoleState),
+  withComputed((store) => ({
+    workspaceRolesBySelectedWorkspaceId: computed(() =>
+      store
+        .workspaceRoles()
+        .filter(
+          (workspaceRole) =>
+            workspaceRole.workspaceId === store.selectedWorkspaceId()
+        )
+    ),
+
+    // Add a loading state computed property for better UI feedback
+    isLoading: computed(
+      () => store.loading() || store.creating() || store.updating()
+    ),
+  })),
   withMethods((store, workspaceRoleService = inject(WorkspaceRoleService)) => ({
-    getWorkspaceRolesByWorkspaceId(
-      workspaceId: string
-    ): Observable<WorkspaceRole[]> {
-      patchState(store, { loading: true });
-      if (store.workspaceRoleIdsByWorkspaceId().has(workspaceId)) {
-        const ids = store.workspaceRoleIdsByWorkspaceId().get(workspaceId)!;
-        patchState(store, { loading: false });
-        return of(ids.map((id) => store.workspaceRoles().get(id)!));
-      }
-      return workspaceRoleService
-        .getWorkspaceRolesByWorkspaceId(workspaceId)
-        .pipe(
-          tap({
-            next: (workspaceRoles) => {
-              const updatedWorkspaceRoleIdsByWorkspaceId = updateParentMap(
-                store.workspaceRoleIdsByWorkspaceId(),
-                workspaceId,
-                workspaceRoles
-              );
-              const updatedWorkspaceRoles = updateModelMap(
-                store.workspaceRoles(),
-                workspaceRoles
-              );
-              patchState(store, {
-                workspaceRoles: updatedWorkspaceRoles,
-                workspaceRoleIdsByWorkspaceId:
-                  updatedWorkspaceRoleIdsByWorkspaceId,
-                loading: false,
-              });
-            },
-            error: (error: Error) => {
-              patchState(store, {
-                loading: false,
-              });
-            },
-          })
-        );
+    setSelectedWorkspaceId(workspaceId: string) {
+      patchState(store, { selectedWorkspaceId: workspaceId });
     },
-    createWorkspaceRole(
-      workspaceId: string,
-      workspaceRoleRequest: WorkspaceRoleRequest
-    ) {
+
+    getWorkspaceRolesByWorkspaceId: rxMethod<void>(
+      pipe(
+        filter(
+          () => !store.loadedWorkspaceIds().has(store.selectedWorkspaceId())
+        ),
+        switchMap(() =>
+          workspaceRoleService
+            .getWorkspaceRolesByWorkspaceId(store.selectedWorkspaceId())
+            .pipe(
+              tap({
+                next: (workspaceRoles) => {
+                  patchState(store, {
+                    workspaceRoles: [
+                      ...store.workspaceRoles(),
+                      ...workspaceRoles,
+                    ],
+                    loadedWorkspaceIds: new Set([
+                      ...store.loadedWorkspaceIds(),
+                      store.selectedWorkspaceId(),
+                    ]),
+                  });
+                },
+                error: (error: Error) => {
+                  console.error(error);
+                  patchState(store, {
+                    loading: false,
+                  });
+                },
+              })
+            )
+        )
+      )
+    ),
+    createWorkspaceRole(workspaceRoleRequest: WorkspaceRoleRequest) {
       patchState(store, { creating: true });
       return workspaceRoleService
-        .createWorkspaceRole(workspaceId, workspaceRoleRequest)
+        .createWorkspaceRole(store.selectedWorkspaceId(), workspaceRoleRequest)
         .pipe(
           tap({
             next: (newWorkspaceRole) => {
-              const updatedWorkspaceRoleIdsByWorkspaceId = addModelToParentMap(
-                store.workspaceRoleIdsByWorkspaceId(),
-                workspaceId,
-                newWorkspaceRole
-              );
-              const updatedWorkspaceRoles = updateModelMap(
-                store.workspaceRoles(),
-                [newWorkspaceRole]
-              );
               patchState(store, {
-                workspaceRoles: updatedWorkspaceRoles,
-                workspaceRoleIdsByWorkspaceId:
-                  updatedWorkspaceRoleIdsByWorkspaceId,
+                workspaceRoles: [...store.workspaceRoles(), newWorkspaceRole],
                 creating: false,
               });
             },
@@ -109,16 +113,19 @@ export const WorkspaceRoleStore = signalStore(
         .pipe(
           tap({
             next: (updatedWorkspaceRole) => {
-              const updatedWorkspaceRoles = updateModelMap(
-                store.workspaceRoles(),
-                [updatedWorkspaceRole]
-              );
               patchState(store, {
-                workspaceRoles: updatedWorkspaceRoles,
+                workspaceRoles: store
+                  .workspaceRoles()
+                  .map((workspaceRole) =>
+                    workspaceRole.id === updatedWorkspaceRole.id
+                      ? updatedWorkspaceRole
+                      : workspaceRole
+                  ),
                 updating: false,
               });
             },
             error: (error: Error) => {
+              console.error(error);
               patchState(store, { updating: false });
             },
           })

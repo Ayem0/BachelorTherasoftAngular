@@ -1,6 +1,14 @@
-import { inject } from '@angular/core';
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { of, tap } from 'rxjs';
+import { computed, inject } from '@angular/core';
+import { MatTableDataSource } from '@angular/material/table';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { filter, of, pipe, switchMap, tap } from 'rxjs';
 import { Workspace, WorkspaceRequest } from './workspace';
 import { WorkspaceService } from './workspace.service';
 
@@ -25,31 +33,37 @@ const initialWorkspaceState: WorkspaceState = {
 export const WorkspaceStore = signalStore(
   { providedIn: 'root' },
   withState(initialWorkspaceState),
+  withComputed((store) => ({
+    workspaceDataSource: computed(
+      () => new MatTableDataSource(store.loading() ? [] : store.workspaces())
+    ),
+  })),
   withMethods((store, workspaceService = inject(WorkspaceService)) => ({
-    getWorkspaces() {
-      if (store.loaded()) {
-        return of(store.workspaces());
-      }
-      patchState(store, { loading: true });
-      return workspaceService.getWorkspacesByUser().pipe(
-        tap({
-          next: (workspaces) => {
-            patchState(store, {
-              workspaces,
-              loading: false,
-              loaded: true,
-              error: null,
-            });
-          },
-          error: (error: Error) => {
-            patchState(store, {
-              loading: false,
-              error: error.message,
-            });
-          },
-        })
-      );
-    },
+    getWorkspaces: rxMethod<void>(
+      pipe(
+        filter(() => !store.loaded()),
+        tap(() => patchState(store, { loading: true })),
+        switchMap(() =>
+          workspaceService.getWorkspacesByUser().pipe(
+            tap({
+              next: (workspaces) => {
+                patchState(store, {
+                  loaded: true,
+                  loading: false,
+                  workspaces: workspaces,
+                });
+              },
+              error: (err) => {
+                console.log(err);
+                patchState(store, {
+                  loading: false,
+                });
+              },
+            })
+          )
+        )
+      )
+    ),
 
     getWorkspaceById(id: string) {
       patchState(store, { loading: true });
@@ -109,24 +123,5 @@ export const WorkspaceStore = signalStore(
         })
       );
     },
-    //   deleteWorkspace: rxMethod<string>(
-    //     pipe(
-    //       switchMap((workspaceId) => {
-    //         return workspaceService.deleteWorkspace(workspaceId).pipe(
-    //           tapResponse({
-    //             next: () => {
-    //               patchState(store, state => ({
-    //                 workspaces: state.workspaces.filter(w => w.id !== workspaceId)
-    //               }));
-    //             },
-    //             error: (error: Error) => {
-    //               patchState(store, { error: error.message });
-    //             }
-    //           })
-    //         );
-    //       }),
-    //       catchError(() => of())
-    //     )
-    //   )
   }))
 );

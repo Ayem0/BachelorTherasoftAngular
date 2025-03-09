@@ -42,7 +42,7 @@ export class RoomDialogComponent {
   public areaId = this.matDialogData.areaId;
   public isUpdate = computed(() => !!this.room());
   public disabled = computed(
-    () => this.roomStore.updating() || this.roomStore.creating()
+    () => this.roomStore.isUpdating() || this.roomStore.isCreating()
   );
 
   public form = new FormGroup<RoomForm>({

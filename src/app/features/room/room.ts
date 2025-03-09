@@ -2,6 +2,8 @@ import { FormControl } from '@angular/forms';
 
 export interface Room extends RoomRequest {
   id: string;
+  areaId: string;
+  workspaceId: string;
   slotIds: string[];
   eventIds: string[];
 }

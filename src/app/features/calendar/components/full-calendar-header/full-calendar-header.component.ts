@@ -10,12 +10,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { ViewMode } from '../../models/calendar';
 
 @Component({
   selector: 'app-full-calendar-header',
-  imports: [MatButtonModule, MatIcon, MatSelectModule, MatSlideToggle],
+  imports: [MatButtonModule, MatIcon, MatSelectModule],
   providers: [
     {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,

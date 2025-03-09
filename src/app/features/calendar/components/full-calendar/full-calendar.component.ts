@@ -181,7 +181,7 @@ export class FullCalendarComponent implements OnInit {
       .open(FullCalendarEventDialogComponent, {
         // hasBackdrop: false,
         data: { start: selectInfo.start, end: selectInfo.end },
-        width: '500px',
+        width: '100%',
       })
       .afterClosed()
       .subscribe((x: Event) => {

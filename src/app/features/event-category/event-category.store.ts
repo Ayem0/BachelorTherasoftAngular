@@ -1,125 +1,126 @@
-import { inject } from '@angular/core';
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { Observable, of, tap } from 'rxjs';
+import { computed, inject } from '@angular/core';
 import {
-  addModelToParentMap,
-  updateModelMap,
-  updateParentMap,
-} from '../../shared/utils/store.utils';
+  patchState,
+  signalStore,
+  withComputed,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { filter, pipe, switchMap, tap } from 'rxjs';
 import { EventCategory, EventCategoryRequest } from './event-category';
 import { EventCategoryService } from './event-category.service';
 
 type EventCategoryState = {
-  eventCategories: Map<string, EventCategory>; // string is id
-  eventCategoryIdsByWorkspaceId: Map<string, string[]>;
-  loading: boolean;
-  updating: boolean;
-  creating: boolean;
+  eventCategories: EventCategory[];
+  loadedWorkspaceIds: Set<string>;
+  selectedWorkspaceId: string;
+  isLoading: boolean;
+  isUpdating: boolean;
+  isCreating: boolean;
   error: string | null;
 };
 
 const initialeventCategoryState: EventCategoryState = {
-  eventCategories: new Map(),
-  eventCategoryIdsByWorkspaceId: new Map(),
-  loading: false,
-  creating: false,
-  updating: false,
+  eventCategories: [],
+  loadedWorkspaceIds: new Set(),
+  selectedWorkspaceId: '',
+  isLoading: false,
+  isCreating: false,
+  isUpdating: false,
   error: null,
 };
 
 export const EventCategoryStore = signalStore(
   { providedIn: 'root' },
   withState(initialeventCategoryState),
+  withComputed((store) => ({
+    eventCategoriesBySelectedWorkspace: computed(() =>
+      store
+        .eventCategories()
+        .filter(
+          (eventCategory) =>
+            eventCategory.workspaceId === store.selectedWorkspaceId()
+        )
+    ),
+  })),
   withMethods((store, eventCategoryService = inject(EventCategoryService)) => ({
-    getEventCategoriesByWorkspaceId(
-      workspaceId: string
-    ): Observable<EventCategory[]> {
-      patchState(store, { loading: true });
-      if (store.eventCategoryIdsByWorkspaceId().has(workspaceId)) {
-        const ids = store.eventCategoryIdsByWorkspaceId().get(workspaceId)!;
-        patchState(store, { loading: false });
-        return of(ids.map((x) => store.eventCategories().get(x)!));
-      }
-      return eventCategoryService
-        .getEventCategoryByWorkspaceId(workspaceId)
-        .pipe(
-          tap({
-            next: (eventCategories) => {
-              const updatedEventCategories = updateModelMap(
-                store.eventCategories(),
-                eventCategories
-              );
-              const updatedEventCategoryIdsByWorkspaceId = updateParentMap(
-                store.eventCategoryIdsByWorkspaceId(),
-                workspaceId,
-                eventCategories
-              );
-
-              patchState(store, {
-                eventCategories: updatedEventCategories,
-                eventCategoryIdsByWorkspaceId:
-                  updatedEventCategoryIdsByWorkspaceId ??
-                  store.eventCategoryIdsByWorkspaceId(),
-                loading: false,
-                error: null,
-              });
-            },
-            error: (error: Error) => {
-              patchState(store, {
-                loading: false,
-                error: error.message,
-              });
-            },
-          })
-        );
+    setSelectedWorkspaceId(workspaceId: string): void {
+      patchState(store, { selectedWorkspaceId: workspaceId });
     },
+    getEventCategoriesByWorkspaceId: rxMethod<void>(
+      pipe(
+        filter(
+          () => !store.loadedWorkspaceIds().has(store.selectedWorkspaceId())
+        ),
+        tap(() => patchState(store, { isLoading: true })),
+        switchMap(() =>
+          eventCategoryService
+            .getEventCategoryByWorkspaceId(store.selectedWorkspaceId())
+            .pipe(
+              tap({
+                next: (eventCategories) => {
+                  patchState(store, {
+                    eventCategories: [
+                      ...store.eventCategories(),
+                      ...eventCategories,
+                    ],
+                    loadedWorkspaceIds: new Set(store.loadedWorkspaceIds()).add(
+                      store.selectedWorkspaceId()
+                    ),
+                    isLoading: false,
+                    error: null,
+                  });
+                },
+                error: (error: Error) => {
+                  patchState(store, {
+                    isLoading: false,
+                    error: error.message,
+                  });
+                },
+              })
+            )
+        )
+      )
+    ),
 
     createEventCategory(workspaceId: string, req: EventCategoryRequest) {
-      patchState(store, { creating: true });
+      patchState(store, { isCreating: true });
       return eventCategoryService.createEventCategory(workspaceId, req).pipe(
         tap({
           next: (newEventCategory) => {
-            const updatedEventCategories = updateModelMap(
-              store.eventCategories(),
-              [newEventCategory]
-            );
-            const updatedEventCategoryIdsByWorkspaceId = addModelToParentMap(
-              store.eventCategoryIdsByWorkspaceId(),
-              workspaceId,
-              newEventCategory
-            );
             patchState(store, {
-              eventCategories: updatedEventCategories,
-              eventCategoryIdsByWorkspaceId:
-                updatedEventCategoryIdsByWorkspaceId,
-              creating: false,
+              eventCategories: [...store.eventCategories(), newEventCategory],
+              isCreating: false,
               error: null,
             });
           },
           error: (error: Error) => {
-            patchState(store, { creating: false, error: error.message });
+            patchState(store, { isCreating: false, error: error.message });
           },
         })
       );
     },
 
     updateEventCategory(id: string, req: EventCategoryRequest) {
-      patchState(store, { updating: true });
+      patchState(store, { isUpdating: true });
       return eventCategoryService.updateEventCategory(id, req).pipe(
         tap({
           next: (updatedEventCategory) => {
-            const updatedEventCategories = updateModelMap(
-              store.eventCategories(),
-              [updatedEventCategory]
-            );
             patchState(store, {
-              eventCategories: updatedEventCategories,
-              updating: false,
+              eventCategories: store
+                .eventCategories()
+                .map((eventCategory) =>
+                  eventCategory.id === updatedEventCategory.id
+                    ? updatedEventCategory
+                    : eventCategory
+                ),
+              isUpdating: false,
               error: null,
             });
           },
           error: (error: Error) => {
-            patchState(store, { updating: false, error: error.message });
+            patchState(store, { isUpdating: false, error: error.message });
           },
         })
       );

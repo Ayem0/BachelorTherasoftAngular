@@ -183,6 +183,10 @@ $dark: mat.define-theme((
   @include mat.expansion-theme($light);
   @include mat.tooltip-theme($light);
   @include mat.badge-theme($light);
+  @include mat.dialog-overrides((
+    container-max-width: 100%,
+  ));
+  
 }
 
 .dark {

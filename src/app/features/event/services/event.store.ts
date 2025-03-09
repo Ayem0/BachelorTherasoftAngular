@@ -51,7 +51,7 @@ export const EventStore = signalStore(
       const ids = searchMap(id, start, end, store.eventIdsByUserId());
       return ids
         ? of(ids.map((id) => store.events().get(id)!))
-        : eventService.getEventsByUser(start, end).pipe(
+        : eventService.getEventsByUserId({ start, end }).pipe(
             tap((events) => {
               const updatedEvents = updateModelMap(store.events(), events);
               const updatedEventIdsByUserId = updateMap(

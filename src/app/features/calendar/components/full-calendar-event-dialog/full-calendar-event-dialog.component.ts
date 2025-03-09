@@ -1,4 +1,12 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  Signal,
+  signal,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -17,25 +25,21 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTimepickerModule } from '@angular/material/timepicker';
-import {
-  catchError,
-  distinctUntilChanged,
-  forkJoin,
-  of,
-  switchMap,
-  tap,
-} from 'rxjs';
+import { FullCalendarModule } from '@fullcalendar/angular';
+import { CalendarOptions } from '@fullcalendar/core/index.js';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid';
+import dayjs from 'dayjs';
+import { catchError, debounceTime, distinctUntilChanged, of, tap } from 'rxjs';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
 import { Repetition } from '../../../../shared/models/repetition';
-import { EventCategory } from '../../../event-category/event-category';
+import { isFutureDate } from '../../../../shared/utils/validators.utils';
 import { EventCategoryStore } from '../../../event-category/event-category.store';
 import { Event, EventRequestForm } from '../../../event/models/event';
 import { EventStore } from '../../../event/services/event.store';
-import { Room } from '../../../room/room';
+import { MemberStore } from '../../../member/member.store';
 import { RoomStore } from '../../../room/room.store';
-import { Workspace } from '../../../workspace/workspace';
 import { WorkspaceStore } from '../../../workspace/workspace.store';
-
 @Component({
   selector: 'app-full-calendar-event-dialog',
   imports: [
@@ -47,144 +51,183 @@ import { WorkspaceStore } from '../../../workspace/workspace.store';
     MatDatepickerModule,
     MatProgressSpinner,
     MatButtonModule,
+    FullCalendarModule,
   ],
   templateUrl: './full-calendar-event-dialog.component.html',
   styleUrl: './full-calendar-event-dialog.component.scss',
 })
 export class FullCalendarEventDialogComponent implements OnInit {
   private readonly matDialog = inject(MatDialog);
-  public readonly matDialogRef = inject(
+  private readonly matDialogRef = inject(
     MatDialogRef<FullCalendarEventDialogComponent>
   );
   private readonly eventStore = inject(EventStore);
   private readonly eventCategoryStore = inject(EventCategoryStore);
   private readonly roomStore = inject(RoomStore);
   private readonly workspaceStore = inject(WorkspaceStore);
+  private readonly memberStore = inject(MemberStore);
   private readonly matDialogData: {
     event: Event | null;
     start: Date | null;
     end: Date | null;
   } = inject(MAT_DIALOG_DATA);
+
   public event = signal(this.matDialogData.event);
   public disabled = computed(
     () => this.eventStore.creating() || this.eventStore.updating()
   );
   public isUpdate = computed(() => !!this.event());
-  public eventCategories = signal<EventCategory[]>([]);
-  public workspaces = signal<Workspace[]>([]);
-  public rooms = signal<Room[]>([]);
-
-  public form = new FormGroup<EventRequestForm>({
-    description: new FormControl(
-      {
-        value: this.event()?.description,
-        disabled: this.disabled(),
-      },
-      { nonNullable: true }
-    ),
-    startDate: new FormControl(
-      {
-        value:
-          this.event()?.startDate || this.matDialogData.start || new Date(),
-        disabled: this.disabled(),
-      },
-      { nonNullable: true, validators: [Validators.required] }
-    ),
-    endDate: new FormControl(
-      {
-        value: this.event()?.endDate || this.matDialogData.end || new Date(),
-        disabled: this.disabled(),
-      },
-      { nonNullable: true, validators: [Validators.required] }
-    ),
-    eventCategoryId: new FormControl(
-      {
-        value: this.event()?.eventCategoryId || '',
-        disabled: this.disabled(),
-      },
-      { nonNullable: true, validators: [Validators.required] }
-    ),
-    workspaceId: new FormControl(
-      {
-        value: this.event()?.workspaceId || '',
-        disabled: this.disabled(),
-      },
-      { nonNullable: true, validators: [Validators.required] }
-    ),
-    roomId: new FormControl(
-      {
-        value: this.event()?.roomId ?? '',
-        disabled: this.disabled(),
-      },
-      { nonNullable: true, validators: [Validators.required] }
-    ),
-    tagIds: new FormControl(
-      {
-        value: this.event()?.tagIds ?? [],
-        disabled: this.disabled(),
-      },
-      { nonNullable: true }
-    ),
-    participantIds: new FormControl(
-      {
-        value: this.event()?.participantIds ?? [],
-        disabled: this.disabled(),
-      },
-      { nonNullable: true }
-    ),
-    userIds: new FormControl(
-      {
-        value: this.event()?.userIds ?? [],
-        disabled: this.disabled(),
-      },
-      { nonNullable: true }
-    ),
-    repetitionInterval: new FormControl(
-      {
-        value: this.event()?.repetitionInterval,
-        disabled: this.disabled(),
-      },
-      { nonNullable: true }
-    ),
-    repetitionNumber: new FormControl(
-      {
-        value: this.event()?.repetitionNumber,
-        disabled: this.disabled(),
-      },
-      { nonNullable: true }
-    ),
-    repetitionEndDate: new FormControl(
-      {
-        value: this.event()?.repetitionEndDate,
-        disabled: this.disabled(),
-      },
-      { nonNullable: true }
-    ),
+  public form = new FormGroup<EventRequestForm>(
+    {
+      description: new FormControl(
+        {
+          value: this.event()?.description,
+          disabled: this.disabled(),
+        },
+        { nonNullable: true }
+      ),
+      startDate: new FormControl(
+        {
+          value:
+            this.event()?.startDate || this.matDialogData.start || new Date(),
+          disabled: this.disabled(),
+        },
+        { nonNullable: true, validators: [Validators.required] }
+      ),
+      endDate: new FormControl(
+        {
+          value: this.event()?.endDate || this.matDialogData.end || new Date(),
+          disabled: this.disabled(),
+        },
+        { nonNullable: true, validators: [Validators.required] }
+      ),
+      eventCategoryId: new FormControl(
+        {
+          value: this.event()?.eventCategoryId || '',
+          disabled: this.disabled(),
+        },
+        { nonNullable: true, validators: [Validators.required] }
+      ),
+      workspaceId: new FormControl(
+        {
+          value: this.event()?.workspaceId || '',
+          disabled: this.disabled(),
+        },
+        { nonNullable: true, validators: [Validators.required] }
+      ),
+      roomId: new FormControl(
+        {
+          value: this.event()?.roomId ?? '',
+          disabled: this.disabled(),
+        },
+        { nonNullable: true, validators: [Validators.required] }
+      ),
+      tagIds: new FormControl(
+        {
+          value: this.event()?.tagIds ?? [],
+          disabled: this.disabled(),
+        },
+        { nonNullable: true }
+      ),
+      participantIds: new FormControl(
+        {
+          value: this.event()?.participantIds ?? [],
+          disabled: this.disabled(),
+        },
+        { nonNullable: true }
+      ),
+      userIds: new FormControl(
+        {
+          value: this.event()?.userIds ?? [],
+          disabled: this.disabled(),
+        },
+        { nonNullable: true }
+      ),
+      repetitionInterval: new FormControl(
+        {
+          value: this.event()?.repetitionInterval,
+          disabled: this.disabled(),
+        },
+        { nonNullable: true }
+      ),
+      repetitionNumber: new FormControl(
+        {
+          value: this.event()?.repetitionNumber,
+          disabled: this.disabled(),
+        },
+        { nonNullable: true }
+      ),
+      repetitionEndDate: new FormControl(
+        {
+          value: this.event()?.repetitionEndDate,
+          disabled: this.disabled(),
+        },
+        { nonNullable: true }
+      ),
+    },
+    { validators: [isFutureDate] }
+  );
+  public eventCategories =
+    this.eventCategoryStore.eventCategoriesBySelectedWorkspace;
+  public workspaces = this.workspaceStore.workspaces;
+  public members = this.memberStore.membersBySelectedWorkspaceId;
+  public rooms = this.roomStore.roomsBySelectedWorkspaceId;
+  public selectedUserIds = signal<string[]>([]);
+  public selectedMembers = computed(() =>
+    this.members()
+      .filter((m) => this.selectedUserIds().includes(m.id))
+      .map((m) => ({ id: m.id, title: `${m.firstName} ${m.lastName}` }))
+  );
+  public canShowCalendar = computed(() => this.selectedMembers().length > 0);
+  public startDate = toSignal(this.form.controls.startDate.valueChanges);
+  public endDate = toSignal(this.form.controls.endDate.valueChanges);
+  public eventDuration = computed(() => {
+    const diff = dayjs(this.endDate()).diff(dayjs(this.startDate()), 'days');
+    console.log(diff);
+    return diff > 0 ? diff : 1;
   });
 
+  public calendarOptions: Signal<CalendarOptions> = computed(() => ({
+    initialView: 'customRessourceTimeGridDay',
+    headerToolbar: false,
+    plugins: [resourceTimeGridPlugin, dayGridPlugin],
+    resources: this.selectedMembers(),
+    views: {
+      customRessourceTimeGridDay: {
+        type: 'resourceTimeGrid',
+        duration: { days: this.eventDuration() },
+      },
+    },
+    schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
+  }));
+
   ngOnInit(): void {
-    this.workspaceStore.getWorkspaces().subscribe((workspaces) => {
-      this.workspaces.set(workspaces);
-    });
+    this.workspaceStore.getWorkspaces();
 
     this.form.controls.workspaceId.valueChanges
       .pipe(
         distinctUntilChanged(),
-        switchMap((workspaceId) =>
-          forkJoin({
-            categories:
-              this.eventCategoryStore.getEventCategoriesByWorkspaceId(
-                workspaceId
-              ),
-            rooms: this.roomStore.getRoomsByWorkspaceId(workspaceId),
-          })
-        )
+        debounceTime(100),
+        tap((workspaceId) => {
+          this.roomStore.setSelectedWorkspaceId(workspaceId);
+          this.memberStore.setSelectedWorkspaceId(workspaceId);
+          this.eventCategoryStore.setSelectedWorkspaceId(workspaceId);
+          this.roomStore.getRoomsByWorkspaceId();
+          this.memberStore.getMembersByWorkspaceId();
+          this.eventCategoryStore.getEventCategoriesByWorkspaceId();
+        })
       )
-      .subscribe(({ categories, rooms }) => {
-        this.eventCategories.set(categories);
-        this.rooms.set(rooms);
-        console.log(this.eventCategories());
-      });
+      .subscribe();
+
+    this.form.controls.userIds.valueChanges
+      .pipe(
+        distinctUntilChanged(),
+        debounceTime(100),
+        tap((userIds) => {
+          this.selectedUserIds.set(userIds);
+        })
+      )
+      .subscribe();
   }
 
   public close() {

@@ -79,7 +79,7 @@ export class WorkspaceRoleDialogComponent {
           .subscribe();
       } else {
         this.workspaceRoleStore
-          .createWorkspaceRole(this.workspaceId, req)
+          .createWorkspaceRole(req)
           .pipe(
             tap((res) => {
               this.dialogRef.close(res);

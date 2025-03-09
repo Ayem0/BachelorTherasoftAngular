@@ -26,7 +26,7 @@ export class WorkspaceRoleService {
 
   public updateWorkspaceRole(id: string, req: WorkspaceRoleRequest) {
     return this.http.put<WorkspaceRole>(
-      `${environment.apiUrl}/api/WorkspaceRole?`,
+      `${environment.apiUrl}/api/WorkspaceRole`,
       { name: req.name, description: req.description },
       { params: { id: id } }
     );

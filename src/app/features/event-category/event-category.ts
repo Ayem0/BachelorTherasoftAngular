@@ -2,6 +2,7 @@ import { FormControl } from '@angular/forms';
 
 export interface EventCategory {
   id: string;
+  workspaceId: string;
   name: string;
   color: string;
   icon: string;

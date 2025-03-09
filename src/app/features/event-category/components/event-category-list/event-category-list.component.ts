@@ -1,4 +1,4 @@
-import { Component, inject, Signal, viewChild } from '@angular/core';
+import { Component, effect, inject, Signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -31,46 +31,59 @@ import { EventCategoryDialogComponent } from '../event-category-dialog/event-cat
     MatPaginatorModule,
     MatTableModule,
     MatSortModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   templateUrl: './event-category-list.component.html',
-  styleUrl: './event-category-list.component.scss'
+  styleUrl: './event-category-list.component.scss',
 })
 export class EventCategoryListComponent {
   private readonly matDialog = inject(MatDialog);
-  public readonly eventCategoryStore = inject(EventCategoryStore);
+  private readonly eventCategoryStore = inject(EventCategoryStore);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-  
-
-  public search = new FormControl("");
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
+  public search = new FormControl('');
+  public isLoading = this.eventCategoryStore.isLoading;
   public dataSource = new MatTableDataSource<EventCategory>([]);
-  public displayedColumns: string[] = ['name', 'color', 'icon', 'description', 'action'];
+  public displayedColumns: string[] = [
+    'name',
+    'color',
+    'icon',
+    'description',
+    'action',
+  ];
+
+  constructor() {
+    effect(() => {
+      this.dataSource.data =
+        this.eventCategoryStore.eventCategoriesBySelectedWorkspace();
+      if (this.paginator && this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
+    });
+  }
 
   public ngOnInit(): void {
-    this.eventCategoryStore.getEventCategoriesByWorkspaceId(this.workspaceId()).subscribe(eventCategories => {
-      this.dataSource.data = eventCategories ?? [];
-    });
+    this.eventCategoryStore.setSelectedWorkspaceId(this.workspaceId());
+    this.eventCategoryStore.getEventCategoriesByWorkspaceId();
   }
 
   public ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator();
     this.dataSource.sort = this.sort();
     this.paginator().length = this.dataSource.data.length;
-    this.search.valueChanges.pipe(debounceTime(200)).subscribe(x => {
-      this.dataSource.filter = x?.trim().toLowerCase() || "";
+    this.search.valueChanges.pipe(debounceTime(200)).subscribe((x) => {
+      this.dataSource.filter = x?.trim().toLowerCase() || '';
       this.dataSource.paginator?.firstPage();
       this.paginator().length = this.dataSource.data.length;
     });
   }
 
   public openDialog(eventCategory?: Partial<EventCategory>) {
-    this.matDialog.open(EventCategoryDialogComponent, { data: { workspaceId: this.workspaceId, eventCategory: eventCategory}, width: '500px' }).afterClosed().subscribe(x => {
-      if (x) {
-        this.dataSource.data = this.eventCategoryStore.eventCategoryIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.eventCategoryStore.eventCategories().get(x)!) ?? [];
-      } 
+    this.matDialog.open(EventCategoryDialogComponent, {
+      data: { workspaceId: this.workspaceId, eventCategory: eventCategory },
+      width: '500px',
     });
   }
 }

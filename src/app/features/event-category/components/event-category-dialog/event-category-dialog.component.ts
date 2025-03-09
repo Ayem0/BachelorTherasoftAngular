@@ -48,7 +48,8 @@ export class EventCategoryDialogComponent {
   public isUpdate = computed(() => !!this.eventCategory());
   public disabled = computed(
     () =>
-      this.eventCategoryStore.updating() || this.eventCategoryStore.creating()
+      this.eventCategoryStore.isUpdating() ||
+      this.eventCategoryStore.isCreating()
   );
 
   public form = new FormGroup<EventCategoryForm>({

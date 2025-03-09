@@ -1,4 +1,12 @@
-import { Component, inject, Signal, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  effect,
+  inject,
+  OnInit,
+  Signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -31,46 +39,56 @@ import { WorkspaceRoleDialogComponent } from '../workspace-role-dialog/workspace
     MatPaginatorModule,
     MatTableModule,
     MatSortModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   templateUrl: './workspace-role-list.component.html',
-  styleUrl: './workspace-role-list.component.scss'
+  styleUrl: './workspace-role-list.component.scss',
 })
-export class WorkspaceRoleListComponent {
+export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
   private readonly matDialog = inject(MatDialog);
-  public readonly WorkspaceRoleStore = inject(WorkspaceRoleStore);
+  private readonly workspaceRoleStore = inject(WorkspaceRoleStore);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-  
-
-  public search = new FormControl("");
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
+  public search = new FormControl('');
+  public isLoading = this.workspaceRoleStore.isLoading;
   public dataSource = new MatTableDataSource<WorkspaceRole>([]);
   public displayedColumns: string[] = ['name', 'description', 'action'];
 
-  public ngOnInit(): void {
-    this.WorkspaceRoleStore.getWorkspaceRolesByWorkspaceId(this.workspaceId()).subscribe(workspaceRoles => {
-      this.dataSource.data = workspaceRoles ?? [];
+  constructor() {
+    effect(() => {
+      this.dataSource.data =
+        this.workspaceRoleStore.workspaceRolesBySelectedWorkspaceId();
+      if (this.paginator && this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
     });
+  }
+
+  public ngOnInit(): void {
+    this.workspaceRoleStore.setSelectedWorkspaceId(this.workspaceId());
+    this.workspaceRoleStore.getWorkspaceRolesByWorkspaceId();
   }
 
   public ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator();
     this.dataSource.sort = this.sort();
-    this.paginator().length = this.dataSource.data.length;
-    this.search.valueChanges.pipe(debounceTime(200)).subscribe(x => {
-      this.dataSource.filter = x?.trim().toLowerCase() || "";
-      this.dataSource.paginator?.firstPage();
-      this.paginator().length = this.dataSource.data.length;
-    });
+    this.search.valueChanges
+      .pipe(debounceTime(200))
+      .subscribe((searchValue) => {
+        this.dataSource.filter = searchValue?.trim().toLowerCase() || '';
+        if (this.dataSource.paginator) {
+          this.dataSource.paginator.firstPage();
+        }
+        this.paginator().length = this.dataSource.filteredData.length;
+      });
   }
 
   public openDialog(workspaceRole?: Partial<WorkspaceRole>) {
-    this.matDialog.open(WorkspaceRoleDialogComponent, { data: { workspaceId: this.workspaceId(), workspaceRole: workspaceRole}, width: '500px' }).afterClosed().subscribe(x => {
-      if (x) {
-        this.dataSource.data = this.WorkspaceRoleStore.workspaceRoleIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.WorkspaceRoleStore.workspaceRoles().get(x)!) ?? [];
-      } 
+    this.matDialog.open(WorkspaceRoleDialogComponent, {
+      data: { workspaceId: this.workspaceId(), workspaceRole: workspaceRole },
+      width: '500px',
     });
   }
 }

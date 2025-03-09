@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
-import { Event, EventRequest } from '../models/event';
+import { DateRange, Event, EventRequest } from '../models/event';
 
 @Injectable({
   providedIn: 'root',
@@ -77,9 +77,9 @@ export class EventService {
     });
   }
 
-  public getEventsByUser(start: Date, end: Date) {
-    const startDate = start.toJSON();
-    const endDate = end.toJSON();
+  public getEventsByUserId(range: DateRange) {
+    const startDate = range.start.toJSON();
+    const endDate = range.end.toJSON();
     return this.http.get<Event[]>(`${environment.apiUrl}/api/event/user`, {
       params: {
         start: startDate,

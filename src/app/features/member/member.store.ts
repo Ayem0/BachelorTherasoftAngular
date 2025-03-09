@@ -1,6 +1,4 @@
 import { computed, inject } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
 import {
   patchState,
   signalStore,
@@ -11,23 +9,19 @@ import {
 } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { filter, pipe, switchMap, tap } from 'rxjs';
-import {
-  updateModelMap,
-  updateParentMap,
-} from '../../shared/utils/store.utils';
 import { Member } from './member';
 import { MemberService } from './member.service';
 
 type MemberState = {
-  members: Map<string, Member>;
-  memberIdsByWorkspaceId: Map<string, string[]>;
+  members: Member[];
+  loadedWorkspaceIds: Set<string>;
   selectedWorkspaceId: string;
   isLoading: boolean;
 };
 
 const initialMemberState: MemberState = {
-  members: new Map(),
-  memberIdsByWorkspaceId: new Map(),
+  members: [],
+  loadedWorkspaceIds: new Set(),
   selectedWorkspaceId: '',
   isLoading: true,
 };
@@ -39,46 +33,42 @@ export const MemberStore = signalStore(
     // TODO listen for socket events
   })),
   withComputed((store) => ({
-    membersBySelectedWorkspace: computed(
-      () =>
-        new MatTableDataSource<Member, MatPaginator>(
-          store.isLoading()
-            ? []
-            : store
-                .memberIdsByWorkspaceId()
-                .get(store.selectedWorkspaceId())!
-                .map((x) => store.members().get(x)!)
-        )
+    membersBySelectedWorkspaceId: computed(() =>
+      store
+        .members()
+        .filter((member) => member.workspaceId === store.selectedWorkspaceId())
     ),
   })),
   withMethods((store, memberService = inject(MemberService)) => ({
-    getMembersByWorkspaceId: rxMethod<string>(
+    getMembersByWorkspaceId: rxMethod<void>(
       pipe(
-        filter((id) => !store.memberIdsByWorkspaceId().has(id)),
+        filter(
+          () => !store.loadedWorkspaceIds().has(store.selectedWorkspaceId())
+        ),
         tap(() => patchState(store, { isLoading: true })),
-        switchMap((id) =>
-          memberService.getMembersByWorkspaceId(id).pipe(
-            tap({
-              next: (members) => {
-                patchState(store, {
-                  members: updateModelMap(store.members(), members),
-                  memberIdsByWorkspaceId: updateParentMap(
-                    store.memberIdsByWorkspaceId(),
-                    id,
-                    members
-                  ),
-                  isLoading: false,
-                });
-              },
-              error: (err) => {
-                console.error(err);
-                // TODO handle error
-                patchState(store, {
-                  isLoading: false,
-                });
-              },
-            })
-          )
+        switchMap(() =>
+          memberService
+            .getMembersByWorkspaceId(store.selectedWorkspaceId())
+            .pipe(
+              tap({
+                next: (members) => {
+                  patchState(store, {
+                    members: [...store.members(), ...members],
+                    loadedWorkspaceIds: new Set(store.loadedWorkspaceIds()).add(
+                      store.selectedWorkspaceId()
+                    ),
+                    isLoading: false,
+                  });
+                },
+                error: (err) => {
+                  console.error(err);
+                  // TODO handle error
+                  patchState(store, {
+                    isLoading: false,
+                  });
+                },
+              })
+            )
         )
       )
     ),

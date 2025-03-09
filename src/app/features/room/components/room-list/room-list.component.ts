@@ -1,4 +1,4 @@
-import { Component, inject, input, viewChild } from '@angular/core';
+import { Component, effect, inject, input, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -32,46 +32,54 @@ import { RoomDialogComponent } from '../room-dialog/room-dialog.component';
     MatPaginatorModule,
     MatTableModule,
     MatSortModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   templateUrl: './room-list.component.html',
-  styleUrl: './room-list.component.scss'
+  styleUrl: './room-list.component.scss',
 })
 export class RoomListComponent {
   private readonly matDialog = inject(MatDialog);
   private readonly roomStore = inject(RoomStore);
-  readonly areaId = input.required<string>();
-
-  public search = new FormControl("");
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
+  readonly areaId = input.required<string>();
 
+  public search = new FormControl('');
   public dataSource = new MatTableDataSource<Room>([]);
   public displayedColumns: string[] = ['name', 'description', 'action'];
-  public loading = this.roomStore.loading;
+  public isLoading = this.roomStore.isLoading;
+
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.roomStore.roomsBySelectedAreaId();
+      if (this.paginator && this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
+    });
+  }
 
   public ngOnInit(): void {
-    this.roomStore.getRoomsByAreaId(this.areaId()).subscribe(rooms => {
-      this.dataSource.data = rooms ?? [];
-    });
+    this.roomStore.setSelectedAreaId(this.areaId());
+    this.roomStore.getRoomsByAreaId();
   }
 
   public ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator();
     this.dataSource.sort = this.sort();
     this.paginator().length = this.dataSource.data.length;
-    this.search.valueChanges.pipe(debounceTime(200)).subscribe(x => {
-      this.dataSource.filter = x?.trim().toLowerCase() || "";
-      this.dataSource.paginator?.firstPage();
-      this.paginator().length = this.dataSource.data.length;
-    });
+    this.search.valueChanges
+      .pipe(debounceTime(200))
+      .subscribe((searchValue) => {
+        this.dataSource.filter = searchValue?.trim().toLowerCase() || '';
+        this.dataSource.paginator?.firstPage();
+        this.paginator().length = this.dataSource.data.length;
+      });
   }
 
   public openDialog(room?: Partial<Room>) {
-    this.matDialog.open(RoomDialogComponent, { data: { areaId: this.areaId, room: room}, width: '500px' }).afterClosed().subscribe(x => {
-      if (x) {
-        this.dataSource.data = this.roomStore.roomIdsByAreaId().get(this.areaId())?.map(x => this.roomStore.rooms().get(x)!) ?? [];
-      } 
+    this.matDialog.open(RoomDialogComponent, {
+      data: { areaId: this.areaId, room: room },
+      width: '500px',
     });
   }
 }

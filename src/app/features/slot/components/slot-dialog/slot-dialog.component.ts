@@ -131,11 +131,8 @@ export class SlotDialogComponent implements OnInit {
   });
 
   public ngOnInit(): void {
-    this.eventCategoryStore
-      .getEventCategoriesByWorkspaceId(this.workspaceId())
-      .subscribe((slotCategories) => {
-        this.eventCategories.set(slotCategories);
-      });
+    this.eventCategoryStore.setSelectedWorkspaceId(this.workspaceId());
+    this.eventCategoryStore.getEventCategoriesByWorkspaceId();
   }
 
   public openRepetitionDialog() {

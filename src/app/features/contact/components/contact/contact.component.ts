@@ -34,7 +34,7 @@ export class ContactComponent implements OnInit {
   public isLoadingWorkspaces = this.workspaceStore.loading;
 
   ngOnInit(): void {
-    this.workspaceStore.getWorkspaces().subscribe();
+    this.workspaceStore.getWorkspaces();
   }
 
   public inviteToWorkspace(workspaceId: string) {
