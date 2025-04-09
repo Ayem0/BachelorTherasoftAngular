@@ -15,8 +15,8 @@ import { catchError, of, tap } from 'rxjs';
 import {
   ParticipantCategory,
   ParticipantCategoryForm,
-} from '../../participant-category';
-import { ParticipantCategoryStore } from '../../participant-category.store';
+} from '../../models/participant-category';
+import { ParticipantCategoryStore } from '../../services/participant-category.store';
 
 @Component({
   selector: 'app-participant-dialog',

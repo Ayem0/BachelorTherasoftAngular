@@ -4,6 +4,7 @@ import {
   effect,
   inject,
   OnInit,
+  signal,
   Signal,
   viewChild,
 } from '@angular/core';
@@ -21,8 +22,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
-import { WorkspaceRole } from '../../workspace-role';
-import { WorkspaceRoleStore } from '../../workspace-role.store';
+import { WorkspaceRole } from '../../models/workspace-role';
+import { WorkspaceRoleService } from '../../services/workspace-role.service';
 import { WorkspaceRoleDialogComponent } from '../workspace-role-dialog/workspace-role-dialog.component';
 
 @Component({
@@ -46,29 +47,33 @@ import { WorkspaceRoleDialogComponent } from '../workspace-role-dialog/workspace
 })
 export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
   private readonly matDialog = inject(MatDialog);
-  private readonly workspaceRoleStore = inject(WorkspaceRoleStore);
+  private readonly workspaceRoleService = inject(WorkspaceRoleService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
   public search = new FormControl('');
-  public isLoading = this.workspaceRoleStore.isLoading;
+  public isLoading = signal(false);
   public dataSource = new MatTableDataSource<WorkspaceRole>([]);
   public displayedColumns: string[] = ['name', 'description', 'action'];
 
   constructor() {
     effect(() => {
       this.dataSource.data =
-        this.workspaceRoleStore.workspaceRolesBySelectedWorkspaceId();
+        this.workspaceRoleService.workspaceRolesBySelectedWorkspaceId();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
     });
   }
 
-  public ngOnInit(): void {
-    this.workspaceRoleStore.setSelectedWorkspaceId(this.workspaceId());
-    this.workspaceRoleStore.getWorkspaceRolesByWorkspaceId();
+  public async ngOnInit() {
+    this.workspaceRoleService.selectedWorkspaceId.set(this.workspaceId());
+    this.isLoading.set(true);
+    await this.workspaceRoleService.getWorkspaceRolesByWorkspaceId(
+      this.workspaceId()
+    );
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {

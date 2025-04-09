@@ -11,9 +11,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { catchError, of, tap } from 'rxjs';
-import { Tag, TagForm } from '../../tag';
-import { TagStore } from '../../tag.store';
+import { Tag, TagForm } from '../../models/tag';
+import { TagService } from '../../services/tag.service';
 
 @Component({
   selector: 'app-tag-dialog',
@@ -29,37 +28,35 @@ import { TagStore } from '../../tag.store';
   styleUrl: './tag-dialog.component.scss',
 })
 export class TagDialogComponent {
-  private readonly tagStore = inject(TagStore);
+  private readonly tagService = inject(TagService);
   private readonly dialogRef = inject(MatDialogRef<TagDialogComponent>);
   private readonly matDialogData: { workspaceId: string; tag: Tag | null } =
     inject(MAT_DIALOG_DATA);
   public tag = signal<Tag | null>(this.matDialogData.tag);
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.tag());
-  public disabled = computed(
-    () => this.tagStore.updating() || this.tagStore.creating()
-  );
+  public isLoading = signal(false);
 
   public form = new FormGroup<TagForm>({
     name: new FormControl(
-      { value: this.tag()?.name || '', disabled: this.disabled() },
+      { value: this.tag()?.name || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     color: new FormControl(
-      { value: this.tag()?.color || '', disabled: this.disabled() },
+      { value: this.tag()?.color || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     icon: new FormControl(
-      { value: this.tag()?.icon || '', disabled: this.disabled() },
+      { value: this.tag()?.icon || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
-      { value: this.tag()?.description || '', disabled: this.disabled() },
+      { value: this.tag()?.description || '', disabled: this.isLoading() },
       { nonNullable: true }
     ),
   });
 
-  public submit() {
+  public async submit() {
     if (
       this.form.valid &&
       this.form.value &&
@@ -68,33 +65,24 @@ export class TagDialogComponent {
       this.form.value.icon
     ) {
       const tagRequest = this.form.getRawValue();
+      let canClose = false;
+      this.isLoading.set(true);
       if (this.tag()) {
-        this.tagStore
-          .updateTag(this.tag()!.id, tagRequest)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.tagService.updateTag(
+          this.tag()!.id,
+          this.workspaceId,
+          tagRequest
+        );
       } else {
-        this.tagStore
-          .createTag(this.workspaceId, tagRequest)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.tagService.createTag(
+          this.workspaceId,
+          tagRequest
+        );
       }
+      if (canClose) {
+        this.dialogRef.close();
+      }
+      this.isLoading.set(false);
     }
   }
 }

@@ -37,7 +37,7 @@ export class EventService {
       .pipe(
         tap({
           next: () =>
-            this.sonner.showToast(
+            this.sonner.success(
               'Event has been created',
               dayjs(event.startDate).format('dddd, MMMM DD, YYYY [at] HH:mm')
             ),
@@ -77,11 +77,27 @@ export class EventService {
     });
   }
 
-  public getEventsByUserId(range: DateRange) {
+  public getEventsByUserId(id: string, range: DateRange) {
     const startDate = range.start.toJSON();
     const endDate = range.end.toJSON();
     return this.http.get<Event[]>(`${environment.apiUrl}/api/event/user`, {
       params: {
+        id: id,
+        start: startDate,
+        end: endDate,
+      },
+    });
+  }
+
+  public getDialogEvents(userIds: string[], roomId: string, range: DateRange) {
+    const startDate = range.start.toJSON();
+    const endDate = range.end.toJSON();
+    const jsonUserIds = JSON.stringify(userIds);
+    const jsonRoomId = JSON.stringify(roomId);
+    return this.http.get<Event[]>(`${environment.apiUrl}/api/event/user`, {
+      params: {
+        userIds: jsonUserIds,
+        roomId: jsonRoomId,
         start: startDate,
         end: endDate,
       },

@@ -1,16 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { RoomListComponent } from "../../../room/components/room-list/room-list.component";
-import { Area } from '../../area';
-import { AreaStore } from '../../area.store';
+import { RoomListComponent } from '../../../room/components/room-list/room-list.component';
+import { Area } from '../../models/area';
+import { AreaStore } from '../../services/area.store';
 
 @Component({
   selector: 'app-area-details',
-  imports: [
-    RoomListComponent
-],
+  imports: [RoomListComponent],
   templateUrl: './area-details.component.html',
-  styleUrl: './area-details.component.scss'
+  styleUrl: './area-details.component.scss',
 })
 export class AreaDetailsComponent {
   private readonly areaStore = inject(AreaStore);
@@ -22,10 +20,11 @@ export class AreaDetailsComponent {
 
   public ngOnInit(): void {
     if (this.areaId()) {
-      this.areaStore.getAreaById(this.areaId()!).subscribe(x => this.area.set(x));
+      this.areaStore
+        .getAreaById(this.areaId()!)
+        .subscribe((x) => this.area.set(x));
     } else {
       // TODO faire un redirect ou un truc du genre jsp
     }
   }
-
 }

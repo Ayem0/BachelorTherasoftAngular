@@ -1,4 +1,11 @@
-import { Component, effect, inject, input, viewChild } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -14,8 +21,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
-import { RoomStore } from '../../../room/room.store';
-import { Room } from '../../room';
+import { Room } from '../../models/room';
+import { RoomService } from '../../services/room.service';
 import { RoomDialogComponent } from '../room-dialog/room-dialog.component';
 
 @Component({
@@ -39,7 +46,7 @@ import { RoomDialogComponent } from '../room-dialog/room-dialog.component';
 })
 export class RoomListComponent {
   private readonly matDialog = inject(MatDialog);
-  private readonly roomStore = inject(RoomStore);
+  private readonly roomService = inject(RoomService);
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
   readonly areaId = input.required<string>();
@@ -47,11 +54,11 @@ export class RoomListComponent {
   public search = new FormControl('');
   public dataSource = new MatTableDataSource<Room>([]);
   public displayedColumns: string[] = ['name', 'description', 'action'];
-  public isLoading = this.roomStore.isLoading;
+  public isLoading = signal(false);
 
   constructor() {
     effect(() => {
-      this.dataSource.data = this.roomStore.roomsBySelectedAreaId();
+      this.dataSource.data = this.roomService.roomsBySelectedAreaId();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
@@ -59,8 +66,8 @@ export class RoomListComponent {
   }
 
   public ngOnInit(): void {
-    this.roomStore.setSelectedAreaId(this.areaId());
-    this.roomStore.getRoomsByAreaId();
+    this.roomService.selectedAreaId.set(this.areaId());
+    this.roomService.getRoomsByAreaId(this.areaId());
   }
 
   public ngAfterViewInit(): void {

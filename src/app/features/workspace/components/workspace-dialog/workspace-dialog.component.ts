@@ -11,9 +11,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { catchError, of, tap } from 'rxjs';
-import { Workspace, WorkspaceForm } from '../../workspace';
-import { WorkspaceStore } from '../../workspace.store';
+import { Workspace, WorkspaceForm } from '../../models/workspace';
+import { WorkspaceService } from '../../services/workspace.service';
 
 @Component({
   selector: 'app-workspace-dialog',
@@ -29,94 +28,44 @@ import { WorkspaceStore } from '../../workspace.store';
   styleUrl: './workspace-dialog.component.scss',
 })
 export class WorkspaceDialogComponent {
-  private readonly workspaceStore = inject(WorkspaceStore);
+  private readonly workspaceService = inject(WorkspaceService);
   private readonly dialogRef = inject(MatDialogRef<WorkspaceDialogComponent>);
   private readonly matDialogData = inject(MAT_DIALOG_DATA);
+
   public workspace = signal<Workspace | null>(this.matDialogData);
   public isUpdate = computed(() => !!this.workspace());
-  public disabled = computed(
-    () => this.workspaceStore.updating() || this.workspaceStore.creating()
-  );
-
+  public isLoading = signal(false);
   public form = new FormGroup<WorkspaceForm>({
     name: new FormControl<string>(
-      { value: this.workspace()?.name || '', disabled: this.disabled() },
+      { value: this.workspace()?.name || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl<string | undefined>(
-      { value: this.workspace()?.description || '', disabled: this.disabled() },
+      {
+        value: this.workspace()?.description || '',
+        disabled: this.isLoading(),
+      },
       { nonNullable: true }
     ),
   });
 
-  public submit() {
+  public async submit() {
     if (this.form.valid && this.form.controls.name.value) {
       const req = this.form.getRawValue();
+      this.isLoading.set(true);
+      let canClose = false;
       if (this.workspace()) {
-        this.workspaceStore
-          .updateWorkspace(this.workspace()!.id, req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.workspaceService.updateWorkspace(
+          this.workspace()!.id,
+          req
+        );
       } else {
-        this.workspaceStore
-          .createWorkspace(req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.workspaceService.createWorkspace(req);
       }
+      if (canClose) {
+        this.dialogRef.close();
+      }
+      this.isLoading.set(false);
     }
   }
-  // ngOnInit(): void {
-  //   this.workspace.set(this.matDialogData);
-
-  //   if (this.workspace()) {
-  //     this.isUpdateMode.set(true);
-  //     this.form.patchValue({
-  //       name: this.workspace()?.name || '',
-  //       description: this.workspace()?.description || ''
-  //     });
-  //   }
-  // }
-
-  //   this.isLoading.set(true);
-  //   if (this.isUpdateMode()) {
-  //     if(this.form.valid && this.form.controls.name.value && this.workspace()?.id) {
-  //       this.workspaceService.updateWorkspace(this.workspace()!.id, this.form.controls.name.value, this.form.controls.description.value ?? undefined).subscribe({
-  //         next: (workspace) => {
-  //           this.isLoading.set(false);
-  //           this.dialogRef.close(workspace);
-  //         },
-  //         error: () => {
-  //           this.isLoading.set(false);
-  //         }
-  //       })
-  //     }
-  //   } else {
-  //     if(this.form.valid && this.form.controls.name.value) {
-  //       this.workspaceService.createWorkspace(this.form.controls.name.value, this.form.controls.description.value ?? undefined).subscribe({
-  //         next: (workspace) => {
-  //           this.isLoading.set(false);
-  //           this.dialogRef.close(workspace);
-  //         },
-  //         error: () => {
-  //           this.isLoading.set(false);
-  //         }
-  //       })
-  //     }
-  //   }
 }

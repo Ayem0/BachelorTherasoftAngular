@@ -1,4 +1,11 @@
-import { Component, inject, Signal, viewChild } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  signal,
+  Signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -14,8 +21,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
-import { SlotStore } from '../../../slot/slot.store';
-import { Slot } from '../../slot';
+import { Slot } from '../../models/slot';
+import { SlotService } from '../../services/slot.service';
 import { SlotDialogComponent } from '../slot-dialog/slot-dialog.component';
 
 @Component({
@@ -32,45 +39,62 @@ import { SlotDialogComponent } from '../slot-dialog/slot-dialog.component';
     MatPaginatorModule,
     MatTableModule,
     MatSortModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   templateUrl: './slot-list.component.html',
-  styleUrl: './slot-list.component.scss'
+  styleUrl: './slot-list.component.scss',
 })
 export class SlotListComponent {
   private readonly matDialog = inject(MatDialog);
-  public readonly slotStore = inject(SlotStore);
+  private readonly slotService = inject(SlotService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-
-  public search = new FormControl("");
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
+  public search = new FormControl('');
+  public isLoading = signal(false);
   public dataSource = new MatTableDataSource<Slot>([]);
-  public displayedColumns: string[] = ['name', 'description', 'startTime', 'endTime', 'startDate', 'endDate', 'action'];
+  public displayedColumns: string[] = [
+    'name',
+    'description',
+    'startTime',
+    'endTime',
+    'startDate',
+    'endDate',
+    'action',
+  ];
 
-  public ngOnInit(): void {
-    this.slotStore.getSlotsByWorkspaceId(this.workspaceId()).subscribe(slots => {
-      this.dataSource.data = slots;
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.slotService.slotsBySelectedWorkspaceId();
+      if (this.paginator && this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
     });
+  }
+
+  public async ngOnInit() {
+    this.isLoading.set(true);
+    this.slotService.selectedWorkspaceId.set(this.workspaceId());
+    await this.slotService.getSlotsByWorkspaceId(this.workspaceId());
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator();
     this.dataSource.sort = this.sort();
     this.paginator().length = this.dataSource.data.length;
-    this.search.valueChanges.pipe(debounceTime(200)).subscribe(x => {
-      this.dataSource.filter = x?.trim().toLowerCase() || "";
+    this.search.valueChanges.pipe(debounceTime(200)).subscribe((x) => {
+      this.dataSource.filter = x?.trim().toLowerCase() || '';
       this.dataSource.paginator?.firstPage();
       this.paginator().length = this.dataSource.data.length;
     });
   }
 
   public openDialog(slot?: Partial<Slot>) {
-    this.matDialog.open(SlotDialogComponent, { data: { workspaceId: this.workspaceId(), slot: slot}, width: '500px' }).afterClosed().subscribe(x => {
-      if (x) {
-        this.dataSource.data = this.slotStore.slotIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.slotStore.slots().get(x)!) ?? [];
-      } 
+    this.matDialog.open(SlotDialogComponent, {
+      data: { workspaceId: this.workspaceId(), slot: slot },
+      width: '500px',
     });
   }
 }

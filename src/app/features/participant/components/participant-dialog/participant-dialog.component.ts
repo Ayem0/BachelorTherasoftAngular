@@ -16,10 +16,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { catchError, of, tap } from 'rxjs';
-import { ParticipantCategory } from '../../../participant-category/participant-category';
-import { ParticipantCategoryStore } from '../../../participant-category/participant-category.store';
-import { Participant, ParticipantForm } from '../../participant';
-import { ParticipantStore } from '../../participant.store';
+import { ParticipantCategory } from '../../../participant-category/models/participant-category';
+import { ParticipantCategoryStore } from '../../../participant-category/services/participant-category.store';
+import { Participant, ParticipantForm } from '../../models/participant';
+import { ParticipantStore } from '../../services/participant.store';
 
 @Component({
   selector: 'app-participant-dialog',
@@ -68,7 +68,7 @@ export class ParticipantDialogComponent implements OnInit {
     ),
     participantCategoryId: new FormControl(
       {
-        value: this.participant()?.participantCategoryId || '',
+        value: this.participant()?.participantCategory?.id || '',
         disabled: this.disabled(),
       },
       { nonNullable: true, validators: [Validators.required] }

@@ -1,4 +1,11 @@
-import { Component, inject, Signal, viewChild } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  signal,
+  Signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,8 +20,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
-import { Tag } from '../../tag';
-import { TagStore } from '../../tag.store';
+import { Tag } from '../../models/tag';
+import { TagService } from '../../services/tag.service';
 import { TagDialogComponent } from '../tag-dialog/tag-dialog.component';
 
 @Component({
@@ -31,46 +38,59 @@ import { TagDialogComponent } from '../tag-dialog/tag-dialog.component';
     MatPaginatorModule,
     MatTableModule,
     MatSortModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   templateUrl: './tag-list.component.html',
-  styleUrl: './tag-list.component.scss'
+  styleUrl: './tag-list.component.scss',
 })
 export class TagListComponent {
   private readonly matDialog = inject(MatDialog);
-  public readonly tagStore = inject(TagStore);
+  private readonly tagService = inject(TagService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-  
-
-  public search = new FormControl("");
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
+  public search = new FormControl('');
+  public isLoading = signal(false);
   public dataSource = new MatTableDataSource<Tag>([]);
-  public displayedColumns: string[] = ['name', 'color', 'icon', 'description', 'action'];
-
-  public ngOnInit(): void {
-    this.tagStore.getTagsByWorkspaceId(this.workspaceId()).subscribe(eventCategories => {
-      this.dataSource.data = eventCategories ?? [];
+  public displayedColumns: string[] = [
+    'name',
+    'color',
+    'icon',
+    'description',
+    'action',
+  ];
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.tagService.tagsBySelectedWorkspaceId();
+      if (this.paginator && this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
     });
+  }
+
+  public async ngOnInit() {
+    this.isLoading.set(true);
+    this.tagService.selectedWorkspaceId.set(this.workspaceId());
+    await this.tagService.getTagsByWorkspaceId(this.workspaceId());
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator();
     this.dataSource.sort = this.sort();
     this.paginator().length = this.dataSource.data.length;
-    this.search.valueChanges.pipe(debounceTime(200)).subscribe(x => {
-      this.dataSource.filter = x?.trim().toLowerCase() || "";
+    this.search.valueChanges.pipe(debounceTime(200)).subscribe((x) => {
+      this.dataSource.filter = x?.trim().toLowerCase() || '';
       this.dataSource.paginator?.firstPage();
       this.paginator().length = this.dataSource.data.length;
     });
   }
 
   public openDialog(tag?: Partial<Tag>) {
-    this.matDialog.open(TagDialogComponent, { data: { workspaceId: this.workspaceId(), tag: tag}, width: '500px' }).afterClosed().subscribe(x => {
-      if (x) {
-        this.dataSource.data = this.tagStore.tagIdsByWorkspaceId().get(this.workspaceId())?.map(x => this.tagStore.tags().get(x)!) ?? [];
-      } 
+    this.matDialog.open(TagDialogComponent, {
+      data: { workspaceId: this.workspaceId(), tag: tag },
+      width: '500px',
     });
   }
 }

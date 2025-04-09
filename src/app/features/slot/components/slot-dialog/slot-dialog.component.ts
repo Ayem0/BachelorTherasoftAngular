@@ -21,13 +21,11 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTimepickerModule } from '@angular/material/timepicker';
-import { catchError, of, tap } from 'rxjs';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
 import { Repetition } from '../../../../shared/models/repetition';
-import { EventCategory } from '../../../event-category/event-category';
-import { EventCategoryStore } from '../../../event-category/event-category.store';
-import { Slot, SlotForm } from '../../slot';
-import { SlotStore } from '../../slot.store';
+import { EventCategoryService } from '../../../event-category/services/event-category.service';
+import { Slot, SlotForm } from '../../models/slot';
+import { SlotService } from '../../services/slot.service';
 
 @Component({
   selector: 'app-slot-dialog',
@@ -50,8 +48,8 @@ import { SlotStore } from '../../slot.store';
   styleUrl: './slot-dialog.component.scss',
 })
 export class SlotDialogComponent implements OnInit {
-  private readonly slotStore = inject(SlotStore);
-  private readonly eventCategoryStore = inject(EventCategoryStore);
+  private readonly slotService = inject(SlotService);
+  private readonly eventCategoryService = inject(EventCategoryService);
   private readonly matDialog = inject(MatDialog);
   private readonly dialogRef = inject(MatDialogRef<SlotDialogComponent>);
   private readonly matDialogData: { workspaceId: string; slot: Slot | null } =
@@ -60,79 +58,82 @@ export class SlotDialogComponent implements OnInit {
   public workspaceId = signal(this.matDialogData.workspaceId).asReadonly();
   public slot = signal<Slot | null>(this.matDialogData.slot).asReadonly();
   public isUpdate = computed(() => !!this.slot());
-  public eventCategories = signal<EventCategory[]>([]);
+  public eventCategories =
+    this.eventCategoryService.eventCategoriesBySelectedWorkspaceId;
   public useRepetition = false;
-  public disabled = computed(
-    () => this.slotStore.updating() || this.slotStore.creating()
-  );
+  public isLoading = signal(false);
 
   public form = new FormGroup<SlotForm>({
     name: new FormControl(
-      { value: this.slot()?.name || '', disabled: this.disabled() },
+      { value: this.slot()?.name || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
       {
         value: this.slot()?.description,
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true }
     ),
     startDate: new FormControl(
       {
         value: this.slot()?.startDate || new Date(),
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
     endDate: new FormControl(
-      { value: this.slot()?.endDate || new Date(), disabled: this.disabled() },
+      { value: this.slot()?.endDate || new Date(), disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     startTime: new FormControl(
       {
         value: this.slot()?.startTime || new Date(),
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
     endTime: new FormControl(
-      { value: this.slot()?.endTime || new Date(), disabled: this.disabled() },
+      { value: this.slot()?.endTime || new Date(), disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     eventCategoryIds: new FormControl(
       {
-        value: this.slot()?.eventCategoryIds || [],
-        disabled: this.disabled(),
+        value: [], // TODO manage to get the event categories from the slot
+        disabled: this.isLoading(),
       },
       { nonNullable: true }
     ),
     repetitionInterval: new FormControl(
       {
         value: this.slot()?.repetitionInterval,
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true }
     ),
     repetitionNumber: new FormControl(
       {
         value: this.slot()?.repetitionNumber,
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true }
     ),
     repetitionEndDate: new FormControl(
       {
         value: this.slot()?.repetitionEndDate,
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true }
     ),
   });
 
-  public ngOnInit(): void {
-    this.eventCategoryStore.setSelectedWorkspaceId(this.workspaceId());
-    this.eventCategoryStore.getEventCategoriesByWorkspaceId();
+  public async ngOnInit() {
+    this.isLoading.set(true);
+    this.eventCategoryService.selectedWorkspaceId.set(this.workspaceId());
+    await this.eventCategoryService.getEventCategoriesByWorkspaceId(
+      this.workspaceId()
+    );
+    this.isLoading.set(false);
   }
 
   public openRepetitionDialog() {
@@ -145,7 +146,7 @@ export class SlotDialogComponent implements OnInit {
     this.matDialog.open(RepetitionComponent, { data: repetition });
   }
 
-  public submit() {
+  public async submit() {
     if (
       this.form.valid &&
       this.form.value &&
@@ -156,33 +157,23 @@ export class SlotDialogComponent implements OnInit {
       this.form.value.endTime
     ) {
       const slotRequest = this.form.getRawValue();
+      let canClose = false;
+      this.isLoading.set(true);
       if (this.slot()) {
-        this.slotStore
-          .updateSlot(this.slot()!.id, slotRequest)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.slotService.updateSlot(
+          this.slot()!.id,
+          slotRequest
+        );
       } else {
-        this.slotStore
-          .createSlot(this.workspaceId(), slotRequest)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.slotService.createSlot(
+          this.workspaceId(),
+          slotRequest
+        );
       }
+      if (canClose) {
+        this.dialogRef.close();
+      }
+      this.isLoading.set(false);
     }
   }
 }

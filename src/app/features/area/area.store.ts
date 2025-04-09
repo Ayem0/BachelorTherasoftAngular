@@ -7,7 +7,7 @@ import {
   updateParentMap,
 } from '../../shared/utils/store.utils';
 import { Area, AreaRequest } from './area';
-import { AreaService } from './area.service';
+import { AreaService } from './services/area.service';
 
 type AreaState = {
   areas: Map<string, Area>; // string is area id

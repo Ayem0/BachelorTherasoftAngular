@@ -11,13 +11,12 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { catchError, of, tap } from 'rxjs';
 import {
   EventCategory,
   EventCategoryForm,
   EventCategoryRequest,
-} from '../../event-category';
-import { EventCategoryStore } from '../../event-category.store';
+} from '../../models/event-category';
+import { EventCategoryService } from '../../services/event-category.service';
 
 @Component({
   selector: 'app-event-category-dialog',
@@ -33,7 +32,7 @@ import { EventCategoryStore } from '../../event-category.store';
   styleUrl: './event-category-dialog.component.scss',
 })
 export class EventCategoryDialogComponent {
-  private readonly eventCategoryStore = inject(EventCategoryStore);
+  private readonly eventCategoryService = inject(EventCategoryService);
   private readonly dialogRef = inject(
     MatDialogRef<EventCategoryDialogComponent>
   );
@@ -46,35 +45,30 @@ export class EventCategoryDialogComponent {
   );
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.eventCategory());
-  public disabled = computed(
-    () =>
-      this.eventCategoryStore.isUpdating() ||
-      this.eventCategoryStore.isCreating()
-  );
-
+  public isLoading = signal(false);
   public form = new FormGroup<EventCategoryForm>({
     name: new FormControl(
-      { value: this.eventCategory()?.name || '', disabled: this.disabled() },
+      { value: this.eventCategory()?.name || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     color: new FormControl(
-      { value: this.eventCategory()?.color || '', disabled: this.disabled() },
+      { value: this.eventCategory()?.color || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     icon: new FormControl(
-      { value: this.eventCategory()?.icon || '', disabled: this.disabled() },
+      { value: this.eventCategory()?.icon || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
       {
         value: this.eventCategory()?.description || '',
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true }
     ),
   });
 
-  public submit() {
+  public async submit() {
     if (
       this.form.valid &&
       this.form.value &&
@@ -83,33 +77,24 @@ export class EventCategoryDialogComponent {
       this.form.value.icon
     ) {
       const req: EventCategoryRequest = this.form.getRawValue();
+      let canClose = false;
+      this.isLoading.set(true);
       if (this.eventCategory()) {
-        this.eventCategoryStore
-          .updateEventCategory(this.eventCategory()!.id, req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.eventCategoryService.updateEventCategory(
+          this.eventCategory()!.id,
+          this.workspaceId(),
+          req
+        );
       } else {
-        this.eventCategoryStore
-          .createEventCategory(this.workspaceId(), req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.eventCategoryService.createEventCategory(
+          this.workspaceId(),
+          req
+        );
       }
+      if (canClose) {
+        this.dialogRef.close(true);
+      }
+      this.isLoading.set(false);
     }
   }
 }

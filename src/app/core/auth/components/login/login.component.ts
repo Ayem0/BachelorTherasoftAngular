@@ -1,30 +1,34 @@
 import { Component, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, Validators } from '@angular/forms';
-import { FormGroup, FormControl } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinner } from '@angular/material/progress-spinner'
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
 import { SonnerService } from '../../../../shared/services/sonner/sonner.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
-    selector: 'app-login',
-    imports: [
-        ReactiveFormsModule,
-        MatCardModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        MatButtonModule,
-        MatProgressSpinner,
-        RouterLink
-    ],
-    templateUrl: './login.component.html',
-    styleUrl: './login.component.scss'
+  selector: 'app-login',
+  imports: [
+    ReactiveFormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatButtonModule,
+    MatProgressSpinner,
+    RouterLink,
+  ],
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);
@@ -35,8 +39,15 @@ export class LoginComponent {
   isLoading = signal(false);
 
   loginForm = new FormGroup({
-    email: new FormControl({ value: "", disabled: this.isLoading() }, [Validators.required, Validators.email]),
-    password: new FormControl({ value: "", disabled: this.isLoading() }, [Validators.required, Validators.minLength(10), Validators.maxLength(30)]),
+    email: new FormControl({ value: '', disabled: this.isLoading() }, [
+      Validators.required,
+      Validators.email,
+    ]),
+    password: new FormControl({ value: '', disabled: this.isLoading() }, [
+      Validators.required,
+      Validators.minLength(10),
+      Validators.maxLength(30),
+    ]),
   });
 
   togglePassword(event: MouseEvent) {
@@ -50,12 +61,12 @@ export class LoginComponent {
     if (this.loginForm.valid && email && password) {
       this.authService.login(email, password).subscribe((res) => {
         if (res) {
-          this.router.navigateByUrl("");
+          this.router.navigateByUrl('');
         } else {
-          this.sonnerService.errorToast("Invalid credentials");
+          this.sonnerService.error('Invalid credentials');
         }
         this.isLoading.set(false);
-      })
+      });
     }
   }
 }

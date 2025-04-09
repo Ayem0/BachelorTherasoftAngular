@@ -6,11 +6,11 @@ import {
   updateModelMap,
   updateParentMap,
 } from '../../shared/utils/store.utils';
-import { LocationRequest, Place } from './location';
-import { LocationService } from './location.service';
+import { Location, LocationRequest } from './location';
+import { LocationService } from './services/location.service';
 
 type LocationState = {
-  locations: Map<string, Place>;
+  locations: Map<string, Location>;
   locationIdsByWorkspaceId: Map<string, string[]>;
   loading: boolean;
   updating: boolean;
@@ -31,7 +31,7 @@ export const LocationStore = signalStore(
   { providedIn: 'root' },
   withState(initialLocationState),
   withMethods((store, locationService = inject(LocationService)) => ({
-    getLocationsByWorkspaceId(workspaceId: string): Observable<Place[]> {
+    getLocationsByWorkspaceId(workspaceId: string): Observable<Location[]> {
       patchState(store, { loading: true });
       if (store.locationIdsByWorkspaceId().has(workspaceId)) {
         const ids = store.locationIdsByWorkspaceId().get(workspaceId)!;
@@ -68,7 +68,7 @@ export const LocationStore = signalStore(
       );
     },
 
-    getLocationById(id: string): Observable<Place> {
+    getLocationById(id: string): Observable<Location> {
       patchState(store, { loading: true });
       if (store.locations().has(id)) {
         patchState(store, { loading: false });

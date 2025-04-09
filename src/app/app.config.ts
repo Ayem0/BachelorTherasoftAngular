@@ -19,7 +19,7 @@ import { firstValueFrom } from 'rxjs';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/interceptors/auth.interceptor';
 import { AuthService } from './core/auth/services/auth.service';
-import { ThemeService } from './features/theme/theme.service';
+import { ThemeService } from './features/theme/services/theme.service';
 import { TranslateService } from './shared/services/translate/translate.service';
 
 const httpLoaderFactory: (http: HttpClient) => TranslateHttpLoader = (

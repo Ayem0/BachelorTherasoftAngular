@@ -1,3 +1,5 @@
 export interface Entity {
-  id: string;
+  id: Id;
 }
+
+export type Id = string;

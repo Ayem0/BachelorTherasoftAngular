@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Room } from '../../room';
-import { RoomStore } from '../../room.store';
+import { RoomService } from '../../services/room.service';
 
 @Component({
   selector: 'app-room-details',
@@ -10,17 +9,19 @@ import { RoomStore } from '../../room.store';
   styleUrl: './room-details.component.scss',
 })
 export class RoomDetailsComponent implements OnInit {
-  private readonly roomStore = inject(RoomStore);
+  private readonly roomService = inject(RoomService);
   private readonly route = inject(ActivatedRoute);
 
-  public loading = this.roomStore.isLoading;
-  public room = signal<Room | null>(null);
+  public isLoading = signal(false);
   public roomId = signal(this.route.snapshot.paramMap.get('id'));
+  public room = this.roomService.roomBySelectedRoomId;
 
-  public ngOnInit(): void {
+  public async ngOnInit() {
     if (this.roomId()) {
-      this.roomStore.setSelectedRoomId(this.roomId()!);
-      this.roomStore.getRoomById();
+      this.roomService.selectedRoomId.set(this.roomId()!);
+      this.isLoading.set(true);
+      await this.roomService.getById(this.roomId()!);
+      this.isLoading.set(false);
     } else {
       // TODO faire un redirect ou un truc du genre jsp
     }

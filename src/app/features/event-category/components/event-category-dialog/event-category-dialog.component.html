@@ -1,33 +1,48 @@
-
-
-<div class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
-  <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate() ? "Update Event category" : "Create Event category" }}</h2>
-  <form [formGroup]="form" class="flex flex-col px-4 pb-4" (ngSubmit)="submit()">
+<div
+  class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black"
+>
+  <h2 class="p-4 dark:text-white text-2xl">
+    {{ isUpdate() ? "Update Event category" : "Create Event category" }}
+  </h2>
+  <form
+    [formGroup]="form"
+    class="flex flex-col px-4 pb-4"
+    (ngSubmit)="submit()"
+  >
     <mat-form-field appearance="outline" [hideRequiredMarker]="true">
       <mat-label>Name</mat-label>
-      <input matInput type="text" placeholder="Name" formControlName="name">
+      <input matInput type="text" placeholder="Name" formControlName="name" />
     </mat-form-field>
 
     <mat-form-field appearance="outline" [hideRequiredMarker]="true">
       <mat-label>Color</mat-label>
-      <input matInput type="text" placeholder="Color" formControlName="color">
+      <input matInput type="text" placeholder="Color" formControlName="color" />
     </mat-form-field>
 
     <mat-form-field appearance="outline" [hideRequiredMarker]="true">
       <mat-label>Icon</mat-label>
-      <input matInput type="text" placeholder="Icon" formControlName="icon">
+      <input matInput type="text" placeholder="Icon" formControlName="icon" />
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Description</mat-label>
-      <textarea matInput placeholder="Description" formControlName="description"></textarea>
+      <textarea
+        matInput
+        placeholder="Description"
+        formControlName="description"
+      ></textarea>
     </mat-form-field>
 
-    <button mat-flat-button type="submit" [disabled]="disabled() || !form.valid" class="my-4">
-      @if(disabled()) {
-          <mat-spinner diameter="24"></mat-spinner>
+    <button
+      mat-flat-button
+      type="submit"
+      [disabled]="isLoading() || !form.valid"
+      class="my-4"
+    >
+      @if(isLoading()) {
+      <mat-spinner diameter="24"></mat-spinner>
       } @else {
-          <span>{{ isUpdate() ? "Update" : "Create"}}</span>
+      <span>{{ isUpdate() ? "Update" : "Create" }}</span>
       }
     </button>
   </form>

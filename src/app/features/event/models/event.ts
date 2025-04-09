@@ -1,8 +1,36 @@
 import { FormControl } from '@angular/forms';
-import { Entity } from '../../../shared/models/entity';
+import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
+import { Entity, Id } from '../../../shared/models/entity';
 import { Interval } from '../../../shared/models/interval';
 
-export interface Event extends EventRequest, Entity {}
+interface EventRelations {
+  members?: unknown;
+  room?: unknown;
+  participants?: unknown;
+  eventCategory?: unknown;
+  tags?: unknown;
+  workspace?: unknown;
+}
+
+type BaseEvent = {
+  description?: string;
+  startDate: Date;
+  endDate: Date;
+  repetitionInterval?: Interval;
+  repetitionNumber?: number;
+  repetitionEndDate?: Date;
+} & Entity;
+export type Event<R extends EventRelations = {}> = BaseEvent &
+  FilterRelations<R>;
+
+export type StoreEvent = {
+  roomId: Id;
+  workspaceId: Id;
+  eventCategoryId: Id;
+  memberIds: Id[];
+  tagIds: Id[];
+  participantIds: Id[];
+} & BaseEvent;
 
 export interface EventRequest {
   description?: string;

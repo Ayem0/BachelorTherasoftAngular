@@ -28,7 +28,7 @@ export const routes: Routes = [
     path: 'agenda',
     loadComponent: () =>
       import(
-        './features/calendar/components/full-calendar/full-calendar.component'
+        './features/event/components/full-calendar/full-calendar.component'
       ).then((c) => c.FullCalendarComponent),
     canActivate: [authGuard],
   },

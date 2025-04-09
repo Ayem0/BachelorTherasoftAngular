@@ -10,12 +10,11 @@ export class SonnerService {
 
   constructor() {}
 
-  public errorToast(err: string) {
-    console.log('SONNER ERROR: ', err);
+  public error(err: string) {
     toast.error(err);
   }
 
-  public showToast(message: string, description: string) {
+  public success(message: string, description: string) {
     toast.message(message, {
       description: description,
     });

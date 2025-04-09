@@ -14,8 +14,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
-import { AreaStore } from '../../../area/area.store';
-import { Area } from '../../area';
+import { Area } from '../../models/area';
+import { AreaStore } from '../../services/area.store';
 import { AreaDialogComponent } from '../area-dialog/area-dialog.component';
 
 @Component({
@@ -32,17 +32,17 @@ import { AreaDialogComponent } from '../area-dialog/area-dialog.component';
     MatPaginatorModule,
     MatTableModule,
     MatSortModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   templateUrl: './area-list.component.html',
-  styleUrl: './area-list.component.scss'
+  styleUrl: './area-list.component.scss',
 })
 export class AreaListComponent {
   private readonly matDialog = inject(MatDialog);
   private readonly areaStore = inject(AreaStore);
   public readonly locationId = input.required<string>();
 
-  public search = new FormControl("");
+  public search = new FormControl('');
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
@@ -51,27 +51,39 @@ export class AreaListComponent {
   public loading = this.areaStore.loading;
 
   public ngOnInit(): void {
-    this.areaStore.getAreasByLocationId(this.locationId()).subscribe(areas => {
-      this.dataSource.data = areas ?? [];
-    });
+    this.areaStore
+      .getAreasByLocationId(this.locationId())
+      .subscribe((areas) => {
+        this.dataSource.data = areas ?? [];
+      });
   }
 
   public ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator();
     this.dataSource.sort = this.sort();
     this.paginator().length = this.dataSource.data.length;
-    this.search.valueChanges.pipe(debounceTime(200)).subscribe(x => {
-      this.dataSource.filter = x?.trim().toLowerCase() || "";
+    this.search.valueChanges.pipe(debounceTime(200)).subscribe((x) => {
+      this.dataSource.filter = x?.trim().toLowerCase() || '';
       this.dataSource.paginator?.firstPage();
       this.paginator().length = this.dataSource.data.length;
     });
   }
 
   public openDialog(area?: Partial<Area>) {
-    this.matDialog.open(AreaDialogComponent, { data: { locationId: this.locationId, area: area}, width: '500px' }).afterClosed().subscribe(x => {
-      if (x) {
-        this.dataSource.data = this.areaStore.areaIdsByLocationId().get(this.locationId())?.map(x => this.areaStore.areas().get(x)!) ?? [];
-      } 
-    });
+    this.matDialog
+      .open(AreaDialogComponent, {
+        data: { locationId: this.locationId, area: area },
+        width: '500px',
+      })
+      .afterClosed()
+      .subscribe((x) => {
+        if (x) {
+          this.dataSource.data =
+            this.areaStore
+              .areaIdsByLocationId()
+              .get(this.locationId())
+              ?.map((x) => this.areaStore.areas().get(x)!) ?? [];
+        }
+      });
   }
 }

@@ -13,8 +13,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { catchError, of, tap } from 'rxjs';
-import { LocationForm, LocationRequest, Place } from '../../location';
-import { LocationStore } from '../../location.store';
+import { Location, LocationForm, LocationRequest } from '../../models/location';
+import { LocationStore } from '../../services/location.store';
 
 @Component({
   selector: 'app-location-dialog',
@@ -34,11 +34,11 @@ export class LocationDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<LocationDialogComponent>);
   private readonly matDialogData: {
     workspaceId: Signal<string>;
-    location: Place | null;
+    location: Location | null;
   } = inject(MAT_DIALOG_DATA);
   private readonly fb = inject(FormBuilder);
 
-  public location = signal<Place | null>(this.matDialogData.location);
+  public location = signal<Location | null>(this.matDialogData.location);
   public workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.location());
   public disabled = computed(

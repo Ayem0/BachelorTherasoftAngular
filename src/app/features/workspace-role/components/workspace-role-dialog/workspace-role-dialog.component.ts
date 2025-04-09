@@ -11,9 +11,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { catchError, of, tap } from 'rxjs';
-import { WorkspaceRole, WorkspaceRoleForm } from '../../workspace-role';
-import { WorkspaceRoleStore } from '../../workspace-role.store';
+import { WorkspaceRole, WorkspaceRoleForm } from '../../models/workspace-role';
+import { WorkspaceRoleService } from '../../services/workspace-role.service';
 
 @Component({
   selector: 'app-workspace-role-dialog',
@@ -29,7 +28,7 @@ import { WorkspaceRoleStore } from '../../workspace-role.store';
   styleUrl: './workspace-role-dialog.component.scss',
 })
 export class WorkspaceRoleDialogComponent {
-  private readonly workspaceRoleStore = inject(WorkspaceRoleStore);
+  private readonly workspaceRoleService = inject(WorkspaceRoleService);
   private readonly dialogRef = inject(
     MatDialogRef<WorkspaceRoleDialogComponent>
   );
@@ -40,57 +39,45 @@ export class WorkspaceRoleDialogComponent {
   public workspaceRole = signal<WorkspaceRole | null>(
     this.matDialogData.workspaceRole
   );
-  public workspaceId = this.matDialogData.workspaceId;
+  private readonly workspaceId = this.matDialogData.workspaceId;
   public isUpdate = computed(() => !!this.workspaceRole());
-  public disabled = computed(
-    () =>
-      this.workspaceRoleStore.updating() || this.workspaceRoleStore.creating()
-  );
+  public isLoading = signal(false);
 
   public form = new FormGroup<WorkspaceRoleForm>({
     name: new FormControl<string>(
-      { value: this.workspaceRole()?.name || '', disabled: this.disabled() },
+      { value: this.workspaceRole()?.name || '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl<string | undefined>(
       {
         value: this.workspaceRole()?.description || '',
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true }
     ),
   });
 
-  public submit() {
+  public async submit() {
     if (this.form.valid && this.form.value && this.form.value.name) {
       const req = this.form.getRawValue();
+      let canClose = true;
+      this.isLoading.set(true);
       if (this.workspaceRole()) {
-        this.workspaceRoleStore
-          .updateWorkspaceRole(this.workspaceRole()!.id, req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.workspaceRoleService.updateWorkspaceRole(
+          this.workspaceRole()!.id,
+          this.workspaceId,
+          req
+        );
       } else {
-        this.workspaceRoleStore
-          .createWorkspaceRole(req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.workspaceRoleService.createWorkspaceRole(
+          this.workspaceId,
+          req
+        );
       }
+      if (canClose) {
+        this.dialogRef.close();
+      }
+      this.isLoading.set(false);
     }
   }
 }

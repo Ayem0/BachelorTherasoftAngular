@@ -20,8 +20,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
-import { Member } from '../../member';
-import { MemberStore } from '../../member.store';
+import { Member } from '../../models/member';
+import { MemberStore } from '../../services/member.store';
 
 @Component({
   selector: 'app-member-list',

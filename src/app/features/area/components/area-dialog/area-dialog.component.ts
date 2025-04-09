@@ -13,8 +13,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { catchError, of, tap } from 'rxjs';
-import { Area, AreaForm, AreaRequest } from '../../area';
-import { AreaStore } from '../../area.store';
+import { Area, AreaForm, AreaRequest } from '../../models/area';
+import { AreaStore } from '../../services/area.store';
 
 @Component({
   selector: 'app-area-dialog',
