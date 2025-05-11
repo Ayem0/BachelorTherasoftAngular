@@ -194,7 +194,7 @@ export const routes: Routes = [
   {
     path: '**',
     loadComponent: () =>
-      import('./features/not-found/not-found.component').then(
+      import('./core/not-found/not-found.component').then(
         (c) => c.NotFoundComponent
       ),
   },

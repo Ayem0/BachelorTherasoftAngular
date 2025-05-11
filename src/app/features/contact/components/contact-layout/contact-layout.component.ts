@@ -1,9 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { ContactStore } from '../../services/contact.store';
+import { ContactService } from '../../services/contact.service';
 import { ContactDialogComponent } from '../contact-dialog/contact-dialog.component';
 import { ContactListComponent } from '../contact-list/contact-list.component';
 
@@ -15,15 +15,18 @@ import { ContactListComponent } from '../contact-list/contact-list.component';
 })
 export class ContactLayoutComponent implements OnInit {
   private readonly matDialog = inject(MatDialog);
-  private readonly contactStore = inject(ContactStore);
-  public contacts = this.contactStore.contacts;
-  public isLoading = this.contactStore.isLoading;
+  private readonly contactService = inject(ContactService);
 
-  public ngOnInit(): void {
-    this.contactStore.getContacts();
+  public contacts = this.contactService.contacts();
+  public isLoading = signal(false);
+
+  public async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
+    await this.contactService.getContacts();
+    this.isLoading.set(false);
   }
 
-  public openDialog() {
+  public openDialog(): void {
     this.matDialog.open(ContactDialogComponent, { hasBackdrop: true });
   }
 }

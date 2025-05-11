@@ -1,28 +1,36 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTooltip } from '@angular/material/tooltip';
-import { Invitation, InvitationType } from '../../models/invitation.model';
-import { InvitationStore } from '../../services/invitation.store';
+import { User } from '../../../../core/auth/models/auth';
+import {
+  ContactInvitation,
+  InvitationType,
+  WorkspaceInvitation,
+} from '../../models/invitation.model';
+import { InvitationService } from '../../services/invitation.service';
 
 @Component({
   selector: 'app-pending-invitation',
-  imports: [MatButtonModule, MatIcon, MatTooltip],
+  imports: [MatButtonModule, MatIcon, MatTooltip, MatProgressSpinner],
   templateUrl: './pending-invitation.component.html',
   styleUrl: './pending-invitation.component.scss',
 })
 export class PendingInvitationComponent {
-  private readonly invitationStore = inject(InvitationStore);
-  public invitation = input.required<Invitation>();
+  private readonly invitationService = inject(InvitationService);
+  public invitation = input.required<
+    | ContactInvitation<{ receiver: User }>
+    | WorkspaceInvitation<{ receiver: User; sender: User }>
+  >();
+  public isLoading = signal(false);
 
   public cancel() {
-    switch (this.invitation().invitationType) {
-      case InvitationType.Workspace:
-        this.invitationStore.cancelWorkspaceInvitation(this.invitation().id);
-        break;
-      case InvitationType.Contact:
-        this.invitationStore.cancelContactInvitation(this.invitation().id);
-        break;
-    }
+    this.isLoading.set(true);
+    const sub =
+      this.invitation().invitationType === InvitationType.Workspace
+        ? this.invitationService.cancelWorkspaceInvitation(this.invitation().id)
+        : this.invitationService.cancelContactInvitation(this.invitation().id);
+    sub.subscribe(() => this.isLoading.set(false));
   }
 }

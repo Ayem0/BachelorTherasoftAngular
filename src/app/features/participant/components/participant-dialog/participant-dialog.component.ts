@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -15,11 +15,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { catchError, of, tap } from 'rxjs';
-import { ParticipantCategory } from '../../../participant-category/models/participant-category';
-import { ParticipantCategoryStore } from '../../../participant-category/services/participant-category.store';
-import { Participant, ParticipantForm } from '../../models/participant';
-import { ParticipantStore } from '../../services/participant.store';
+import { ParticipantCategoryService } from '../../../participant-category/services/participant-category.service';
+import { ParticipantForm } from '../../models/participant';
+import { ParticipantService } from '../../services/participant.service';
 
 @Component({
   selector: 'app-participant-dialog',
@@ -39,107 +37,101 @@ import { ParticipantStore } from '../../services/participant.store';
   styleUrl: './participant-dialog.component.scss',
 })
 export class ParticipantDialogComponent implements OnInit {
-  private readonly participantStore = inject(ParticipantStore);
-  private readonly participantCategoryStore = inject(ParticipantCategoryStore);
+  private readonly participantService = inject(ParticipantService);
+  private readonly participantCategoryService = inject(
+    ParticipantCategoryService
+  );
   private readonly dialogRef = inject(MatDialogRef<ParticipantDialogComponent>);
   private readonly matDialogData: {
     workspaceId: string;
-    participant: Participant | null;
+    participantId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
 
-  public workspaceId = signal(this.matDialogData.workspaceId).asReadonly();
-  public participant = signal<Participant | null>(
-    this.matDialogData.participant
-  ).asReadonly();
-  public isUpdate = computed(() => !!this.participant());
-  public participantCategories = signal<ParticipantCategory[]>([]);
-  public disabled = computed(
-    () => this.participantStore.updating() || this.participantStore.creating()
+  public workspaceId = this.matDialogData.workspaceId;
+  public participantId = this.matDialogData.participantId;
+  public participant = this.participantService.participantById(
+    this.participantId
   );
-
+  public isUpdate = !!this.participantId;
+  public participantCategories =
+    this.participantCategoryService.participantCategoriesByWorkspaceId(
+      this.workspaceId
+    );
+  public isLoading = signal(false);
   public form = new FormGroup<ParticipantForm>({
     firstName: new FormControl(
-      { value: this.participant()?.firstName || '', disabled: this.disabled() },
+      {
+        value: this.participant()?.firstName ?? '',
+        disabled: this.isLoading(),
+      },
       { nonNullable: true, validators: [Validators.required] }
     ),
     lastName: new FormControl(
-      { value: this.participant()?.lastName || '', disabled: this.disabled() },
+      { value: this.participant()?.lastName ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     participantCategoryId: new FormControl(
       {
-        value: this.participant()?.participantCategory?.id || '',
-        disabled: this.disabled(),
+        value: this.participant()?.participantCategoryId ?? '',
+        disabled: this.isLoading(),
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
-      { value: this.participant()?.description, disabled: this.disabled() },
+      { value: this.participant()?.description, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     email: new FormControl(
-      { value: this.participant()?.country, disabled: this.disabled() },
+      { value: this.participant()?.country, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     phoneNumber: new FormControl(
-      { value: this.participant()?.phoneNumber, disabled: this.disabled() },
+      { value: this.participant()?.phoneNumber, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     address: new FormControl(
-      { value: this.participant()?.address, disabled: this.disabled() },
+      { value: this.participant()?.address, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     city: new FormControl(
-      { value: this.participant()?.city, disabled: this.disabled() },
+      { value: this.participant()?.city, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     country: new FormControl(
-      { value: this.participant()?.country, disabled: this.disabled() },
+      { value: this.participant()?.country, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     dateOfBirth: new FormControl(
-      { value: this.participant()?.dateOfBirth, disabled: this.disabled() },
+      { value: this.participant()?.dateOfBirth, disabled: this.isLoading() },
       { nonNullable: true }
     ),
   });
 
-  public ngOnInit(): void {
-    this.participantCategoryStore
-      .getParticipantCategoriesByWorkspaceId(this.workspaceId())
-      .subscribe((participantCategories) => {
-        this.participantCategories.set(participantCategories);
-      });
+  public async ngOnInit() {
+    this.isLoading.set(true);
+    await this.participantCategoryService.getParticipantCategoriesByWorkspaceId(
+      this.workspaceId
+    );
+    this.isLoading.set(false);
   }
 
-  public submit() {
+  public async submit() {
     if (this.form.valid) {
       const req = this.form.getRawValue();
+      let canClose = false;
       if (this.participant()) {
-        this.participantStore
-          .updateParticipant(this.participant()!.id, req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.participantService.updateParticipant(
+          this.participant()!.id,
+          req
+        );
       } else {
-        this.participantStore
-          .createParticipant(this.workspaceId(), req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.participantService.createParticipant(
+          this.workspaceId,
+          req
+        );
+      }
+      if (canClose) {
+        this.dialogRef.close();
       }
     }
   }

@@ -43,6 +43,7 @@ export const appConfig: ApplicationConfig = {
         },
       }),
     ]),
+    // TODO : remove this and make it in authService and guards
     provideAppInitializer(async () => {
       const authService = inject(AuthService);
       await firstValueFrom(authService.getUserInfo());

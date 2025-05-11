@@ -8,7 +8,7 @@ import { Lang } from '../../models/lang';
 export class TranslateService {
   private readonly ngxTranslateService = inject(NgxTranslateService);
   private readonly langKey = 'lang';
-  private readonly validLangs: Lang[] = ['en', 'fr'];
+  private readonly validLangs: string[] = ['en', 'fr'];
 
   public loadLang() {
     this.ngxTranslateService.setDefaultLang('en');
@@ -40,6 +40,13 @@ export class TranslateService {
   }
 
   private toLang(lang: string | null | undefined): Lang | undefined {
-    return this.validLangs.includes(lang as Lang) ? (lang as Lang) : undefined;
+    if (lang) {
+      return this.validLangs.includes(lang) ? (lang as Lang) : undefined;
+    }
+    return undefined;
+  }
+
+  public translate(key: string): string {
+    return this.ngxTranslateService.instant(key);
   }
 }

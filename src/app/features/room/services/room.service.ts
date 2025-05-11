@@ -1,54 +1,60 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, Signal } from '@angular/core';
 import { firstValueFrom, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Room, RoomRequest } from '../models/room';
-import { RoomStore2 } from './room.store2';
+import { Id } from '../../../shared/models/entity';
+import { SonnerService } from '../../../shared/services/sonner/sonner.service';
+import { Store } from '../../../shared/services/store/store';
+import { TranslateService } from '../../../shared/services/translate/translate.service';
+import { Room, RoomRequest, UNKNOW_ROOM } from '../models/room';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RoomService {
   private readonly http = inject(HttpClient);
-  private readonly roomStore = inject(RoomStore2);
-  public selectedAreaId = signal<string | null>(null);
-  public selectedWorkspaceId = signal<string | null>(null);
-  public selectedRoomId = signal<string | null>(null);
-  public roomsBySelectedAreaId = computed(() =>
-    this.roomStore
-      .roomsArr()
-      .filter((room) => room.areaId === this.selectedAreaId())
-  );
-  public roomsBySelectedWorkspaceId = computed(() =>
-    this.roomStore
-      .roomsArr()
-      .filter((room) => room.workspaceId === this.selectedWorkspaceId())
-  );
-  public roomBySelectedRoomId = computed(() =>
-    this.selectedRoomId()
-      ? this.roomStore.rooms().get(this.selectedRoomId()!) ?? null
-      : null
-  );
+  private readonly store = inject(Store);
+  private readonly sonner = inject(SonnerService);
+  private readonly translate = inject(TranslateService);
 
-  public async getRoomsByAreaId(areaId: string) {
+  public roomsByWorkspaceId(id: Id): Signal<Room[]> {
+    return computed(() =>
+      this.store.workspacesRooms().has(id)
+        ? Array.from(
+            this.store.workspacesRooms().get(id)!,
+            (i) => this.store.rooms().get(i) ?? UNKNOW_ROOM
+          )
+        : []
+    );
+  }
+
+  public roomById(id: Id | null | undefined): Signal<Room | undefined> {
+    return computed(() => (id ? this.store.rooms().get(id) : undefined));
+  }
+
+  public roomByAreaId(id: Signal<Id>): Signal<Room[]> {
+    return computed(() =>
+      this.store.areasRooms().has(id())
+        ? Array.from(
+            this.store.areasRooms().get(id())!,
+            (i) => this.store.rooms().get(i) ?? UNKNOW_ROOM
+          )
+        : []
+    );
+  }
+
+  public async getRoomsByAreaId(id: string) {
     await firstValueFrom(
       this.http
-        .get<Room[]>(`${environment.apiUrl}/api/room/area`, {
-          params: { areaId },
-        })
+        .get<Room[]>(`${environment.apiUrl}/api/room/area?id=${id}`)
         .pipe(
           tap({
             next: (rooms) => {
-              this.roomStore.setRooms(
-                rooms.map((room) => ({
-                  ...room,
-                  areaId: areaId,
-                  workspaceId: '',
-                }))
-              ); // TODO get workspace id
+              this.store.setEntities('rooms', rooms);
             },
             error: (error) => {
               console.error(error);
+              this.sonner.error(this.translate.translate('room.get.error'));
             },
           })
         )
@@ -58,22 +64,17 @@ export class RoomService {
   public async getRoomsByWorkspaceId(workspaceId: string) {
     await firstValueFrom(
       this.http
-        .get<Room[]>(`${environment.apiUrl}/api/room/workspace`, {
-          params: { id: workspaceId },
-        })
+        .get<Room[]>(
+          `${environment.apiUrl}/api/room/workspace?id=${workspaceId}`
+        )
         .pipe(
           tap({
             next: (rooms) => {
-              this.roomStore.setRooms(
-                rooms.map((room) => ({
-                  ...room,
-                  areaId: '',
-                  workspaceId: workspaceId,
-                }))
-              ); // TODO get area id
+              this.store.setEntities('rooms', rooms);
             },
             error: (error) => {
               console.error(error);
+              this.sonner.error(this.translate.translate('room.get.error'));
             },
           })
         )
@@ -82,20 +83,17 @@ export class RoomService {
 
   public async getById(id: string) {
     await firstValueFrom(
-      this.http
-        .get<Room>(`${environment.apiUrl}/api/room`, {
-          params: { id },
+      this.http.get<Room>(`${environment.apiUrl}/api/room?id=${id}`).pipe(
+        tap({
+          next: (room) => {
+            this.store.setEntity('rooms', room);
+          },
+          error: (error) => {
+            console.error(error);
+            this.sonner.error(this.translate.translate('room.get.error'));
+          },
         })
-        .pipe(
-          tap({
-            next: (room) => {
-              this.roomStore.setRoom({ ...room, areaId: '', workspaceId: '' }); // TODO get workspace id and area id
-            },
-            error: (error) => {
-              console.error(error);
-            },
-          })
-        )
+      )
     );
   }
 
@@ -104,22 +102,21 @@ export class RoomService {
     await firstValueFrom(
       this.http
         .post<Room>(`${environment.apiUrl}/api/room`, {
+          ...req,
           areaId,
-          name: req.name,
-          description: req.description,
         })
         .pipe(
           tap({
             next: (room) => {
-              this.roomStore.setRoom({
-                ...room,
-                areaId: areaId,
-                workspaceId: '',
-              }); // TODO get workspace id
+              this.store.setEntity('rooms', room);
+              this.sonner.success(
+                this.translate.translate('room.create.success')
+              );
             },
             error: (error) => {
               console.error(error);
               isSuccess = false;
+              this.sonner.error(this.translate.translate('room.create.error'));
             },
           })
         )
@@ -130,23 +127,21 @@ export class RoomService {
   public async updateRoom(id: string, req: RoomRequest) {
     let isSuccess = true;
     await firstValueFrom(
-      this.http
-        .put<Room>(
-          `${environment.apiUrl}/api/room`,
-          { name: req.name, description: req.description },
-          { params: { id: id } }
-        )
-        .pipe(
-          tap({
-            next: (room) => {
-              this.roomStore.setRoom({ ...room, areaId: '', workspaceId: '' }); // TODO get area id
-            },
-            error: (error) => {
-              console.error(error);
-              isSuccess = false;
-            },
-          })
-        )
+      this.http.put<Room>(`${environment.apiUrl}/api/room?id=${id}`, req).pipe(
+        tap({
+          next: (room) => {
+            this.store.setEntity('rooms', room);
+            this.sonner.success(
+              this.translate.translate('room.update.success')
+            );
+          },
+          error: (error) => {
+            console.error(error);
+            isSuccess = false;
+            this.sonner.error(this.translate.translate('room.update.error'));
+          },
+        })
+      )
     );
     return isSuccess;
   }

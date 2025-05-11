@@ -22,11 +22,15 @@ interface RoomRelations {
 type BaseRoom = {
   name: string;
   description?: string;
+  workspaceId: Id;
+  areaId: Id;
 } & Entity;
 
 export type Room<R extends RoomRelations = {}> = BaseRoom & FilterRelations<R>;
 
-export type StoreRoom = BaseRoom & {
-  workspaceId: Id;
-  areaId: Id;
+export const UNKNOW_ROOM: Room = {
+  id: '',
+  name: 'Unknown Room',
+  workspaceId: '',
+  areaId: '',
 };

@@ -1,4 +1,4 @@
-import { Component, computed, inject, Signal, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -11,7 +11,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { Room, RoomForm } from '../../models/room';
+import { RoomForm } from '../../models/room';
 import { RoomService } from '../../services/room.service';
 
 @Component({
@@ -31,11 +31,11 @@ export class RoomDialogComponent {
   private readonly roomService = inject(RoomService);
   private readonly dialogRef = inject(MatDialogRef<RoomDialogComponent>);
   private readonly matDialogData: {
-    areaId: Signal<string>;
-    room: Room | null;
+    areaId: string;
+    roomId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
 
-  public room = signal<Room | null>(this.matDialogData.room);
+  public room = this.roomService.roomById(this.matDialogData.roomId);
   public areaId = this.matDialogData.areaId;
   public isUpdate = computed(() => !!this.room());
   public isLoading = signal(false);
@@ -62,10 +62,7 @@ export class RoomDialogComponent {
           roomRequest
         );
       } else {
-        canClose = await this.roomService.createRoom(
-          this.areaId(),
-          roomRequest
-        );
+        canClose = await this.roomService.createRoom(this.areaId, roomRequest);
       }
       if (canClose) {
         this.dialogRef.close();

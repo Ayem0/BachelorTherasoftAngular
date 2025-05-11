@@ -21,6 +21,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
+import { Id } from '../../../../shared/models/entity';
 import { Room } from '../../models/room';
 import { RoomService } from '../../services/room.service';
 import { RoomDialogComponent } from '../room-dialog/room-dialog.component';
@@ -55,19 +56,21 @@ export class RoomListComponent {
   public dataSource = new MatTableDataSource<Room>([]);
   public displayedColumns: string[] = ['name', 'description', 'action'];
   public isLoading = signal(false);
+  private rooms = this.roomService.roomByAreaId(this.areaId);
 
   constructor() {
     effect(() => {
-      this.dataSource.data = this.roomService.roomsBySelectedAreaId();
+      this.dataSource.data = this.rooms();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
     });
   }
 
-  public ngOnInit(): void {
-    this.roomService.selectedAreaId.set(this.areaId());
-    this.roomService.getRoomsByAreaId(this.areaId());
+  public async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
+    await this.roomService.getRoomsByAreaId(this.areaId());
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {
@@ -83,9 +86,9 @@ export class RoomListComponent {
       });
   }
 
-  public openDialog(room?: Partial<Room>) {
+  public openDialog(roomId?: Id): void {
     this.matDialog.open(RoomDialogComponent, {
-      data: { areaId: this.areaId, room: room },
+      data: { areaId: this.areaId(), roomId: roomId },
       width: '500px',
     });
   }

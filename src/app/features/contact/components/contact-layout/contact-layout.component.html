@@ -7,7 +7,11 @@
             </button>
         </div>
         <div>
-            <app-contact-list [contacts]="contacts()" [isLoading]="isLoading()"></app-contact-list>
+            @if (isLoading()) {
+            <!-- TODO make a spinner -->
+            } @else {
+            <app-contact-list [contacts]="contacts()"></app-contact-list>
+            }
         </div>
     </div>
     <div class="flex h-full border dark:border-[--mdc-outlined-card-outline-color] md:col-span-2 rounded-lg">

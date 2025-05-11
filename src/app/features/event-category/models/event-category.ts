@@ -11,11 +11,8 @@ type BaseEventCategory = {
   color: string;
   icon: string;
   description?: string;
-} & Entity;
-
-export type StoreEventCategory = BaseEventCategory & {
   workspaceId: Id;
-};
+} & Entity;
 
 export type EventCategory = BaseEventCategory &
   FilterRelations<eventCategoryRelations>;
@@ -32,3 +29,11 @@ export interface EventCategoryForm {
   icon: FormControl<string>;
   description: FormControl<string | undefined>;
 }
+
+export const UNKNOWN_EVENT_CATEGORY: EventCategory = {
+  id: '',
+  name: 'Unknown category',
+  color: '#',
+  icon: '',
+  workspaceId: '',
+};

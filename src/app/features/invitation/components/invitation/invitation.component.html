@@ -1,6 +1,6 @@
 <div class="flex flex-row items-center space justify-between">
     <div class="flex flex-row">
-        <p>{{ invitation().sender.firstName + " " + invitation().sender.lastName}}</p>
+        <p>{{ invitation().senderId }}</p>
         @switch (invitation().invitationType) {
         @case (0) {
         <p> wants to add you to the workspace </p>
@@ -15,11 +15,19 @@
     </div>
 
     <div class="flex flex-row">
-        <button mat-icon-button (click)="accept()">
-            <mat-icon>check</mat-icon>
+        <button mat-icon-button (click)="accept()" [disabled]="isLoading()">
+            @if (isAccepting()) {
+                <mat-spinner diameter="24"></mat-spinner>
+            } @else {
+                <mat-icon>check</mat-icon>
+            }
         </button>
-        <button mat-icon-button (click)="refuse()">
-            <mat-icon>close</mat-icon>
+        <button mat-icon-button (click)="refuse()" [disabled]="isLoading()">
+            @if (isRefusing()) {
+                <mat-spinner diameter="24"></mat-spinner>
+            } @else {
+                <mat-icon>close</mat-icon>
+            }
         </button>
     </div>
 </div>

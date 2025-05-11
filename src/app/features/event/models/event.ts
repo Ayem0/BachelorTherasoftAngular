@@ -20,6 +20,7 @@ type BaseEvent = {
   repetitionNumber?: number;
   repetitionEndDate?: Date;
 } & Entity;
+
 export type Event<R extends EventRelations = {}> = BaseEvent &
   FilterRelations<R>;
 

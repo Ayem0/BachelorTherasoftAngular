@@ -20,6 +20,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
+import { Id } from '../../../../shared/models/entity';
 import { EventCategory } from '../../models/event-category';
 import { EventCategoryService } from '../../services/event-category.service';
 import { EventCategoryDialogComponent } from '../event-category-dialog/event-category-dialog.component';
@@ -60,19 +61,19 @@ export class EventCategoryListComponent {
     'description',
     'action',
   ];
+  private eventCategories =
+    this.eventCategoryService.eventCategoriesByWorkspaceId(this.workspaceId());
 
   constructor() {
     effect(() => {
-      this.dataSource.data =
-        this.eventCategoryService.eventCategoriesBySelectedWorkspaceId();
+      this.dataSource.data = this.eventCategories();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
     });
   }
 
-  public async ngOnInit() {
-    this.eventCategoryService.selectedWorkspaceId.set(this.workspaceId());
+  public async ngOnInit(): Promise<void> {
     this.isLoading.set(true);
     await this.eventCategoryService.getEventCategoriesByWorkspaceId(
       this.workspaceId()
@@ -91,9 +92,9 @@ export class EventCategoryListComponent {
     });
   }
 
-  public openDialog(eventCategory?: Partial<EventCategory>) {
+  public openDialog(eventCategoryId?: Id): void {
     this.matDialog.open(EventCategoryDialogComponent, {
-      data: { workspaceId: this.workspaceId, eventCategory: eventCategory },
+      data: { workspaceId: this.workspaceId, eventCategoryId: eventCategoryId },
       width: '500px',
     });
   }

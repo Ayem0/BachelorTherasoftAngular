@@ -1,6 +1,5 @@
-import { Component, computed, inject, Signal, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
-  FormBuilder,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -12,9 +11,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { catchError, of, tap } from 'rxjs';
-import { Location, LocationForm, LocationRequest } from '../../models/location';
-import { LocationStore } from '../../services/location.store';
+import { LocationForm, LocationRequest } from '../../models/location';
+import { LocationService } from '../../services/location.service';
 
 @Component({
   selector: 'app-location-dialog',
@@ -30,74 +28,55 @@ import { LocationStore } from '../../services/location.store';
   styleUrl: './location-dialog.component.scss',
 })
 export class LocationDialogComponent {
-  private readonly locationStore = inject(LocationStore);
+  private readonly locationService = inject(LocationService);
   private readonly dialogRef = inject(MatDialogRef<LocationDialogComponent>);
   private readonly matDialogData: {
-    workspaceId: Signal<string>;
-    location: Location | null;
+    workspaceId: string;
+    locationId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
-  private readonly fb = inject(FormBuilder);
 
-  public location = signal<Location | null>(this.matDialogData.location);
-  public workspaceId = this.matDialogData.workspaceId;
-  public isUpdate = computed(() => !!this.location());
-  public disabled = computed(
-    () => this.locationStore.updating() || this.locationStore.creating()
-  );
+  private locationId = this.matDialogData.locationId;
+  private workspaceId = this.matDialogData.workspaceId;
+  private location = this.locationService.locationById(this.locationId);
+  public isUpdate = !!this.locationId;
+  public isLoading = signal(false);
 
   public form = new FormGroup<LocationForm>({
     name: new FormControl(
-      { value: this.location()?.name || '', disabled: this.disabled() },
+      { value: this.location()?.name ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
-      { value: this.location()?.description || '', disabled: this.disabled() },
+      { value: this.location()?.description, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     address: new FormControl(
-      { value: this.location()?.address || '', disabled: this.disabled() },
+      { value: this.location()?.address, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     city: new FormControl(
-      { value: this.location()?.city || '', disabled: this.disabled() },
+      { value: this.location()?.city, disabled: this.isLoading() },
       { nonNullable: true }
     ),
     country: new FormControl(
-      { value: this.location()?.country || '', disabled: this.disabled() },
+      { value: this.location()?.country, disabled: this.isLoading() },
       { nonNullable: true }
     ),
   });
 
-  public submit() {
+  public submit(): void {
     if (this.form.valid && this.form.value && this.form.value.name) {
       const req: LocationRequest = this.form.getRawValue();
-      if (this.location()) {
-        this.locationStore
-          .updateLocation(this.location()!.id, req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
-      } else {
-        this.locationStore
-          .createLocation(this.workspaceId(), req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
-      }
+      this.isLoading.set(true);
+      const sub = this.locationId
+        ? this.locationService.updateLocation(this.locationId, req)
+        : this.locationService.createLocation(this.workspaceId, req);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }

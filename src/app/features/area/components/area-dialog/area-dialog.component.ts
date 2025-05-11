@@ -1,6 +1,5 @@
-import { Component, computed, inject, Signal, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
-  FormBuilder,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -12,9 +11,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { catchError, of, tap } from 'rxjs';
-import { Area, AreaForm, AreaRequest } from '../../models/area';
-import { AreaStore } from '../../services/area.store';
+import { AreaForm, AreaRequest } from '../../models/area';
+import { AreaService } from '../../services/area.service';
 
 @Component({
   selector: 'app-area-dialog',
@@ -30,70 +28,48 @@ import { AreaStore } from '../../services/area.store';
   styleUrl: './area-dialog.component.scss',
 })
 export class AreaDialogComponent {
-  private readonly areaStore = inject(AreaStore);
+  private readonly areaService = inject(AreaService);
   private readonly dialogRef = inject(MatDialogRef<AreaDialogComponent>);
   private readonly matDialogData: {
-    locationId: Signal<string>;
-    area: Area | null;
+    locationId: string;
+    areaId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
-  private readonly fb = inject(FormBuilder);
 
-  public area = signal<Area | null>(this.matDialogData.area);
-  public locationId = this.matDialogData.locationId;
-  public isUpdate = computed(() => !!this.area());
-  public disabled = computed(
-    () => this.areaStore.updating() || this.areaStore.creating()
-  );
+  public area = this.areaService.areaById(this.matDialogData.areaId);
+  public isUpdate = !!this.matDialogData.areaId;
+  public isLoading = signal(false);
 
   public form = new FormGroup<AreaForm>({
     name: new FormControl(
-      { value: this.area()?.name || '', disabled: this.disabled() },
+      { value: this.area()?.name ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
-      { value: this.area()?.description || '', disabled: this.disabled() },
-      { nonNullable: true }
+      {
+        value: this.area()?.description ?? undefined,
+        disabled: this.isLoading(),
+      },
+      { nonNullable: true, validators: [Validators.maxLength(255)] }
     ),
   });
 
-  // public form2 = this.fb.group({
-  //   name: [this.area()?.description, ]
-  //   description: new FormControl({ value: this.area()?.description || "", disabled: this.disabled() }),
-  //   address: new FormControl({ value: this.area()?.address || "", disabled: this.disabled() }),
-  //   city: new FormControl({ value: this.area()?.city || "", disabled: this.disabled() }),
-  //   country: new FormControl({ value: this.area()?.country || "", disabled: this.disabled() }),
-  // })
-
-  public submit() {
+  public async submit() {
     if (this.form.valid) {
       const req: AreaRequest = this.form.getRawValue();
+      let canClose = true;
+      this.isLoading.set(true);
       if (this.area()) {
-        this.areaStore
-          .updateArea(this.area()!.id, req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.areaService.updateArea(this.area()!.id, req);
       } else {
-        this.areaStore
-          .createArea(this.locationId(), req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose = await this.areaService.createArea(
+          this.matDialogData.locationId,
+          req
+        );
       }
+      if (canClose) {
+        this.dialogRef.close();
+      }
+      this.isLoading.set(false);
     }
   }
 }

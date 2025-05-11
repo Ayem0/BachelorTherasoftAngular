@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -22,9 +22,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
+import { Id } from '../../../../shared/models/entity';
 import { Repetition } from '../../../../shared/models/repetition';
 import { EventCategoryService } from '../../../event-category/services/event-category.service';
-import { Slot, SlotForm } from '../../models/slot';
+import { SlotForm } from '../../models/slot';
 import { SlotService } from '../../services/slot.service';
 
 @Component({
@@ -52,20 +53,21 @@ export class SlotDialogComponent implements OnInit {
   private readonly eventCategoryService = inject(EventCategoryService);
   private readonly matDialog = inject(MatDialog);
   private readonly dialogRef = inject(MatDialogRef<SlotDialogComponent>);
-  private readonly matDialogData: { workspaceId: string; slot: Slot | null } =
+  private readonly matDialogData: { workspaceId: Id; slotId: Id | undefined } =
     inject(MAT_DIALOG_DATA);
 
-  public workspaceId = signal(this.matDialogData.workspaceId).asReadonly();
-  public slot = signal<Slot | null>(this.matDialogData.slot).asReadonly();
-  public isUpdate = computed(() => !!this.slot());
+  public slot = this.slotService.slotById(this.matDialogData.slotId);
+  public isUpdate = !!this.matDialogData.slotId;
   public eventCategories =
-    this.eventCategoryService.eventCategoriesBySelectedWorkspaceId;
+    this.eventCategoryService.eventCategoriesByWorkspaceId(
+      this.matDialogData.workspaceId
+    );
   public useRepetition = false;
   public isLoading = signal(false);
 
   public form = new FormGroup<SlotForm>({
     name: new FormControl(
-      { value: this.slot()?.name || '', disabled: this.isLoading() },
+      { value: this.slot()?.name ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
@@ -77,24 +79,24 @@ export class SlotDialogComponent implements OnInit {
     ),
     startDate: new FormControl(
       {
-        value: this.slot()?.startDate || new Date(),
+        value: this.slot()?.startDate ?? new Date(),
         disabled: this.isLoading(),
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
     endDate: new FormControl(
-      { value: this.slot()?.endDate || new Date(), disabled: this.isLoading() },
+      { value: this.slot()?.endDate ?? new Date(), disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     startTime: new FormControl(
       {
-        value: this.slot()?.startTime || new Date(),
+        value: this.slot()?.startTime ?? new Date(),
         disabled: this.isLoading(),
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
     endTime: new FormControl(
-      { value: this.slot()?.endTime || new Date(), disabled: this.isLoading() },
+      { value: this.slot()?.endTime ?? new Date(), disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     eventCategoryIds: new FormControl(
@@ -129,9 +131,8 @@ export class SlotDialogComponent implements OnInit {
 
   public async ngOnInit() {
     this.isLoading.set(true);
-    this.eventCategoryService.selectedWorkspaceId.set(this.workspaceId());
     await this.eventCategoryService.getEventCategoriesByWorkspaceId(
-      this.workspaceId()
+      this.matDialogData.workspaceId
     );
     this.isLoading.set(false);
   }
@@ -156,18 +157,15 @@ export class SlotDialogComponent implements OnInit {
       this.form.value.startTime &&
       this.form.value.endTime
     ) {
-      const slotRequest = this.form.getRawValue();
+      const req = this.form.getRawValue();
       let canClose = false;
       this.isLoading.set(true);
       if (this.slot()) {
-        canClose = await this.slotService.updateSlot(
-          this.slot()!.id,
-          slotRequest
-        );
+        canClose = await this.slotService.updateSlot(this.slot()!.id, req);
       } else {
         canClose = await this.slotService.createSlot(
-          this.workspaceId(),
-          slotRequest
+          this.matDialogData.workspaceId,
+          req
         );
       }
       if (canClose) {

@@ -22,6 +22,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
+import { Id } from '../../../../shared/models/entity';
 import { WorkspaceRole } from '../../models/workspace-role';
 import { WorkspaceRoleService } from '../../services/workspace-role.service';
 import { WorkspaceRoleDialogComponent } from '../workspace-role-dialog/workspace-role-dialog.component';
@@ -56,11 +57,13 @@ export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
   public isLoading = signal(false);
   public dataSource = new MatTableDataSource<WorkspaceRole>([]);
   public displayedColumns: string[] = ['name', 'description', 'action'];
+  public workspaceRoles = this.workspaceRoleService.workspaceRolesByWorkspaceId(
+    this.workspaceId()
+  );
 
   constructor() {
     effect(() => {
-      this.dataSource.data =
-        this.workspaceRoleService.workspaceRolesBySelectedWorkspaceId();
+      this.dataSource.data = this.workspaceRoles();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
@@ -68,7 +71,6 @@ export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
   }
 
   public async ngOnInit() {
-    this.workspaceRoleService.selectedWorkspaceId.set(this.workspaceId());
     this.isLoading.set(true);
     await this.workspaceRoleService.getWorkspaceRolesByWorkspaceId(
       this.workspaceId()
@@ -90,9 +92,12 @@ export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
       });
   }
 
-  public openDialog(workspaceRole?: Partial<WorkspaceRole>) {
+  public openDialog(workspaceRoleId?: Id) {
     this.matDialog.open(WorkspaceRoleDialogComponent, {
-      data: { workspaceId: this.workspaceId(), workspaceRole: workspaceRole },
+      data: {
+        workspaceId: this.workspaceId(),
+        workspaceRoleId: workspaceRoleId,
+      },
       width: '500px',
     });
   }

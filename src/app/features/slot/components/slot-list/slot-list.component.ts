@@ -21,6 +21,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
+import { Id } from '../../../../shared/models/entity';
 import { Slot } from '../../models/slot';
 import { SlotService } from '../../services/slot.service';
 import { SlotDialogComponent } from '../slot-dialog/slot-dialog.component';
@@ -63,10 +64,11 @@ export class SlotListComponent {
     'endDate',
     'action',
   ];
+  public slots = this.slotService.slotsByWorkspaceId(this.workspaceId());
 
   constructor() {
     effect(() => {
-      this.dataSource.data = this.slotService.slotsBySelectedWorkspaceId();
+      this.dataSource.data = this.slots();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
@@ -75,7 +77,6 @@ export class SlotListComponent {
 
   public async ngOnInit() {
     this.isLoading.set(true);
-    this.slotService.selectedWorkspaceId.set(this.workspaceId());
     await this.slotService.getSlotsByWorkspaceId(this.workspaceId());
     this.isLoading.set(false);
   }
@@ -91,9 +92,9 @@ export class SlotListComponent {
     });
   }
 
-  public openDialog(slot?: Partial<Slot>) {
+  public openDialog(slotId?: Id) {
     this.matDialog.open(SlotDialogComponent, {
-      data: { workspaceId: this.workspaceId(), slot: slot },
+      data: { workspaceId: this.workspaceId(), slotId: slotId },
       width: '500px',
     });
   }

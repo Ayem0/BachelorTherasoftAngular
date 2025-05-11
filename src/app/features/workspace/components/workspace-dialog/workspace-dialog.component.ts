@@ -11,7 +11,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { Workspace, WorkspaceForm } from '../../models/workspace';
+import { WorkspaceForm } from '../../models/workspace';
 import { WorkspaceService } from '../../services/workspace.service';
 
 @Component({
@@ -30,19 +30,19 @@ import { WorkspaceService } from '../../services/workspace.service';
 export class WorkspaceDialogComponent {
   private readonly workspaceService = inject(WorkspaceService);
   private readonly dialogRef = inject(MatDialogRef<WorkspaceDialogComponent>);
-  private readonly matDialogData = inject(MAT_DIALOG_DATA);
+  private readonly workspaceId: string = inject(MAT_DIALOG_DATA);
 
-  public workspace = signal<Workspace | null>(this.matDialogData);
+  public workspace = this.workspaceService.workspaceById(this.workspaceId);
   public isUpdate = computed(() => !!this.workspace());
   public isLoading = signal(false);
   public form = new FormGroup<WorkspaceForm>({
     name: new FormControl<string>(
-      { value: this.workspace()?.name || '', disabled: this.isLoading() },
+      { value: this.workspace()?.name ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl<string | undefined>(
       {
-        value: this.workspace()?.description || '',
+        value: this.workspace()?.description ?? undefined,
         disabled: this.isLoading(),
       },
       { nonNullable: true }

@@ -1,6 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { InvitationStore } from '../../services/invitation.store';
+import { InvitationService } from '../../services/invitation.service';
 import { InvitationComponent } from '../invitation/invitation.component';
 
 @Component({
@@ -10,12 +10,14 @@ import { InvitationComponent } from '../invitation/invitation.component';
   styleUrl: './invitation-list.component.scss',
 })
 export class InvitationListComponent implements OnInit {
-  private readonly invitationStore = inject(InvitationStore);
+  private readonly invitationService = inject(InvitationService);
 
-  public invitationsReceived = this.invitationStore.invitationsReceived;
-  public isLoaded = this.invitationStore.isReceivedInvitationsLoaded;
+  public invitationsReceived = this.invitationService.invitationsReceived();
+  public isLoading = signal(false);
 
-  ngOnInit(): void {
-    this.invitationStore.getReceivedInvitations();
+  public async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
+    await this.invitationService.getReceivedInvitationsByUser();
+    this.isLoading.set(false);
   }
 }

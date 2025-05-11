@@ -1,4 +1,4 @@
-import { Component, computed, inject, Signal, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -12,7 +12,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import {
-  EventCategory,
   EventCategoryForm,
   EventCategoryRequest,
 } from '../../models/event-category';
@@ -37,31 +36,33 @@ export class EventCategoryDialogComponent {
     MatDialogRef<EventCategoryDialogComponent>
   );
   private readonly matDialogData: {
-    workspaceId: Signal<string>;
-    eventCategory: EventCategory | null;
+    workspaceId: string;
+    eventCategoryId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
-  public eventCategory = signal<EventCategory | null>(
-    this.matDialogData.eventCategory
-  );
+
   public workspaceId = this.matDialogData.workspaceId;
-  public isUpdate = computed(() => !!this.eventCategory());
+  public eventCategoryId = this.matDialogData.eventCategoryId;
+  public eventCategory = this.eventCategoryService.eventCategoryById(
+    this.eventCategoryId
+  );
+  public isUpdate = !!this.eventCategoryId;
   public isLoading = signal(false);
   public form = new FormGroup<EventCategoryForm>({
     name: new FormControl(
-      { value: this.eventCategory()?.name || '', disabled: this.isLoading() },
+      { value: this.eventCategory()?.name ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     color: new FormControl(
-      { value: this.eventCategory()?.color || '', disabled: this.isLoading() },
+      { value: this.eventCategory()?.color ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     icon: new FormControl(
-      { value: this.eventCategory()?.icon || '', disabled: this.isLoading() },
+      { value: this.eventCategory()?.icon ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
       {
-        value: this.eventCategory()?.description || '',
+        value: this.eventCategory()?.description,
         disabled: this.isLoading(),
       },
       { nonNullable: true }
@@ -82,12 +83,11 @@ export class EventCategoryDialogComponent {
       if (this.eventCategory()) {
         canClose = await this.eventCategoryService.updateEventCategory(
           this.eventCategory()!.id,
-          this.workspaceId(),
           req
         );
       } else {
         canClose = await this.eventCategoryService.createEventCategory(
-          this.workspaceId(),
+          this.workspaceId,
           req
         );
       }

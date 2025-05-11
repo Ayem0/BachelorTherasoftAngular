@@ -1,8 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AreaListComponent } from '../../../area/components/area-list/area-list.component';
-import { Location } from '../../models/location';
-import { LocationStore } from '../../services/location.store';
+import { LocationService } from '../../services/location.service';
 
 @Component({
   selector: 'app-location-details',
@@ -11,18 +10,18 @@ import { LocationStore } from '../../services/location.store';
   styleUrl: './location-details.component.scss',
 })
 export class LocationDetailsComponent implements OnInit {
-  private readonly locationStore = inject(LocationStore);
+  private readonly locationService = inject(LocationService);
   private readonly route = inject(ActivatedRoute);
 
-  public loading = this.locationStore.loading;
-  public location = signal<Location | null>(null);
-  public locationId = signal(this.route.snapshot.paramMap.get('id'));
+  public isLoading = signal(false);
+  public locationId = this.route.snapshot.paramMap.get('id');
+  public location = this.locationService.locationById(this.locationId);
 
-  public ngOnInit(): void {
-    if (this.locationId()) {
-      this.locationStore
-        .getLocationById(this.locationId()!)
-        .subscribe((x) => this.location.set(x));
+  public async ngOnInit(): Promise<void> {
+    if (this.locationId) {
+      this.isLoading.set(true);
+      await this.locationService.getById(this.locationId);
+      this.isLoading.set(false);
     } else {
       // TODO faire un redirect ou un truc du genre jsp
     }

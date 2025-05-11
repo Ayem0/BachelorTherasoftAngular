@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -11,12 +11,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { catchError, of, tap } from 'rxjs';
-import {
-  ParticipantCategory,
-  ParticipantCategoryForm,
-} from '../../models/participant-category';
-import { ParticipantCategoryStore } from '../../services/participant-category.store';
+import { ParticipantCategoryForm } from '../../models/participant-category';
+import { ParticipantCategoryService } from '../../services/participant-category.service';
 
 @Component({
   selector: 'app-participant-dialog',
@@ -32,92 +28,76 @@ import { ParticipantCategoryStore } from '../../services/participant-category.st
   styleUrl: './participant-category-dialog.component.scss',
 })
 export class ParticipantCategoryDialogComponent {
-  private readonly participantCategoryStore = inject(ParticipantCategoryStore);
+  private readonly participantCategoryService = inject(
+    ParticipantCategoryService
+  );
   private readonly dialogRef = inject(
     MatDialogRef<ParticipantCategoryDialogComponent>
   );
   private readonly matDialogData: {
     workspaceId: string;
-    participantCategory: ParticipantCategory | null;
+    participantCategoryId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
-  public participantCategory = signal<ParticipantCategory | null>(
-    this.matDialogData.participantCategory
-  );
-  public workspaceId = this.matDialogData.workspaceId;
-  public isUpdate = computed(() => !!this.participantCategory());
-  public disabled = computed(
-    () =>
-      this.participantCategoryStore.updating() ||
-      this.participantCategoryStore.creating()
-  );
+  public participantCategory =
+    this.participantCategoryService.participantCategoryById(
+      this.matDialogData.participantCategoryId
+    );
+  public isUpdate = !!this.matDialogData.participantCategoryId;
+  public isLoading = signal(false);
 
   public form = new FormGroup<ParticipantCategoryForm>({
     name: new FormControl(
       {
         value: this.participantCategory()?.name || '',
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
     color: new FormControl(
       {
         value: this.participantCategory()?.color || '',
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
     icon: new FormControl(
       {
         value: this.participantCategory()?.icon || '',
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl(
       {
         value: this.participantCategory()?.description,
-        disabled: this.disabled(),
+        disabled: this.isLoading(),
       },
       { nonNullable: true }
     ),
   });
 
-  public submit() {
-    if (
-      this.form.valid &&
-      this.form.value &&
-      this.form.value.name &&
-      this.form.value.color &&
-      this.form.value.icon
-    ) {
+  public async submit() {
+    if (this.form.valid) {
       const req = this.form.getRawValue();
+      this.isLoading.set(true);
+      let canClose = false;
       if (this.participantCategory()) {
-        this.participantCategoryStore
-          .updateParticipantCategory(this.participantCategory()!.id, req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose =
+          await this.participantCategoryService.updateParticipantCategory(
+            this.participantCategory()!.id,
+            req
+          );
       } else {
-        this.participantCategoryStore
-          .createParticipantCategory(this.workspaceId, req)
-          .pipe(
-            tap((res) => {
-              this.dialogRef.close(res);
-            }),
-            catchError((err) => {
-              console.log(err);
-              return of();
-            })
-          )
-          .subscribe();
+        canClose =
+          await this.participantCategoryService.createParticipantCategory(
+            this.matDialogData.workspaceId,
+            req
+          );
       }
+      if (canClose) {
+        this.dialogRef.close();
+      }
+      this.isLoading.set(false);
     }
   }
 }

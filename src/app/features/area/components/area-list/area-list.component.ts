@@ -1,4 +1,11 @@
-import { Component, inject, input, viewChild } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -14,8 +21,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
+import { Id } from '../../../../shared/models/entity';
 import { Area } from '../../models/area';
-import { AreaStore } from '../../services/area.store';
+import { AreaService } from '../../services/area.service';
 import { AreaDialogComponent } from '../area-dialog/area-dialog.component';
 
 @Component({
@@ -39,23 +47,30 @@ import { AreaDialogComponent } from '../area-dialog/area-dialog.component';
 })
 export class AreaListComponent {
   private readonly matDialog = inject(MatDialog);
-  private readonly areaStore = inject(AreaStore);
-  public readonly locationId = input.required<string>();
+  private readonly areaService = inject(AreaService);
 
-  public search = new FormControl('');
+  public readonly locationId = input.required<string>();
+  private areas = this.areaService.areasByLocationId(this.locationId);
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
-
+  public search = new FormControl('');
   public dataSource = new MatTableDataSource<Area>([]);
   public displayedColumns: string[] = ['name', 'description', 'action'];
-  public loading = this.areaStore.loading;
+  public isLoading = signal(false);
 
-  public ngOnInit(): void {
-    this.areaStore
-      .getAreasByLocationId(this.locationId())
-      .subscribe((areas) => {
-        this.dataSource.data = areas ?? [];
-      });
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.areas();
+      if (this.paginator && this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
+    });
+  }
+
+  public async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
+    await this.areaService.getAreasByLocationId(this.locationId());
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {
@@ -69,21 +84,10 @@ export class AreaListComponent {
     });
   }
 
-  public openDialog(area?: Partial<Area>) {
-    this.matDialog
-      .open(AreaDialogComponent, {
-        data: { locationId: this.locationId, area: area },
-        width: '500px',
-      })
-      .afterClosed()
-      .subscribe((x) => {
-        if (x) {
-          this.dataSource.data =
-            this.areaStore
-              .areaIdsByLocationId()
-              .get(this.locationId())
-              ?.map((x) => this.areaStore.areas().get(x)!) ?? [];
-        }
-      });
+  public openDialog(areaId?: Id) {
+    this.matDialog.open(AreaDialogComponent, {
+      data: { locationId: this.locationId(), areaId: areaId },
+      width: '500px',
+    });
   }
 }

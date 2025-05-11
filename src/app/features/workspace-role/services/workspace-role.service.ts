@@ -1,46 +1,69 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, Signal, signal } from '@angular/core';
+import { computed, inject, Injectable, Signal } from '@angular/core';
 import { firstValueFrom, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { WorkspaceRole, WorkspaceRoleRequest } from '../models/workspace-role';
-import { WorkspaceRoleStore } from './workspace-role.store';
+import { Id } from '../../../shared/models/entity';
+import { SonnerService } from '../../../shared/services/sonner/sonner.service';
+import { Store } from '../../../shared/services/store/store';
+import { TranslateService } from '../../../shared/services/translate/translate.service';
+import {
+  UNKNOW_WORKSPACE_ROLE,
+  WorkspaceRole,
+  WorkspaceRoleRequest,
+} from '../models/workspace-role';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WorkspaceRoleService {
   private readonly http = inject(HttpClient);
-  private readonly workspaceRoleStore = inject(WorkspaceRoleStore);
+  private readonly store = inject(Store);
+  private readonly sonner = inject(SonnerService);
+  private readonly translate = inject(TranslateService);
 
-  public selectedWorkspaceId = signal<string | null>(null);
-  public readonly workspaceRolesBySelectedWorkspaceId: Signal<WorkspaceRole[]> =
-    computed(() =>
-      this.selectedWorkspaceId() === null
-        ? []
-        : this.workspaceRoleStore
-            .workspaceRolesArr()
-            .filter((wr) => wr.workspaceId === this.selectedWorkspaceId())
+  public workspaceRolesByWorkspaceId(id: Id): Signal<WorkspaceRole[]> {
+    return computed(() =>
+      this.store.workspacesWorkspaceRoles().has(id)
+        ? Array.from(
+            this.store.workspacesWorkspaceRoles().get(id)!,
+            (i) => this.store.workspaceRoles().get(i) ?? UNKNOW_WORKSPACE_ROLE
+          )
+        : []
     );
+  }
+
+  public workspaceRoleById(
+    id: Id | null | undefined
+  ): Signal<WorkspaceRole | undefined> {
+    return computed(() =>
+      id ? this.store.workspaceRoles().get(id) : undefined
+    );
+  }
 
   public async getWorkspaceRolesByWorkspaceId(workspaceId: string) {
+    if (this.store.workspacesWorkspaceRoles().has(workspaceId)) {
+      return;
+    }
     await firstValueFrom(
       this.http
         .get<WorkspaceRole[]>(
-          `${environment.apiUrl}/api/WorkspaceRole/workspace`,
-          { params: { workspaceId } }
+          `${environment.apiUrl}/api/WorkspaceRole/workspace?id=${workspaceId}`
         )
         .pipe(
           tap({
             next: (workspaceRoles) => {
-              this.workspaceRoleStore.setWorkspaceRoles(
-                workspaceRoles.map((workspaceRole) => ({
-                  ...workspaceRole,
-                  workspaceId: workspaceId,
-                }))
+              this.store.setEntities('workspaceRoles', workspaceRoles);
+              this.store.setRelation(
+                'workspacesWorkspaceRoles',
+                workspaceId,
+                workspaceRoles.map((w) => w.id)
               );
             },
             error: (error) => {
               console.error(error);
+              this.sonner.error(
+                this.translate.translate('workspaceRole.get.error')
+              );
             },
           })
         )
@@ -56,16 +79,15 @@ export class WorkspaceRoleService {
       this.http
         .post<WorkspaceRole>(`${environment.apiUrl}/api/WorkspaceRole`, {
           workspaceId,
-          name: req.name,
-          description: req.description,
+          ...req,
         })
         .pipe(
           tap({
             next: (workspaceRole) => {
-              this.workspaceRoleStore.setWorkspaceRole({
-                ...workspaceRole,
-                workspaceId: workspaceId,
-              });
+              this.store.setEntity('workspaceRoles', workspaceRole);
+              this.store.setRelation('workspacesWorkspaceRoles', workspaceId, [
+                workspaceRole.id,
+              ]);
             },
             error: (error) => {
               console.error(error);
@@ -77,30 +99,28 @@ export class WorkspaceRoleService {
     return isSuccess;
   }
 
-  public async updateWorkspaceRole(
-    id: string,
-    workspaceId: string,
-    req: WorkspaceRoleRequest
-  ) {
+  public async updateWorkspaceRole(id: string, req: WorkspaceRoleRequest) {
     let isSuccess = true;
     await firstValueFrom(
       this.http
         .put<WorkspaceRole>(
-          `${environment.apiUrl}/api/WorkspaceRole`,
-          { name: req.name, description: req.description },
-          { params: { id: id } }
+          `${environment.apiUrl}/api/WorkspaceRole?id=${id}`,
+          req
         )
         .pipe(
           tap({
             next: (workspaceRole) => {
-              this.workspaceRoleStore.setWorkspaceRole({
-                ...workspaceRole,
-                workspaceId: workspaceId,
-              });
+              this.store.setEntity('workspaceRoles', workspaceRole);
+              this.sonner.success(
+                this.translate.translate('workspaceRole.update.success')
+              );
             },
             error: (error) => {
               console.error(error);
               isSuccess = false;
+              this.sonner.error(
+                this.translate.translate('workspaceRole.update.error')
+              );
             },
           })
         )
@@ -108,22 +128,25 @@ export class WorkspaceRoleService {
     return isSuccess;
   }
 
-  public async getWorkspaceRoleById(id: string, workspaceId: string) {
+  public async getWorkspaceRoleById(id: string) {
+    if (this.store.workspaceRoles().has(id)) {
+      return;
+    }
     await firstValueFrom(
       this.http
-        .get<WorkspaceRole>(`${environment.apiUrl}/api/WorkspaceRole/details`, {
-          params: { id: id },
-        })
+        .get<WorkspaceRole>(
+          `${environment.apiUrl}/api/WorkspaceRole/details?id=${id}`
+        )
         .pipe(
           tap({
             next: (workspaceRole) => {
-              this.workspaceRoleStore.setWorkspaceRole({
-                ...workspaceRole,
-                workspaceId: workspaceId,
-              });
+              this.store.setEntity('workspaceRoles', workspaceRole);
             },
             error: (error) => {
               console.error(error);
+              this.sonner.error(
+                this.translate.translate('workspaceRole.get.error')
+              );
             },
           })
         )

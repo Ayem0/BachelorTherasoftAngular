@@ -1,9 +1,10 @@
 import { FormControl } from '@angular/forms';
 import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
 import { Entity } from '../../../shared/models/entity';
+import { Slot, SlotRelations } from '../../slot/models/slot';
 
 interface workspaceRelationsOptions {
-  slots?: unknown;
+  slots?: Slot<SlotRelations>[];
   workspaceRoles?: unknown;
   members?: unknown;
   tags?: unknown;
@@ -32,3 +33,8 @@ export interface WorkspaceForm {
   name: FormControl<string>;
   description: FormControl<string | undefined>;
 }
+
+export const UNKNOW_WORKSPACE: Workspace = {
+  id: '',
+  name: 'Unknow Workspace',
+};

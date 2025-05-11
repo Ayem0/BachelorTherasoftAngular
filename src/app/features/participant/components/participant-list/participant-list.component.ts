@@ -1,4 +1,11 @@
-import { Component, inject, Signal, viewChild } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  signal,
+  Signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -14,8 +21,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
+import { Id } from '../../../../shared/models/entity';
 import { Participant } from '../../models/participant';
-import { ParticipantStore } from '../../services/participant.store';
+import { ParticipantService } from '../../services/participant.service';
 import { ParticipantDialogComponent } from '../participant-dialog/participant-dialog.component';
 
 @Component({
@@ -39,13 +47,16 @@ import { ParticipantDialogComponent } from '../participant-dialog/participant-di
 })
 export class ParticipantListComponent {
   private readonly matDialog = inject(MatDialog);
-  public readonly participantStore = inject(ParticipantStore);
+  private readonly participantService = inject(ParticipantService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
 
+  public isLoading = signal(false);
   public search = new FormControl('');
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
-
+  public participants = this.participantService.participantsByWorkspaceId(
+    this.workspaceId()
+  );
   public dataSource = new MatTableDataSource<Participant>([]);
   public displayedColumns: string[] = [
     'firstName',
@@ -60,12 +71,21 @@ export class ParticipantListComponent {
     'action',
   ];
 
-  public ngOnInit(): void {
-    this.participantStore
-      .getParticipantsByWorkspaceId(this.workspaceId())
-      .subscribe((participants) => {
-        this.dataSource.data = participants;
-      });
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.participants();
+      if (this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
+    });
+  }
+
+  public async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
+    await this.participantService.getParticipantsByWorkspaceId(
+      this.workspaceId()
+    );
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {
@@ -79,21 +99,10 @@ export class ParticipantListComponent {
     });
   }
 
-  public openDialog(participant?: Partial<Participant>) {
-    this.matDialog
-      .open(ParticipantDialogComponent, {
-        data: { workspaceId: this.workspaceId(), participant: participant },
-        width: '500px',
-      })
-      .afterClosed()
-      .subscribe((x) => {
-        if (x) {
-          this.dataSource.data =
-            this.participantStore
-              .participantIdsByWorkspaceId()
-              .get(this.workspaceId())
-              ?.map((x) => this.participantStore.participants().get(x)!) ?? [];
-        }
-      });
+  public openDialog(participantId?: Id): void {
+    this.matDialog.open(ParticipantDialogComponent, {
+      data: { workspaceId: this.workspaceId(), participant: participantId },
+      width: '500px',
+    });
   }
 }

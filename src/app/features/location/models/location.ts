@@ -1,16 +1,31 @@
 import { FormControl } from '@angular/forms';
-import { Area } from '../../area/models/area';
+import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
+import { Entity } from '../../../shared/models/entity';
 
-export interface Location {
-  id: string;
+interface LocationRelations {
+  workspace?: unknown;
+  events?: unknown;
+  area?: unknown;
+  slots?: unknown;
+}
+
+type BaseLocation = {
   workspaceId: string;
   name: string;
   description?: string;
   address?: string;
   city?: string;
   country?: string;
-  areas: Area[];
-}
+} & Entity;
+
+export type Location<R extends LocationRelations = {}> = BaseLocation &
+  FilterRelations<R>;
+
+export const UNKNOW_LOCATION: Location = {
+  id: '',
+  name: 'Unknown Room',
+  workspaceId: '',
+};
 
 export interface LocationRequest {
   name: string;

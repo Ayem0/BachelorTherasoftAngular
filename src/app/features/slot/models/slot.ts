@@ -29,10 +29,10 @@ export interface SlotForm {
   eventCategoryIds: FormControl<string[]>;
 }
 
-interface SlotRelations {
+export interface SlotRelations {
   workspace?: unknown;
-  eventCategories?: unknown;
-  rooms?: unknown;
+  eventCategories?: unknown[];
+  roooms?: unknown[];
 }
 
 type BaseSlot = {
@@ -45,10 +45,17 @@ type BaseSlot = {
   repetitionInterval?: Interval;
   repetitionNumber?: number;
   repetitionEndDate?: Date;
+  workspaceId: Id;
 } & Entity;
 
 export type Slot<R extends SlotRelations = {}> = BaseSlot & FilterRelations<R>;
 
-export type StoreSlot = BaseSlot & {
-  workspaceId: Id;
+export const UNKNOWN_SLOT: Slot = {
+  id: '0',
+  name: 'Unknown Slot',
+  startDate: new Date(),
+  startTime: new Date(),
+  endDate: new Date(),
+  endTime: new Date(),
+  workspaceId: '',
 };

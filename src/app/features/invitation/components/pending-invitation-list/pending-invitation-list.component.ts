@@ -1,5 +1,9 @@
 import { Component, input } from '@angular/core';
-import { Invitation } from '../../models/invitation.model';
+import { User } from '../../../../core/auth/models/auth';
+import {
+  ContactInvitation,
+  WorkspaceInvitation,
+} from '../../models/invitation.model';
 import { PendingInvitationComponent } from '../pending-invitation/pending-invitation.component';
 
 @Component({
@@ -9,5 +13,8 @@ import { PendingInvitationComponent } from '../pending-invitation/pending-invita
   styleUrl: './pending-invitation-list.component.scss',
 })
 export class PendingInvitationListComponent {
-  public invitations = input.required<Invitation[]>();
+  public invitations = input.required<
+    | ContactInvitation<{ receiver: User }>[]
+    | WorkspaceInvitation<{ receiver: User; sender: User }>[]
+  >();
 }

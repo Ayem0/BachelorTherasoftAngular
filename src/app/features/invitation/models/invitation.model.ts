@@ -1,27 +1,44 @@
-import { User } from "../../../core/auth/models/auth";
+import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
+import { Entity, Id } from '../../../shared/models/entity';
 
-export interface WorkspaceInvitation {
-  id: string;
-  invitationType: InvitationType;
-  sender: User;
-  receiver: User;
-  workspaceId: string;
+interface BaseInvitationRelations {
+  sender?: unknown;
+  receiver?: unknown;
 }
 
-export interface EventInvitation {
-  id: string;
+interface BaseInvitation {
   invitationType: InvitationType;
-  sender: User;
-  receiver: User;
-  eventId: string;
+  senderId: Id;
+  receiverId: Id;
 }
 
-export interface ContactInvitation {
-  id: string;
-  invitationType: InvitationType;
-  sender: User;
-  receiver: User;
+interface EventInvitationRelations extends BaseInvitationRelations {
+  event?: unknown;
 }
+
+interface WorkspaceInvitationRelations extends BaseInvitationRelations {
+  workspace?: unknown;
+}
+
+export type ContactInvitation<R extends BaseInvitationRelations = {}> =
+  BaseInvitation &
+    FilterRelations<R> & {
+      invitationType: InvitationType.Contact;
+    } & Entity;
+
+export type WorkspaceInvitation<R extends WorkspaceInvitationRelations = {}> =
+  BaseInvitation &
+    FilterRelations<R> & {
+      workspaceId: Id;
+      invitationType: InvitationType.Workspace;
+    } & Entity;
+
+export type EventInvitation<R extends EventInvitationRelations = {}> =
+  BaseInvitation &
+    FilterRelations<R> & {
+      eventId: Id;
+      invitationType: InvitationType.Event;
+    } & Entity;
 
 export type Invitation =
   | WorkspaceInvitation
@@ -29,7 +46,14 @@ export type Invitation =
   | ContactInvitation;
 
 export enum InvitationType {
-  Workspace,
-  Event,
-  Contact,
+  Workspace = 0,
+  Event = 1,
+  Contact = 2,
 }
+
+export const UNKNOW_INVITATION: Invitation = {
+  id: '',
+  invitationType: InvitationType.Contact,
+  senderId: '',
+  receiverId: '',
+};

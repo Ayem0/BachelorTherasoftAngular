@@ -21,6 +21,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
+import { Id } from '../../../../shared/models/entity';
 import { Workspace } from '../../models/workspace';
 import { WorkspaceService } from '../../services/workspace.service';
 import { WorkspaceDialogComponent } from '../workspace-dialog/workspace-dialog.component';
@@ -54,10 +55,11 @@ export class WorkspaceListComponent implements OnInit, AfterViewInit {
   public isLoading = signal(false);
   public dataSource = new MatTableDataSource<Workspace>([]);
   public displayedColumns: string[] = ['name', 'description', 'action'];
+  public workspaces = this.workspaceService.workspaces();
 
   constructor() {
     effect(() => {
-      this.dataSource.data = this.workspaceService.workspaces();
+      this.dataSource.data = this.workspaces();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
@@ -66,7 +68,7 @@ export class WorkspaceListComponent implements OnInit, AfterViewInit {
 
   public async ngOnInit() {
     this.isLoading.set(true);
-    await this.workspaceService.getWorkspacesByUser();
+    await this.workspaceService.getWorkspaces();
     this.isLoading.set(false);
   }
 
@@ -81,9 +83,9 @@ export class WorkspaceListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  public openDialog(workspace?: Partial<Workspace>) {
+  public openDialog(workspaceId?: Id) {
     this.matDialog.open(WorkspaceDialogComponent, {
-      data: workspace,
+      data: workspaceId,
       width: '500px',
     });
   }

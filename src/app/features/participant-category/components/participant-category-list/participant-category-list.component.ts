@@ -1,4 +1,11 @@
-import { Component, inject, Signal, viewChild } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  signal,
+  Signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -14,8 +21,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
+import { Id } from '../../../../shared/models/entity';
 import { ParticipantCategory } from '../../models/participant-category';
-import { ParticipantCategoryStore } from '../../services/participant-category.store';
+import { ParticipantCategoryService } from '../../services/participant-category.service';
 import { ParticipantCategoryDialogComponent } from '../participant-category-dialog/participant-category-dialog.component';
 
 @Component({
@@ -39,13 +47,15 @@ import { ParticipantCategoryDialogComponent } from '../participant-category-dial
 })
 export class ParticipantCategoryListComponent {
   private readonly matDialog = inject(MatDialog);
-  public readonly participantCategoryStore = inject(ParticipantCategoryStore);
+  private readonly participantCategoryService = inject(
+    ParticipantCategoryService
+  );
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-
-  public search = new FormControl('');
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
+  public search = new FormControl('');
+  public isLoading = signal(false);
   public dataSource = new MatTableDataSource<ParticipantCategory>([]);
   public displayedColumns: string[] = [
     'name',
@@ -54,13 +64,26 @@ export class ParticipantCategoryListComponent {
     'description',
     'action',
   ];
+  public participantCategories =
+    this.participantCategoryService.participantCategoriesByWorkspaceId(
+      this.workspaceId()
+    );
 
-  public ngOnInit(): void {
-    this.participantCategoryStore
-      .getParticipantCategoriesByWorkspaceId(this.workspaceId())
-      .subscribe((participantCategories) => {
-        this.dataSource.data = participantCategories ?? [];
-      });
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.participantCategories();
+      if (this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
+    });
+  }
+
+  public async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
+    await this.participantCategoryService.getParticipantCategoriesByWorkspaceId(
+      this.workspaceId()
+    );
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {
@@ -74,28 +97,13 @@ export class ParticipantCategoryListComponent {
     });
   }
 
-  public openDialog(participantCategory?: Partial<ParticipantCategory>) {
-    this.matDialog
-      .open(ParticipantCategoryDialogComponent, {
-        data: {
-          workspaceId: this.workspaceId(),
-          participantCategory: participantCategory,
-        },
-        width: '500px',
-      })
-      .afterClosed()
-      .subscribe((x) => {
-        if (x) {
-          const ids = this.participantCategoryStore
-            .participantCategoryIdsByWorkspaceId()
-            .get(this.workspaceId())!;
-          const data = ids?.map(
-            (x) => this.participantCategoryStore.participantCategories().get(x)!
-          );
-          console.log(ids);
-          console.log(data);
-          this.dataSource.data = data;
-        }
-      });
+  public openDialog(participantCategoryId?: Id): void {
+    this.matDialog.open(ParticipantCategoryDialogComponent, {
+      data: {
+        workspaceId: this.workspaceId(),
+        participantCategoryId: participantCategoryId,
+      },
+      width: '500px',
+    });
   }
 }

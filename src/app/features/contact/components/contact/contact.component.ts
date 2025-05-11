@@ -12,7 +12,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTooltip } from '@angular/material/tooltip';
 import { User } from '../../../../core/auth/models/auth';
-import { InvitationStore } from '../../../invitation/services/invitation.store';
+import { InvitationService } from '../../../invitation/services/invitation.service';
 import { WorkspaceService } from '../../../workspace/services/workspace.service';
 
 @Component({
@@ -29,7 +29,7 @@ import { WorkspaceService } from '../../../workspace/services/workspace.service'
 })
 export class ContactComponent implements OnInit {
   private readonly workspaceService = inject(WorkspaceService);
-  private readonly invitationStore = inject(InvitationStore);
+  private readonly invitationService = inject(InvitationService);
   public contact = input.required<User>();
   public name = computed(
     () =>
@@ -37,19 +37,19 @@ export class ContactComponent implements OnInit {
         .lastName?.charAt(0)
         .toUpperCase()}`
   );
-  public workspaces = this.workspaceService.workspaces;
+  public workspaces = this.workspaceService.workspaces();
   public isLoading = signal(false);
 
   public async ngOnInit() {
     this.isLoading.set(true);
-    await this.workspaceService.getWorkspacesByUser();
+    await this.workspaceService.getWorkspaces();
     this.isLoading.set(false);
   }
 
   public inviteToWorkspace(workspaceId: string) {
-    this.invitationStore.createWorkspaceInvitation([
+    this.invitationService.createWorkspaceInvitation(
       workspaceId,
-      this.contact().id,
-    ]);
+      this.contact().id
+    );
   }
 }

@@ -22,8 +22,8 @@
           <mat-header-cell *matHeaderCellDef mat-sort-header>
             Name
           </mat-header-cell>
-          <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]">
-            {{ event.name }}
+          <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
+            {{ tag.name }}
           </mat-cell>
         </ng-container>
 
@@ -31,8 +31,8 @@
           <mat-header-cell *matHeaderCellDef mat-sort-header>
             Color
           </mat-header-cell>
-          <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]">
-            {{ event.color }}
+          <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
+            {{ tag.color }}
           </mat-cell>
         </ng-container>
 
@@ -40,8 +40,8 @@
           <mat-header-cell *matHeaderCellDef mat-sort-header>
             Icon
           </mat-header-cell>
-          <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]">
-            <mat-icon>{{ event.icon }}</mat-icon>
+          <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
+            <mat-icon>{{ tag.icon }}</mat-icon>
           </mat-cell>
         </ng-container>
 
@@ -49,24 +49,20 @@
           <mat-header-cell *matHeaderCellDef mat-sort-header>
             Description
           </mat-header-cell>
-          <mat-cell *matCellDef="let event" [routerLink]="['/event', event.id]">
-            {{ event.description }}
+          <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
+            {{ tag.description }}
           </mat-cell>
         </ng-container>
 
         <ng-container matColumnDef="action">
           <mat-header-cell *matHeaderCellDef></mat-header-cell>
-          <mat-cell *matCellDef="let event">
-            <button
-              mat-icon-button
-              [matMenuTriggerFor]="menu"
-              aria-label="event actions"
-              (click)="$event.stopPropagation()"
-            >
+          <mat-cell *matCellDef="let tag">
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="tag actions"
+              (click)="$event.stopPropagation()">
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="openDialog(event)">
+              <button mat-menu-item (click)="openDialog(tag.id)">
                 <mat-icon>edit</mat-icon>
                 <span>Edit</span>
               </button>
@@ -77,17 +73,11 @@
             </mat-menu>
           </mat-cell>
         </ng-container>
-        <mat-header-row
-          *matHeaderRowDef="displayedColumns; sticky: true"
-        ></mat-header-row>
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
         <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
       </mat-table>
     </div>
-    <mat-paginator
-      [pageSizeOptions]="[5, 10, 20]"
-      showFirstLastButtons
-      aria-label="Select page of events"
-    >
+    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of events">
     </mat-paginator>
   </div>
 </div>

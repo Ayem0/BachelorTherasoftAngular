@@ -1,46 +1,66 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { firstValueFrom, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { EventCategory, EventCategoryRequest } from '../models/event-category';
-import { EventCategoryStore3 } from './event-category.store3';
+import { SonnerService } from '../../../shared/services/sonner/sonner.service';
+import { Store } from '../../../shared/services/store/store';
+import { TranslateService } from '../../../shared/services/translate/translate.service';
+import {
+  EventCategory,
+  EventCategoryRequest,
+  UNKNOWN_EVENT_CATEGORY,
+} from '../models/event-category';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EventCategoryService {
   private readonly http = inject(HttpClient);
-  private readonly eventCategoryStore = inject(EventCategoryStore3);
+  private readonly store = inject(Store);
+  private readonly sonner = inject(SonnerService);
+  private readonly translate = inject(TranslateService);
 
-  public selectedWorkspaceId = signal<string | null>(null);
-  public eventCategoriesBySelectedWorkspaceId = computed(() =>
-    this.eventCategoryStore
-      .eventCategoriesArr()
-      .filter(
-        (eventCategory) =>
-          eventCategory.workspaceId === this.selectedWorkspaceId()
-      )
-  );
+  public eventCategoriesByWorkspaceId(id: string) {
+    return computed(() =>
+      this.store.workspacesEventCategories().has(id)
+        ? Array.from(
+            this.store.workspacesEventCategories().get(id)!,
+            (i) => this.store.eventCategories().get(i) ?? UNKNOWN_EVENT_CATEGORY
+          )
+        : []
+    );
+  }
 
-  public async getEventCategoriesByWorkspaceId(workspaceId: string) {
+  public eventCategoryById(id: string | null | undefined) {
+    return computed(() =>
+      id ? this.store.eventCategories().get(id) : undefined
+    );
+  }
+
+  public async getEventCategoriesByWorkspaceId(id: string): Promise<void> {
+    if (this.store.workspacesEventCategories().has(id)) {
+      return;
+    }
     await firstValueFrom(
       this.http
         .get<EventCategory[]>(
-          `${environment.apiUrl}/api/EventCategory/workspace`,
-          { params: { workspaceId } }
+          `${environment.apiUrl}/api/EventCategory/workspace?id=${id}`
         )
         .pipe(
           tap({
             next: (eventCategories) => {
-              this.eventCategoryStore.setEventCategories(
-                eventCategories.map((eventCategory) => ({
-                  ...eventCategory,
-                  workspaceId: workspaceId,
-                }))
+              this.store.setEntities('eventCategories', eventCategories);
+              this.store.setRelation(
+                'workspacesEventCategories',
+                id,
+                eventCategories.map((eventCategory) => eventCategory.id)
               );
             },
             error: (err) => {
               console.log(err);
+              this.sonner.error(
+                this.translate.translate('eventCategory.get.error')
+              );
             },
           })
         )
@@ -50,28 +70,28 @@ export class EventCategoryService {
   public async createEventCategory(
     workspaceId: string,
     req: EventCategoryRequest
-  ) {
+  ): Promise<boolean> {
     let isSuccess = true;
     await firstValueFrom(
       this.http
         .post<EventCategory>(`${environment.apiUrl}/api/EventCategory`, {
           workspaceId,
-          name: req.name,
-          color: req.color,
-          icon: req.icon,
-          description: req.description,
+          ...req,
         })
         .pipe(
           tap({
             next: (eventCategory) => {
-              this.eventCategoryStore.setEventCategory({
-                ...eventCategory,
-                workspaceId: workspaceId,
-              });
+              this.store.setEntity('eventCategories', eventCategory);
+              this.sonner.success(
+                this.translate.translate('eventCategory.create.success')
+              );
             },
             error: (err) => {
               console.log(err);
               isSuccess = false;
+              this.sonner.error(
+                this.translate.translate('eventCategory.create.error')
+              );
             },
           })
         )
@@ -81,59 +101,33 @@ export class EventCategoryService {
 
   public async updateEventCategory(
     id: string,
-    workspaceId: string,
     req: EventCategoryRequest
-  ) {
+  ): Promise<boolean> {
     let isSuccess = true;
     await firstValueFrom(
       this.http
         .put<EventCategory>(
-          `${environment.apiUrl}/api/EventCategory`,
-          {
-            name: req.name,
-            color: req.color,
-            icon: req.icon,
-            description: req.description,
-          },
-          { params: { id: id } }
+          `${environment.apiUrl}/api/EventCategory?id=${id}`,
+          req
         )
         .pipe(
           tap({
             next: (eventCategory) => {
-              this.eventCategoryStore.setEventCategory({
-                ...eventCategory,
-                workspaceId: workspaceId,
-              });
+              this.store.setEntity('eventCategories', eventCategory);
+              this.sonner.success(
+                this.translate.translate('eventCategory.update.success')
+              );
             },
             error: (err) => {
               console.log(err);
               isSuccess = false;
+              this.sonner.error(
+                this.translate.translate('eventCategory.update.error')
+              );
             },
           })
         )
     );
     return isSuccess;
-  }
-
-  public async getEventCategoryDetailsById(id: string, workspaceId: string) {
-    await firstValueFrom(
-      this.http
-        .get<EventCategory>(`${environment.apiUrl}/api/EventCategory/details`, {
-          params: { id: id },
-        })
-        .pipe(
-          tap({
-            next: (eventCategory) => {
-              this.eventCategoryStore.setEventCategory({
-                ...eventCategory,
-                workspaceId: workspaceId,
-              });
-            },
-            error: (err) => {
-              console.log(err);
-            },
-          })
-        )
-    );
   }
 }

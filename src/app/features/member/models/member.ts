@@ -1,9 +1,27 @@
-import { WorkspaceRole } from '../../workspace-role/models/workspace-role';
+import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
+import { Entity, Id } from '../../../shared/models/entity';
 
-export interface Member {
-  id: string;
-  workspaceId: string;
+export type BaseMember = {
   firstName: string;
   lastName: string;
-  roles: WorkspaceRole[];
+  workspaceId: Id;
+} & Entity;
+
+interface MemberRelations {
+  workspace?: unknown;
+  workspaceRoles?: unknown;
 }
+export type Member<R extends MemberRelations = {}> = BaseMember &
+  FilterRelations<R>;
+
+export type StoreMember = {
+  workspaceId: Id;
+  workspaceRoleIds: Id[];
+} & BaseMember;
+
+export const UNKNOW_MEMBER: Member = {
+  id: '',
+  firstName: 'Unkown',
+  lastName: 'Member',
+  workspaceId: '',
+};

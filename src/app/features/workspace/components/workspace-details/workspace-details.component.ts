@@ -37,17 +37,19 @@ export class WorkspaceDetailsComponent implements OnInit {
   public selectedIndex = this.routes.indexOf(
     `./${this.router.url.split('/').pop()!}`
   );
-  public workspace = this.workspaceService.workspaceBySelectedId;
   public workspaceId = this.route.snapshot.paramMap.get('id');
-  public isLoading = signal(true);
+  public workspace = this.workspaceService.workspaceById(this.workspaceId);
+  public isLoading = signal(false);
 
   public async ngOnInit() {
-    if (this.workspaceId) {
-      this.isLoading.set(true);
-      this.workspaceService.selectedWorkspaceId.set(this.workspaceId);
-      await this.workspaceService.getWorkspaceById(this.workspaceId);
-      console.log(this.workspace());
-      this.isLoading.set(false);
+    try {
+      if (this.workspaceId) {
+        this.isLoading.set(true);
+        await this.workspaceService.getWorkspaceById(this.workspaceId);
+        this.isLoading.set(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   }
 

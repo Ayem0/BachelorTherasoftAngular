@@ -4,6 +4,7 @@ import {
   effect,
   inject,
   OnInit,
+  signal,
   Signal,
   viewChild,
 } from '@angular/core';
@@ -20,8 +21,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
-import { Member } from '../../models/member';
-import { MemberStore } from '../../services/member.store';
+import { User } from '../../../../core/auth/models/auth';
+import { MemberService } from '../../services/member.service';
 
 @Component({
   selector: 'app-member-list',
@@ -43,28 +44,30 @@ import { MemberStore } from '../../services/member.store';
   styleUrl: './member-list.component.scss',
 })
 export class MemberListComponent implements OnInit, AfterViewInit {
-  private readonly memberStore = inject(MemberStore);
+  private readonly memberService = inject(MemberService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
   private readonly paginator = viewChild.required(MatPaginator);
   private readonly sort = viewChild.required(MatSort);
 
   public search = new FormControl('');
-  public isLoading = this.memberStore.isLoading;
-  public dataSource = new MatTableDataSource<Member>([]);
+  public isLoading = signal(false);
+  public dataSource = new MatTableDataSource<User>([]);
   public displayedColumns: string[] = ['firstName', 'lastName', 'action'];
+  public members = this.memberService.membersByWorkspaceId(this.workspaceId());
 
   constructor() {
     effect(() => {
-      this.dataSource.data = this.memberStore.membersBySelectedWorkspaceId();
+      this.dataSource.data = this.members();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
     });
   }
 
-  public ngOnInit(): void {
-    this.memberStore.setSelectedWorkspaceId(this.workspaceId());
-    this.memberStore.getMembersByWorkspaceId();
+  public async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
+    await this.memberService.getMembersByWorkspaceId(this.workspaceId());
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {
@@ -72,7 +75,7 @@ export class MemberListComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort();
     this.search.valueChanges.pipe(debounceTime(200)).subscribe((x) => {
       this.dataSource.filter = x?.trim().toLowerCase() || '';
-      this.dataSource.filterPredicate = (data: Member, filter: string) => {
+      this.dataSource.filterPredicate = (data: User, filter: string) => {
         const dataStr = `${data.firstName} ${data.lastName}`.toLowerCase();
         return dataStr.includes(filter);
       };

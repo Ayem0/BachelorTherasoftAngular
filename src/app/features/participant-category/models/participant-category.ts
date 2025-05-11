@@ -1,13 +1,6 @@
 import { FormControl } from '@angular/forms';
-
-export interface ParticipantCategory {
-  id: string;
-  workspaceId: string;
-  name: string;
-  color: string;
-  icon: string;
-  description?: string;
-}
+import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
+import { Entity, Id } from '../../../shared/models/entity';
 
 export interface ParticipantCategoryRequest {
   name: string;
@@ -22,3 +15,26 @@ export interface ParticipantCategoryForm {
   icon: FormControl<string>;
   description: FormControl<string | undefined>;
 }
+
+interface ParticipantCategoryRelations {
+  workspace?: unknown;
+}
+
+type BaseParticipantCategory = {
+  name: string;
+  color: string;
+  icon: string;
+  description?: string;
+  workspaceId: Id;
+} & Entity;
+
+export type ParticipantCategory<R extends ParticipantCategoryRelations = {}> =
+  BaseParticipantCategory & FilterRelations<R>;
+
+export const UNKNOWN_PARTICIPANTCATEGORY: ParticipantCategory = {
+  id: '',
+  name: 'Unknown Category',
+  color: '',
+  icon: '',
+  workspaceId: '',
+};

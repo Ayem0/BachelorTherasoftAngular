@@ -1,9 +1,10 @@
 import { FormControl } from '@angular/forms';
 import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
 import { Entity, Id } from '../../../shared/models/entity';
+import { Workspace } from '../../workspace/models/workspace';
 
 interface TagRelations {
-  workspace?: unknown;
+  workspace?: Workspace;
 }
 
 type BaseTag = {
@@ -11,13 +12,10 @@ type BaseTag = {
   color: string;
   icon: string;
   description?: string;
+  workspaceId: Id;
 } & Entity;
 
 export type Tag<R extends TagRelations = {}> = BaseTag & FilterRelations<R>;
-
-export type StoreTag = {
-  workspaceId: Id;
-} & BaseTag;
 
 export interface TagRequest {
   name: string;
@@ -32,3 +30,11 @@ export interface TagForm {
   icon: FormControl<string>;
   description: FormControl<string | undefined>;
 }
+
+export const UNKNOWN_TAG: Tag = {
+  id: '',
+  name: 'Unknown',
+  color: '',
+  icon: '',
+  workspaceId: '',
+};

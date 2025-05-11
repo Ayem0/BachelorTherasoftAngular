@@ -1,4 +1,11 @@
-import { Component, inject, Signal, viewChild } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  signal,
+  Signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -14,8 +21,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
+import { Id } from '../../../../shared/models/entity';
 import { Location } from '../../models/location';
-import { LocationStore } from '../../services/location.store';
+import { LocationService } from '../../services/location.service';
 import { LocationDialogComponent } from '../location-dialog/location-dialog.component';
 
 @Component({
@@ -39,7 +47,7 @@ import { LocationDialogComponent } from '../location-dialog/location-dialog.comp
 })
 export class LocationListComponent {
   private readonly matDialog = inject(MatDialog);
-  private readonly locationStore = inject(LocationStore);
+  private readonly locationService = inject(LocationService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
 
   public search = new FormControl('');
@@ -55,14 +63,24 @@ export class LocationListComponent {
     'country',
     'action',
   ];
-  public loading = this.locationStore.loading;
+  public isLoading = signal(false);
+  private locations = this.locationService.locationsByWorkspaceId(
+    this.workspaceId()
+  );
 
-  public ngOnInit(): void {
-    this.locationStore
-      .getLocationsByWorkspaceId(this.workspaceId())
-      .subscribe((locations) => {
-        this.dataSource.data = locations ?? [];
-      });
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.locations();
+      if (this.paginator()) {
+        this.paginator().length = this.dataSource.data.length;
+      }
+    });
+  }
+
+  public async ngOnInit(): Promise<void> {
+    this.isLoading.set(true);
+    await this.locationService.getLocationsByWorkspaceId(this.workspaceId());
+    this.isLoading.set(false);
   }
 
   public ngAfterViewInit(): void {
@@ -76,21 +94,10 @@ export class LocationListComponent {
     });
   }
 
-  public openDialog(location?: Partial<Location>) {
-    this.matDialog
-      .open(LocationDialogComponent, {
-        data: { workspaceId: this.workspaceId, location: location },
-        width: '500px',
-      })
-      .afterClosed()
-      .subscribe((x) => {
-        if (x) {
-          this.dataSource.data =
-            this.locationStore
-              .locationIdsByWorkspaceId()
-              .get(this.workspaceId())
-              ?.map((x) => this.locationStore.locations().get(x)!) ?? [];
-        }
-      });
+  public openDialog(locationId?: Id): void {
+    this.matDialog.open(LocationDialogComponent, {
+      data: { workspaceId: this.workspaceId(), locationId: locationId },
+      width: '500px',
+    });
   }
 }

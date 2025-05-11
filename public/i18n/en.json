@@ -3,5 +3,25 @@
         "agenda": "Agenda",
         "workspace": "Workspace",
         "contacts": "Contacts"
+    },
+    "action": {
+        "add": "Add",
+        "edit": "Edit",
+        "create": "Create",
+        "update": "Update",
+        "delete": "Delete"
+    },
+    "area": {
+        "create": {
+            "success": "Area succesfully created",
+            "error": "Error creating area"
+        },
+        "update": {
+            "success": "Area succesfully updated",
+            "error": "Error updating area"
+        },
+        "get": {
+            "error": "Error getting area"
+        }
     }
 }

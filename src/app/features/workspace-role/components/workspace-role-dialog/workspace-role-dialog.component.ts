@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -11,7 +11,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { WorkspaceRole, WorkspaceRoleForm } from '../../models/workspace-role';
+import { WorkspaceRoleForm } from '../../models/workspace-role';
 import { WorkspaceRoleService } from '../../services/workspace-role.service';
 
 @Component({
@@ -34,23 +34,22 @@ export class WorkspaceRoleDialogComponent {
   );
   private readonly matDialogData: {
     workspaceId: string;
-    workspaceRole: WorkspaceRole | null;
+    workspaceRoleId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
-  public workspaceRole = signal<WorkspaceRole | null>(
-    this.matDialogData.workspaceRole
+  private workspaceRole = this.workspaceRoleService.workspaceRoleById(
+    this.matDialogData.workspaceRoleId
   );
-  private readonly workspaceId = this.matDialogData.workspaceId;
-  public isUpdate = computed(() => !!this.workspaceRole());
+  public isUpdate = this.matDialogData.workspaceRoleId;
   public isLoading = signal(false);
 
   public form = new FormGroup<WorkspaceRoleForm>({
     name: new FormControl<string>(
-      { value: this.workspaceRole()?.name || '', disabled: this.isLoading() },
+      { value: this.workspaceRole()?.name ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
     description: new FormControl<string | undefined>(
       {
-        value: this.workspaceRole()?.description || '',
+        value: this.workspaceRole()?.description ?? undefined,
         disabled: this.isLoading(),
       },
       { nonNullable: true }
@@ -65,12 +64,11 @@ export class WorkspaceRoleDialogComponent {
       if (this.workspaceRole()) {
         canClose = await this.workspaceRoleService.updateWorkspaceRole(
           this.workspaceRole()!.id,
-          this.workspaceId,
           req
         );
       } else {
         canClose = await this.workspaceRoleService.createWorkspaceRole(
-          this.workspaceId,
+          this.matDialogData.workspaceId,
           req
         );
       }

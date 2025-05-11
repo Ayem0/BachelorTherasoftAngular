@@ -20,6 +20,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
+import { Id } from '../../../../shared/models/entity';
 import { Tag } from '../../models/tag';
 import { TagService } from '../../services/tag.service';
 import { TagDialogComponent } from '../tag-dialog/tag-dialog.component';
@@ -60,9 +61,10 @@ export class TagListComponent {
     'description',
     'action',
   ];
+  public tags = this.tagService.tagsByWorkspaceId(this.workspaceId());
   constructor() {
     effect(() => {
-      this.dataSource.data = this.tagService.tagsBySelectedWorkspaceId();
+      this.dataSource.data = this.tags();
       if (this.paginator && this.paginator()) {
         this.paginator().length = this.dataSource.data.length;
       }
@@ -71,7 +73,6 @@ export class TagListComponent {
 
   public async ngOnInit() {
     this.isLoading.set(true);
-    this.tagService.selectedWorkspaceId.set(this.workspaceId());
     await this.tagService.getTagsByWorkspaceId(this.workspaceId());
     this.isLoading.set(false);
   }
@@ -87,9 +88,9 @@ export class TagListComponent {
     });
   }
 
-  public openDialog(tag?: Partial<Tag>) {
+  public openDialog(tagId?: Id) {
     this.matDialog.open(TagDialogComponent, {
-      data: { workspaceId: this.workspaceId(), tag: tag },
+      data: { workspaceId: this.workspaceId(), tagId: tagId },
       width: '500px',
     });
   }
