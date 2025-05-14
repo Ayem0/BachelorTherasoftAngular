@@ -40,16 +40,16 @@ export class ContactComponent implements OnInit {
   public workspaces = this.workspaceService.workspaces();
   public isLoading = signal(false);
 
-  public async ngOnInit() {
+  public ngOnInit() {
     this.isLoading.set(true);
-    await this.workspaceService.getWorkspaces();
-    this.isLoading.set(false);
+    this.workspaceService
+      .getWorkspaces()
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public inviteToWorkspace(workspaceId: string) {
-    this.invitationService.createWorkspaceInvitation(
-      workspaceId,
-      this.contact().id
-    );
+    this.invitationService
+      .createWorkspaceInvitation(workspaceId, this.contact().id)
+      .subscribe();
   }
 }

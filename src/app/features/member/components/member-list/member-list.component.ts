@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +24,7 @@ import { ROUTER_OUTLET_DATA, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
 import { User } from '../../../../core/auth/models/auth';
 import { MemberService } from '../../services/member.service';
+import { AddMemberDialogComponent } from '../add-member-dialog/add-member-dialog.component';
 
 @Component({
   selector: 'app-member-list',
@@ -45,6 +47,7 @@ import { MemberService } from '../../services/member.service';
 })
 export class MemberListComponent implements OnInit, AfterViewInit {
   private readonly memberService = inject(MemberService);
+  private readonly matDialog = inject(MatDialog);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
   private readonly paginator = viewChild.required(MatPaginator);
   private readonly sort = viewChild.required(MatSort);
@@ -64,10 +67,11 @@ export class MemberListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoading.set(true);
-    await this.memberService.getMembersByWorkspaceId(this.workspaceId());
-    this.isLoading.set(false);
+    this.memberService
+      .getMembersByWorkspaceId(this.workspaceId())
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public ngAfterViewInit(): void {
@@ -81,6 +85,13 @@ export class MemberListComponent implements OnInit, AfterViewInit {
       };
       this.dataSource.paginator?.firstPage();
       this.paginator().length = this.dataSource.filteredData.length;
+    });
+  }
+
+  public openDialog(): void {
+    this.matDialog.open(AddMemberDialogComponent, {
+      maxWidth: '500px',
+      data: this.workspaceId(),
     });
   }
 }

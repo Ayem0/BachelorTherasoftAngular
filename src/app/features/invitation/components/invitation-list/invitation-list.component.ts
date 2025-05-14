@@ -15,9 +15,10 @@ export class InvitationListComponent implements OnInit {
   public invitationsReceived = this.invitationService.invitationsReceived();
   public isLoading = signal(false);
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoading.set(true);
-    await this.invitationService.getReceivedInvitationsByUser();
-    this.isLoading.set(false);
+    this.invitationService
+      .getReceivedInvitations()
+      .subscribe(() => this.isLoading.set(false));
   }
 }

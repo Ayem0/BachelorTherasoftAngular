@@ -1,0 +1,31 @@
+<div class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
+  <h2 class="p-4 dark:text-white text-2xl">Add contact</h2>
+  <form [formGroup]="form" class="flex flex-col px-4 pb-4" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+          <mat-label>Contact</mat-label>
+          <mat-select formControlName="userId">
+            @if(isLoading()) {
+              <mat-option disabled="true"><mat-spinner diameter="24"></mat-spinner></mat-option>;
+            } @else {
+              @for (contact of contacts(); track contact.id) {
+                <mat-option di [value]="contact.id">{{contact.firstName + " " + contact.lastName}} </mat-option>
+              } @empty {
+                <mat-option disabled="true"> No contacts </mat-option>
+              }
+            }
+          </mat-select>
+      </mat-form-field>
+      <button mat-flat-button type="submit" [disabled]="isLoading() || !form.valid">
+          @if(isSubmitting()) {
+          <mat-spinner diameter="24"></mat-spinner>
+          } @else {
+            Submit
+          }
+      </button>
+  </form>
+  @if(isLoading()) {
+      <mat-spinner diameter="24"></mat-spinner>
+  } @else {
+    <app-pending-invitation-list [invitations]="pendingInvitations()"></app-pending-invitation-list>
+  }
+</div>

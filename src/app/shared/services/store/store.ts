@@ -19,7 +19,7 @@ export interface EventLoadedKey {
   range: DateRange;
 }
 
-type StoreState = {
+export type StoreState = {
   // Area
   areas: Map<Id, Area>;
   areasRooms: Map<Id, Set<Id>>;
@@ -87,8 +87,6 @@ type StoreState = {
 };
 
 type MapEntity<T> = T extends Map<unknown, infer V extends Entity> ? V : never;
-
-type MapRelation<T> = T extends Map<unknown, Set<infer X>> ? X : never;
 
 type SetValue<T> = T extends Set<infer V> ? V : never;
 
@@ -232,22 +230,33 @@ export const Store = signalStore(
     clear() {
       patchState(store, initialStoreState);
     },
-    /** Set Relation */
+    /**
+     * Set a relation in the store
+     * @param storeKey Key of the store
+     * @param key Id of the entity
+     * @param value Set of ids
+     */
     setRelation<K extends keyof StoreState>(
       storeKey: K,
       key: MapKey<StoreState[K]>,
-      value: MapRelation<StoreState[K]>[]
+      value: SetValue<MapValue<StoreState[K]>>[]
     ) {
       patchState(store, {
         [storeKey]: new Map([
           ...(store[storeKey]() as Map<
             MapKey<StoreState[K]>,
-            MapRelation<StoreState[K]>
+            SetValue<MapValue<StoreState[K]>>
           >),
-          [key, new Set(value) as MapRelation<StoreState[K]>],
+          [key, new Set(value) as SetValue<MapValue<StoreState[K]>>],
         ]),
       });
     },
+    /**
+     * Add an id to a relation set in the store
+     * @param storeKey Key of the store
+     * @param key Id of the entity
+     * @param value Id to add to the relation set
+     */
     addToRelation<K extends keyof StoreState>(
       storeKey: K,
       key: MapKey<StoreState[K]>,
@@ -257,13 +266,19 @@ export const Store = signalStore(
         store[storeKey]() as Map<MapKey<StoreState[K]>, MapSet<StoreState[K]>>
       );
       if (map.has(key)) {
-        const set = map.get(key)!;
+        const set = new Set(map.get(key)!) as MapSet<StoreState[K]>;
         map.set(key, set.add(value));
       }
       patchState(store, {
         [storeKey]: map,
       });
     },
+    /**
+     * Remove an id from a relation set in the store
+     * @param storeKey Key of the store
+     * @param key Id of the entity to delete relation from
+     * @param keyToDelete Id to delete from the relation set
+     */
     deleteFromRelation<K extends keyof StoreState>(
       storeKey: K,
       key: MapKey<StoreState[K]>,

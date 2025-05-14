@@ -69,7 +69,7 @@ export class AuthService {
     return this.http.get<User>(`${environment.apiUrl}/api/user`).pipe(
       tap((user) => {
         this.currentUser.set(user);
-        this.socket.startConnection(user.id);
+        this.socket.startConnection();
       }),
       catchError(() => {
         this.currentUser.set(null);

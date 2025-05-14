@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -49,6 +50,7 @@ import { FullCalendarHeaderComponent } from '../full-calendar-header/full-calend
     MatIcon,
     // FullCalendarSidebarComponent
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './full-calendar.component.html',
   styleUrl: './full-calendar.component.scss',
 })

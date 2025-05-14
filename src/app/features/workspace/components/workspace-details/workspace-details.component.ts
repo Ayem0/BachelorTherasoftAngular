@@ -41,15 +41,12 @@ export class WorkspaceDetailsComponent implements OnInit {
   public workspace = this.workspaceService.workspaceById(this.workspaceId);
   public isLoading = signal(false);
 
-  public async ngOnInit() {
-    try {
-      if (this.workspaceId) {
-        this.isLoading.set(true);
-        await this.workspaceService.getWorkspaceById(this.workspaceId);
-        this.isLoading.set(false);
-      }
-    } catch (error) {
-      console.error('Error:', error);
+  public ngOnInit() {
+    if (this.workspaceId) {
+      this.isLoading.set(true);
+      this.workspaceService
+        .getWorkspaceById(this.workspaceId)
+        .subscribe(() => this.isLoading.set(false));
     }
   }
 

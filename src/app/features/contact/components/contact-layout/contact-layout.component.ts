@@ -20,10 +20,11 @@ export class ContactLayoutComponent implements OnInit {
   public contacts = this.contactService.contacts();
   public isLoading = signal(false);
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoading.set(true);
-    await this.contactService.getContacts();
-    this.isLoading.set(false);
+    this.contactService
+      .getContacts()
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public openDialog(): void {

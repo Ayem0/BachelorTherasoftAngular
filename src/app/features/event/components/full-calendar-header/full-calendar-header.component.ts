@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   input,
   model,
@@ -23,6 +24,7 @@ import { ViewMode } from '../../../event/models/view-mode';
       },
     },
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './full-calendar-header.component.html',
   styleUrl: './full-calendar-header.component.scss',
 })

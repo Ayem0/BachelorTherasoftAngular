@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/guards/auth.guard';
 import { unauthGuard } from './core/auth/guards/unauth.guard';
+import { FullCalendarComponent } from './features/event/components/full-calendar/full-calendar.component';
 
 export const routes: Routes = [
   {
@@ -26,10 +27,7 @@ export const routes: Routes = [
   },
   {
     path: 'agenda',
-    loadComponent: () =>
-      import(
-        './features/event/components/full-calendar/full-calendar.component'
-      ).then((c) => c.FullCalendarComponent),
+    component: FullCalendarComponent,
     canActivate: [authGuard],
   },
   {

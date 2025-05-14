@@ -42,10 +42,11 @@ export class ContactDialogComponent implements OnInit {
     ),
   });
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoadingPendingInvitations.set(true);
-    await this.invitationService.getSentInvitations();
-    this.isLoadingPendingInvitations.set(false);
+    this.invitationService
+      .getSentInvitations()
+      .subscribe(() => this.isLoadingPendingInvitations.set(false));
   }
 
   public submit() {

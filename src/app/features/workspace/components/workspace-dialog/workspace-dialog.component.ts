@@ -49,23 +49,19 @@ export class WorkspaceDialogComponent {
     ),
   });
 
-  public async submit() {
+  public submit() {
     if (this.form.valid && this.form.controls.name.value) {
       const req = this.form.getRawValue();
       this.isLoading.set(true);
-      let canClose = false;
-      if (this.workspace()) {
-        canClose = await this.workspaceService.updateWorkspace(
-          this.workspace()!.id,
-          req
-        );
-      } else {
-        canClose = await this.workspaceService.createWorkspace(req);
-      }
-      if (canClose) {
-        this.dialogRef.close();
-      }
-      this.isLoading.set(false);
+      const sub = this.workspaceId
+        ? this.workspaceService.updateWorkspace(this.workspaceId, req)
+        : this.workspaceService.createWorkspace(req);
+      sub.subscribe((canClose) => {
+        if (canClose) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }
