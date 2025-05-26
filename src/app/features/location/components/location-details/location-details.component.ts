@@ -17,11 +17,12 @@ export class LocationDetailsComponent implements OnInit {
   public locationId = this.route.snapshot.paramMap.get('id');
   public location = this.locationService.locationById(this.locationId);
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     if (this.locationId) {
       this.isLoading.set(true);
-      await this.locationService.getById(this.locationId);
-      this.isLoading.set(false);
+      this.locationService
+        .getById(this.locationId)
+        .subscribe(() => this.isLoading.set(false));
     } else {
       // TODO faire un redirect ou un truc du genre jsp
     }

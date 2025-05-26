@@ -1,14 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import {
-  catchError,
-  filter,
-  firstValueFrom,
-  map,
-  Observable,
-  of,
-  tap,
-} from 'rxjs';
+import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
@@ -43,60 +35,51 @@ export class LocationService {
     return computed(() => (id ? this.store.locations().get(id) : undefined));
   }
 
-  public async getLocationsByWorkspaceId(id: string): Promise<void> {
-    if (this.store.workspacesLocations().has(id)) return;
+  public getLocationsByWorkspaceId(id: string): Observable<Location[]> {
+    if (this.store.workspacesLocations().has(id)) return of([]);
 
-    await firstValueFrom(
-      this.http
-        .get<Location[]>(
-          `${environment.apiUrl}/api/location/workspace?id=${id}`
-        )
-        .pipe(
-          tap({
-            next: (locations) => {
-              this.store.setEntities('locations', locations);
-              this.store.setRelation(
-                'workspacesLocations',
-                id,
-                locations.map((location) => location.id)
-              );
-            },
-            error: (error) => {
-              console.error(error);
-              this.sonner.error(this.translate.translate('location.get.error'));
-            },
-          })
-        )
-    );
+    return this.http
+      .get<Location[]>(`${environment.apiUrl}/workspace/${id}/locations`)
+      .pipe(
+        debounceTime(150),
+        tap((locations) => {
+          this.store.setEntities('locations', locations);
+          this.store.setRelation(
+            'workspacesLocations',
+            id,
+            locations.map((location) => location.id)
+          );
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.translate.translate('location.get.error'));
+          return of([]);
+        })
+      );
   }
 
-  public async getById(id: string): Promise<void> {
-    if (this.store.locations().has(id)) return;
+  public getById(id: string): Observable<Location | null> {
+    if (this.store.locations().has(id)) return of(null);
 
-    await firstValueFrom(
-      this.http
-        .get<Location>(`${environment.apiUrl}/api/location?id=${id}`)
-        .pipe(
-          tap({
-            next: (location) => {
-              this.store.setEntity('locations', location);
-            },
-            error: (error) => {
-              console.error(error);
-              this.sonner.error(this.translate.translate('location.get.error'));
-            },
-          })
-        )
+    return this.http.get<Location>(`${environment.apiUrl}/location/${id}`).pipe(
+      debounceTime(150),
+      tap((location) => this.store.setEntity('locations', location)),
+      catchError((err) => {
+        console.error(err);
+        this.sonner.error(this.translate.translate('location.get.error'));
+        return of(null);
+      })
     );
   }
 
   public createLocation(workspaceId: string, req: LocationRequest) {
     return this.http
-      .post<Location>(`${environment.apiUrl}/api/location`, {
+      .post<Location>(`${environment.apiUrl}/location`, {
         ...req,
         workspaceId: workspaceId,
       })
       .pipe(
+        debounceTime(150),
         map((location) => {
           this.store.setEntity('locations', location);
           this.store.addToRelation(
@@ -119,8 +102,9 @@ export class LocationService {
 
   public updateLocation(id: string, req: LocationRequest): Observable<boolean> {
     return this.http
-      .put<Location>(`${environment.apiUrl}/api/location?id=${id}`, req)
+      .put<Location>(`${environment.apiUrl}/location/${id}`, req)
       .pipe(
+        debounceTime(150),
         map((location) => {
           this.store.setEntity('locations', location);
           this.store.addToRelation(
@@ -139,24 +123,5 @@ export class LocationService {
           return of(false);
         })
       );
-  }
-
-  public async getDetailsById(id: string) {
-    await firstValueFrom(
-      this.http
-        .get<Location>(`${environment.apiUrl}/api/location/details?id=${id}`)
-        .pipe(
-          filter(() => !this.store.locations().has(id)),
-          tap({
-            next: (location) => {
-              this.store.setEntity('locations', location);
-            },
-            error: (error) => {
-              console.error(error);
-              this.sonner.error(this.translate.translate('location.get.error'));
-            },
-          })
-        )
-    );
   }
 }

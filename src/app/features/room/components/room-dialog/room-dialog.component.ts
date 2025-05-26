@@ -34,9 +34,10 @@ export class RoomDialogComponent {
     areaId: string;
     roomId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
+  private areaId = this.matDialogData.areaId;
+  private roomId = this.matDialogData.roomId;
 
   public room = this.roomService.roomById(this.matDialogData.roomId);
-  public areaId = this.matDialogData.areaId;
   public isUpdate = computed(() => !!this.room());
   public isLoading = signal(false);
 
@@ -51,23 +52,19 @@ export class RoomDialogComponent {
     ),
   });
 
-  public async submit() {
-    if (this.form.valid && this.form.value && this.form.value.name) {
-      const roomRequest = this.form.getRawValue();
+  public submit() {
+    if (this.form.valid) {
+      const req = this.form.getRawValue();
       this.isLoading.set(true);
-      let canClose = false;
-      if (this.room()) {
-        canClose = await this.roomService.updateRoom(
-          this.room()!.id,
-          roomRequest
-        );
-      } else {
-        canClose = await this.roomService.createRoom(this.areaId, roomRequest);
-      }
-      if (canClose) {
-        this.dialogRef.close();
-      }
-      this.isLoading.set(false);
+      const sub = this.roomId
+        ? this.roomService.updateRoom(this.roomId, req)
+        : this.roomService.createRoom(this.areaId, req);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }

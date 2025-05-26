@@ -48,8 +48,8 @@ export class EventCategoryListComponent {
   private readonly matDialog = inject(MatDialog);
   private readonly eventCategoryService = inject(EventCategoryService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-  private paginator = viewChild.required(MatPaginator);
-  private sort = viewChild.required(MatSort);
+  private paginator = viewChild(MatPaginator);
+  private sort = viewChild(MatSort);
 
   public search = new FormControl('');
   public isLoading = signal(false);
@@ -67,34 +67,38 @@ export class EventCategoryListComponent {
   constructor() {
     effect(() => {
       this.dataSource.data = this.eventCategories();
-      if (this.paginator && this.paginator()) {
-        this.paginator().length = this.dataSource.data.length;
+      if (this.paginator()) {
+        this.paginator()!.length = this.dataSource.data.length;
       }
     });
   }
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoading.set(true);
-    await this.eventCategoryService.getEventCategoriesByWorkspaceId(
-      this.workspaceId()
-    );
-    this.isLoading.set(false);
+    this.eventCategoryService
+      .getEventCategoriesByWorkspaceId(this.workspaceId())
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator();
-    this.dataSource.sort = this.sort();
-    this.paginator().length = this.dataSource.data.length;
+    this.dataSource.paginator = this.paginator() ?? null;
+    this.dataSource.sort = this.sort() ?? null;
+    if (this.paginator())
+      this.paginator()!.length = this.dataSource.data.length;
     this.search.valueChanges.pipe(debounceTime(200)).subscribe((x) => {
       this.dataSource.filter = x?.trim().toLowerCase() || '';
       this.dataSource.paginator?.firstPage();
-      this.paginator().length = this.dataSource.data.length;
+      if (this.paginator())
+        this.paginator()!.length = this.dataSource.data.length;
     });
   }
 
   public openDialog(eventCategoryId?: Id): void {
     this.matDialog.open(EventCategoryDialogComponent, {
-      data: { workspaceId: this.workspaceId, eventCategoryId: eventCategoryId },
+      data: {
+        workspaceId: this.workspaceId(),
+        eventCategoryId: eventCategoryId,
+      },
       width: '500px',
     });
   }

@@ -37,6 +37,7 @@ export class LoginComponent {
 
   isHidden = signal(true);
   isLoading = signal(false);
+  isLoadingWithGoogle = signal(false);
 
   loginForm = new FormGroup({
     email: new FormControl({ value: '', disabled: this.isLoading() }, [
@@ -68,5 +69,9 @@ export class LoginComponent {
         this.isLoading.set(false);
       });
     }
+  }
+
+  public loginWithGoogle() {
+    this.authService.loginWithGoogle();
   }
 }

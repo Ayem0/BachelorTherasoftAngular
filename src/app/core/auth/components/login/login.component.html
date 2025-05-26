@@ -27,6 +27,13 @@
                     }
                 </button>
             </form>
+            <button mat-flat-button type="button" (click)="loginWithGoogle()" [disabled]="isLoadingWithGoogle()" class="my-4">
+                @if(isLoadingWithGoogle()) {
+                    <mat-spinner diameter="24"></mat-spinner>
+                } @else {
+                    <span>Login With Google</span>
+                }
+            </button>
             <div class="flex justify-center">
                 <span class="text-sm text-zinc-700 dark:text-zinc-300">Don't have an account? <a routerLink="/register" class="text-sm hover:underline dark:hover:text-white hover:text-black underline-offset-2">Sign up</a></span>
             </div>

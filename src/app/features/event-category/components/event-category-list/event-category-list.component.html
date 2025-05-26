@@ -66,11 +66,10 @@
             </ng-container>
             <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
             <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-            <!-- No data row -->
             <tr *matNoDataRow>
                 <td colspan="3">
                     <div class="flex justify-center p-4">
-                        No workspace roles found
+                        No event categories found
                         @if (search.value) {
                         matching "{{search.value}}"
                         }
@@ -79,6 +78,6 @@
             </tr>
         </mat-table>
     </div>
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of workspace roles">
+    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of event categories">
     </mat-paginator>
 </div>

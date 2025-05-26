@@ -1,9 +1,12 @@
+
+
+
 <div class="flex size-full">
     <mat-sidenav-container [hasBackdrop]="showOver()" [style.flex]="'1 0 auto'" class="z-50 !flex">
         <mat-sidenav #sidebar [(opened)]="isSideBarOpen" autoFocus="false" [mode]="sidenavMode()"
             [fixedInViewport]="true" [fixedTopGap]="56" class="!w-64 !rounded-none">
-            <div class="flex flex-col overflow-hidden pt-2">
-                <!-- <div class="flex justify-between w-full px-2"> -->
+            <div class="flex flex-col overflow-hidden pt-2"> 
+                <!-- <div class="flex justify-between w-full px-2">  -->
                 <!-- @if(isSideBarOpen()) {
                     <button mat-icon-button (click)="toggleSidebar()">
                         <mat-icon>menu</mat-icon>
@@ -25,11 +28,35 @@
             </div>
         </mat-sidenav>
         <mat-sidenav-content class="!mr-0 !flex size-full">
-            <div class="left-0 top-0 right-0 bottom-0 flex flex-col size-full">
-                <app-full-calendar-header (todayChange)="setToday()" [todayDisable]="todayDisable()"
-                    (nextChange)="next()" (prevChange)="previous()" [dateTitle]="dateTitle()"
-                    [(isSideBarOpen)]="isSideBarOpen" [(viewMode)]="viewMode" (viewModeChange)="viewModeChange($event)">
-                </app-full-calendar-header>
+            <div class="left-0 top-0 right-0 bottom-0 flex flex-col size-full p-4 pt-0">
+                <div class="flex w-full justify-between overflow-hidden p-2 flex-col md:flex-row">
+                    <div class="flex items-center gap-2">
+                        <button mat-icon-button aria-label="TODO" (click)="toggleSidebar()">
+                            <mat-icon>{{ isSideBarOpen() ? "keyboard_double_arrow_left" : "keyboard_double_arrow_right" }}</mat-icon>
+                        </button>
+                        <span class="text-2xl">{{ dateTitle() }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button mat-stroked-button aria-label="TODO" [disabled]="todayDisable()"
+                            (click)="setToday()">Today</button>
+                        <button mat-icon-button aria-label="TODO" (click)="previous()">
+                            <mat-icon>arrow_back_ios_new</mat-icon>
+                        </button>
+                        <button mat-icon-button aria-label="TODO" (click)="next()">
+                            <mat-icon>arrow_forward_ios</mat-icon>
+                        </button>
+                        <mat-form-field appearance="outline" class="w-24 form-field-h40">
+                            <mat-select [value]="viewMode()">
+                                <mat-option value="timeGridDay">Day</mat-option>
+                                <mat-option value="timeGridWeek">Week</mat-option>
+                                <mat-option value="dayGridMonth">Month</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <button mat-icon-button>
+                            <mat-icon>settings</mat-icon>
+                        </button>
+                    </div>
+                </div>
                 <full-calendar #fullCalendar [options]="calendarOptions()"></full-calendar>
             </div>
         </mat-sidenav-content>

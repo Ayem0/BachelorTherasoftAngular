@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import { firstValueFrom, tap } from 'rxjs';
+import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
@@ -32,103 +32,77 @@ export class AreaService {
     );
   }
 
-  public async getById(id: string) {
-    if (this.store.areas().has(id)) {
-      return;
-    }
-    await firstValueFrom(
-      this.http.get<Area>(`${environment.apiUrl}/api/area?id=${id}`).pipe(
-        tap({
-          next: (area) => {
-            this.store.setEntity('areas', area);
-          },
-          error: (err) => {
-            console.error('Error fetching area:', err);
-            this.sonner.error(this.translate.translate('area.get.error'));
-          },
-        })
-      )
+  public getById(id: string): Observable<Area | null> {
+    if (this.store.areas().has(id)) return of(null);
+    return this.http.get<Area>(`${environment.apiUrl}/area/${id}`).pipe(
+      debounceTime(150),
+      tap((area) => this.store.setEntity('areas', area)),
+      catchError((err) => {
+        console.error('Error fetching area:', err);
+        this.sonner.error(this.translate.translate('area.get.error'));
+        return of(null);
+      })
     );
   }
 
-  public async getAreasByLocationId(id: string) {
-    if (this.store.locationsAreas().has(id)) {
-      return;
-    }
-    await firstValueFrom(
-      this.http
-        .get<Area[]>(`${environment.apiUrl}/api/area/location?id=${id}`)
-        .pipe(
-          tap({
-            next: (areas) => {
-              this.store.setEntities('areas', areas);
-              this.store.setRelation(
-                'locationsAreas',
-                id,
-                areas.map((area) => area.id)
-              );
-            },
-            error: (err) => {
-              console.error('Error fetching areas:', err);
-              this.sonner.error(this.translate.translate('area.get.error'));
-            },
-          })
-        )
-    );
+  public getAreasByLocationId(id: string): Observable<Area[]> {
+    if (this.store.locationsAreas().has(id)) return of([]);
+    return this.http
+      .get<Area[]>(`${environment.apiUrl}/location/${id}/areas`)
+      .pipe(
+        debounceTime(150),
+        tap((areas) => {
+          this.store.setEntities('areas', areas);
+          this.store.setRelation(
+            'locationsAreas',
+            id,
+            areas.map((area) => area.id)
+          );
+        }),
+        catchError((err) => {
+          console.error('Error fetching areas:', err);
+          this.sonner.error(this.translate.translate('area.get.error'));
+          return of([]);
+        })
+      );
   }
 
-  public async createArea(locationId: string, req: AreaRequest) {
-    let isSuccess = false;
-    await firstValueFrom(
-      this.http
-        .post<Area>(`${environment.apiUrl}/api/area`, {
-          locationId,
-          ...req,
+  public createArea(locationId: string, req: AreaRequest): Observable<boolean> {
+    return this.http
+      .post<Area>(`${environment.apiUrl}/area`, {
+        locationId,
+        ...req,
+      })
+      .pipe(
+        debounceTime(150),
+        map((area) => {
+          this.store.setEntity('areas', area);
+          this.store.addToRelation('locationsAreas', locationId, area.id);
+          this.sonner.success(this.translate.translate('area.create.success'));
+          return true;
+        }),
+        catchError((err) => {
+          console.error('Error creating area:', err);
+          this.sonner.error(this.translate.translate('area.create.error'));
+          return of(false);
         })
-        .pipe(
-          tap({
-            next: (area) => {
-              this.store.setEntity('areas', area);
-              this.store.addToRelation('locationsAreas', locationId, area.id);
-              this.sonner.success(
-                this.translate.translate('area.create.success')
-              );
-              isSuccess = true;
-            },
-            error: (err) => {
-              console.error('Error creating area:', err);
-              this.sonner.error(this.translate.translate('area.create.error'));
-            },
-          })
-        )
-    );
-    return isSuccess;
+      );
   }
 
-  public async updateArea(id: string, req: AreaRequest): Promise<boolean> {
-    let isSuccess = false;
-    await firstValueFrom(
-      this.http.put<Area>(`${environment.apiUrl}/api/area?id=${id}`, req).pipe(
-        tap({
-          next: (area) => {
-            this.store.setEntity('areas', area);
-            this.store.addToRelation(
-              'locationsAreas',
-              area.locationId,
-              area.id
-            );
-            this.sonner.success(
-              this.translate.translate('area.update.success')
-            );
-            isSuccess = true;
-          },
-          error: (err) => {
-            console.error('Error updating area:', err);
-            this.sonner.error(this.translate.translate('area.update.error'));
-          },
-        })
-      )
+  public updateArea(id: string, req: AreaRequest): Observable<boolean> {
+    return this.http.put<Area>(`${environment.apiUrl}/area/${id}`, req).pipe(
+      debounceTime(150),
+      map((area) => {
+        this.store.setEntity('areas', area);
+        this.store.addToRelation('locationsAreas', area.locationId, area.id);
+        this.sonner.success(this.translate.translate('area.update.success'));
+        return true;
+      }),
+      catchError((err) => {
+        console.error('Error updating area:', err);
+        this.sonner.error(this.translate.translate('area.update.error'));
+        return of(false);
+      })
     );
-    return isSuccess;
   }
 }

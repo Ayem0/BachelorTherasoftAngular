@@ -18,7 +18,7 @@ export class AuthService {
   public login(email: string, password: string) {
     return this.http
       .post(
-        `${environment.apiUrl}/login`,
+        `${environment.apiUrl}/auth/login`,
         { email, password },
         { params: { useCookies: true }, observe: 'response' }
       )
@@ -29,14 +29,21 @@ export class AuthService {
           }
         }),
         map((res) => res.ok),
-        catchError(() => of(false))
+        catchError((err) => {
+          console.error(err);
+          return of(false);
+        })
       );
+  }
+
+  public loginWithGoogle() {
+    window.location.href = `${environment.apiUrl}/auth/login/google`;
   }
 
   public register(email: string, password: string, confirmPassword: string) {
     return this.http
       .post(
-        `${environment.apiUrl}/register`,
+        `${environment.apiUrl}/auth/register`,
         { email, password, confirmPassword },
         { observe: 'response' }
       )
@@ -48,11 +55,7 @@ export class AuthService {
 
   public logout() {
     return this.http
-      .post(
-        `${environment.apiUrl}/api/auth/logout`,
-        {},
-        { observe: 'response' }
-      )
+      .post(`${environment.apiUrl}/auth/logout`, {}, { observe: 'response' })
       .pipe(
         tap((res) => {
           if (res.ok) {
@@ -66,7 +69,7 @@ export class AuthService {
   }
 
   public getUserInfo() {
-    return this.http.get<User>(`${environment.apiUrl}/api/user`).pipe(
+    return this.http.get<User>(`${environment.apiUrl}/user`).pipe(
       tap((user) => {
         this.currentUser.set(user);
         this.socket.startConnection();
@@ -80,7 +83,7 @@ export class AuthService {
 
   public updateUserInfo(firstname: string, lastname: string) {
     return this.http
-      .put<User>(`${environment.apiUrl}/api/user`, { firstname, lastname })
+      .put<User>(`${environment.apiUrl}/user`, { firstname, lastname })
       .pipe(
         tap((user) => this.currentUser.set(user)),
         catchError((err) => {

@@ -67,10 +67,11 @@ export class AreaListComponent {
     });
   }
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoading.set(true);
-    await this.areaService.getAreasByLocationId(this.locationId());
-    this.isLoading.set(false);
+    this.areaService
+      .getAreasByLocationId(this.locationId())
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public ngAfterViewInit(): void {

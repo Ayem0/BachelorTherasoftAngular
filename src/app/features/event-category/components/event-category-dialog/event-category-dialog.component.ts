@@ -11,10 +11,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import {
-  EventCategoryForm,
-  EventCategoryRequest,
-} from '../../models/event-category';
+import { EventCategoryForm } from '../../models/event-category';
 import { EventCategoryService } from '../../services/event-category.service';
 
 @Component({
@@ -69,32 +66,22 @@ export class EventCategoryDialogComponent {
     ),
   });
 
-  public async submit() {
-    if (
-      this.form.valid &&
-      this.form.value &&
-      this.form.value.name &&
-      this.form.value.color &&
-      this.form.value.icon
-    ) {
-      const req: EventCategoryRequest = this.form.getRawValue();
-      let canClose = false;
+  public submit() {
+    if (this.form.valid) {
+      const req = this.form.getRawValue();
       this.isLoading.set(true);
-      if (this.eventCategory()) {
-        canClose = await this.eventCategoryService.updateEventCategory(
-          this.eventCategory()!.id,
-          req
-        );
-      } else {
-        canClose = await this.eventCategoryService.createEventCategory(
-          this.workspaceId,
-          req
-        );
-      }
-      if (canClose) {
-        this.dialogRef.close(true);
-      }
-      this.isLoading.set(false);
+      const sub = this.eventCategoryId
+        ? this.eventCategoryService.updateEventCategory(
+            this.eventCategoryId,
+            req
+          )
+        : this.eventCategoryService.createEventCategory(this.workspaceId, req);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }

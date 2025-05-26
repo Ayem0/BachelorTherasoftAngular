@@ -18,9 +18,12 @@ export class AreaDetailsComponent {
   public areaId = this.route.snapshot.paramMap.get('id');
   public area = this.areaService.areaById(this.areaId);
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
+    this.isLoading.set(true);
     if (this.areaId) {
-      await this.areaService.getById(this.areaId);
+      this.areaService
+        .getById(this.areaId)
+        .subscribe(() => this.isLoading.set(false));
     } else {
       this.router.navigate(['/']);
     }

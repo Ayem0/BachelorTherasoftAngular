@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/guards/auth.guard';
 import { unauthGuard } from './core/auth/guards/unauth.guard';
-import { FullCalendarComponent } from './features/event/components/full-calendar/full-calendar.component';
 
 export const routes: Routes = [
   {
@@ -27,11 +26,14 @@ export const routes: Routes = [
   },
   {
     path: 'agenda',
-    component: FullCalendarComponent,
+    loadComponent: () =>
+      import(
+        './features/event/components/full-calendar/full-calendar.component'
+      ).then((c) => c.FullCalendarComponent),
     canActivate: [authGuard],
   },
   {
-    path: 'workspace',
+    path: 'workspaces',
     loadComponent: () =>
       import(
         './features/workspace/components/workspace-list/workspace-list.component'
@@ -110,6 +112,7 @@ export const routes: Routes = [
           ),
         canActivate: [authGuard],
       },
+
       {
         path: '',
         redirectTo: 'members',
@@ -182,7 +185,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'contact',
+    path: 'contacts',
     loadComponent: () =>
       import(
         './features/contact/components/contact-layout/contact-layout.component'

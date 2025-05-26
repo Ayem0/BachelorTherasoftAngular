@@ -35,7 +35,7 @@ export class MemberService {
   public getMembersByWorkspaceId(id: string): Observable<User[]> {
     if (this.store.workspacesUsers().has(id)) return of([]);
     return this.http
-      .get<User[]>(`${environment.apiUrl}/api/member/workspace/${id}`)
+      .get<User[]>(`${environment.apiUrl}/workspace/${id}/users`)
       .pipe(
         debounceTime(150),
         tap((users) => this.addMembersToStore(id, users)),

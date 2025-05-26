@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import { firstValueFrom, tap } from 'rxjs';
+import { catchError, debounceTime, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
@@ -44,132 +44,112 @@ export class ParticipantCategoryService {
     );
   }
 
-  public async getParticipantCategoriesByWorkspaceId(id: Id) {
-    if (this.store.workspacesParticipants().has(id)) {
-      return;
-    }
-    await firstValueFrom(
-      this.http
-        .get<ParticipantCategory[]>(
-          `${environment.apiUrl}/api/ParticipantCategory/workspace?id=${id}`
-        )
-        .pipe(
-          tap({
-            next: (participantCategories) => {
-              this.store.setRelation(
-                'workspacesParticipantCategories',
-                id,
-                participantCategories.map((p) => p.id)
-              );
-              this.store.setEntities(
-                'participantCategories',
-                participantCategories
-              );
-            },
-            error: (error) => {
-              console.error(error);
-              this.sonner.error(
-                this.translate.translate('participantCategory.get.error')
-              );
-            },
-          })
-        )
-    );
+  public getParticipantCategoriesByWorkspaceId(id: Id) {
+    if (this.store.workspacesParticipantCategories().has(id)) return of([]);
+    return this.http
+      .get<ParticipantCategory[]>(
+        `${environment.apiUrl}/workspace/${id}/participantCategories`
+      )
+      .pipe(
+        debounceTime(150),
+        tap((pc) => {
+          this.store.setRelation(
+            'workspacesParticipantCategories',
+            id,
+            pc.map((p) => p.id)
+          );
+          this.store.setEntities('participantCategories', pc);
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(
+            this.translate.translate('participantCategory.get.error')
+          );
+          return of([]);
+        })
+      );
   }
 
-  public async createParticipantCategory(
+  public createParticipantCategory(
     workspaceId: string,
     req: ParticipantCategoryRequest
   ) {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http
-        .post<ParticipantCategory>(
-          `${environment.apiUrl}/api/ParticipantCategory`,
-          {
+    return this.http
+      .post<ParticipantCategory>(`${environment.apiUrl}/ParticipantCategory`, {
+        workspaceId,
+        ...req,
+      })
+      .pipe(
+        debounceTime(150),
+        map((pc) => {
+          this.store.setEntity('participantCategories', pc);
+          this.store.addToRelation(
+            'workspacesParticipantCategories',
             workspaceId,
-            ...req,
-          }
-        )
-        .pipe(
-          tap({
-            next: (participantCategory) => {
-              this.store.setEntity(
-                'participantCategories',
-                participantCategory
-              );
-              this.sonner.success(
-                this.translate.translate('participantCategory.create.success')
-              );
-            },
-            error: (error) => {
-              console.error(error);
-              isSuccess = false;
-              this.sonner.error(
-                this.translate.translate('participantCategory.create.error')
-              );
-            },
-          })
-        )
-    );
-    return isSuccess;
+            pc.id
+          );
+          this.sonner.success(
+            this.translate.translate('participantCategory.create.success')
+          );
+          return true;
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(
+            this.translate.translate('participantCategory.create.error')
+          );
+          return of(false);
+        })
+      );
   }
 
-  public async updateParticipantCategory(
+  public updateParticipantCategory(
     id: string,
     req: ParticipantCategoryRequest
   ) {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http
-        .put<ParticipantCategory>(
-          `${environment.apiUrl}/api/ParticipantCategory`,
-          req,
-          { params: { id: id } }
-        )
-        .pipe(
-          tap({
-            next: (participantCategory) => {
-              this.store.setEntity(
-                'participantCategories',
-                participantCategory
-              );
-              this.sonner.success(
-                this.translate.translate('participantCategory.update.success')
-              );
-            },
-            error: (error) => {
-              console.error(error);
-              isSuccess = false;
-            },
-          })
-        )
-    );
-    return isSuccess;
+    return this.http
+      .put<ParticipantCategory>(
+        `${environment.apiUrl}/ParticipantCategory/${id}`,
+        req
+      )
+      .pipe(
+        debounceTime(150),
+        map((pc) => {
+          this.store.setEntity('participantCategories', pc);
+          this.sonner.success(
+            this.translate.translate('participantCategory.update.success')
+          );
+          return true;
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(
+            this.translate.translate('participantCategory.update.error')
+          );
+          return of(false);
+        })
+      );
   }
 
-  public async getParticipantCategoryById(id: string) {
-    await firstValueFrom(
-      this.http
-        .get<ParticipantCategory>(
-          `${environment.apiUrl}/api/ParticipantCategory/details?id=${id}`
-        )
-        .pipe(
-          tap({
-            next: (participantCategory) => {
-              this.store.setEntity(
-                'participantCategories',
-                participantCategory
-              );
-            },
-            error: (error) => {
-              console.error(error);
-              this.sonner.error(
-                this.translate.translate('participantCategory.get.error')
-              );
-            },
-          })
-        )
-    );
+  public getParticipantCategoryById(id: string) {
+    if (this.store.participantCategories().has(id))
+      return of(this.store.participantCategories().get(id)!);
+    return this.http
+      .get<ParticipantCategory>(
+        `${environment.apiUrl}/ParticipantCategory/${id}`
+      )
+      .pipe(
+        debounceTime(150),
+        tap((pc) => {
+          this.store.setEntity('participantCategories', pc);
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(
+            this.translate.translate('participantCategory.get.error')
+          );
+          return of(null);
+        })
+      );
   }
 }

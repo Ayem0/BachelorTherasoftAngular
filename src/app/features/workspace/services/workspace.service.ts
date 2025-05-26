@@ -47,22 +47,20 @@ export class WorkspaceService {
   public getWorkspaces(): Observable<Workspace[]> {
     const id = this.auth.currentUserInfo()?.id;
     if (!id || this.store.usersWorkspaces().has(id)) return of([]);
-    return this.http
-      .get<Workspace[]>(`${environment.apiUrl}/api/workspace/user`)
-      .pipe(
-        debounceTime(150),
-        tap((workspaces) => this.setWorkspacesToStore(id, workspaces)),
-        catchError((err) => {
-          console.error('Error fetching workspaces:', err);
-          this.sonner.error(this.translate.translate('workspace.get.error'));
-          return of([]);
-        })
-      );
+    return this.http.get<Workspace[]>(`${environment.apiUrl}/workspace`).pipe(
+      debounceTime(150),
+      tap((workspaces) => this.setWorkspacesToStore(id, workspaces)),
+      catchError((err) => {
+        console.error('Error fetching workspaces:', err);
+        this.sonner.error(this.translate.translate('workspace.get.error'));
+        return of([]);
+      })
+    );
   }
 
   public createWorkspace(req: WorkspaceRequest): Observable<boolean> {
     return this.http
-      .post<Workspace>(`${environment.apiUrl}/api/workspace`, req)
+      .post<Workspace>(`${environment.apiUrl}/workspace`, req)
       .pipe(
         debounceTime(150),
         tap((workspace) => {
@@ -85,7 +83,7 @@ export class WorkspaceService {
     req: WorkspaceRequest
   ): Observable<boolean> {
     return this.http
-      .put<Workspace>(`${environment.apiUrl}/api/workspace?id=${id}`, req)
+      .put<Workspace>(`${environment.apiUrl}/workspace/${id}`, req)
       .pipe(
         debounceTime(150),
         tap((workspace) => {
@@ -106,7 +104,7 @@ export class WorkspaceService {
   public getWorkspaceById(id: string): Observable<Workspace | undefined> {
     if (this.store.workspaces().has(id)) return of(undefined);
     return this.http
-      .get<Workspace>(`${environment.apiUrl}/api/workspace?id=${id}`)
+      .get<Workspace>(`${environment.apiUrl}/workspace/${id}`)
       .pipe(
         debounceTime(150),
         tap((workspace) => this.addWorkspaceToStore(workspace)),

@@ -4,12 +4,12 @@ import {
   computed,
   inject,
   OnInit,
+  Signal,
   signal,
   viewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCalendar, MatDatepickerModule } from '@angular/material/datepicker';
-import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIcon } from '@angular/material/icon';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
@@ -31,12 +31,17 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import dayjs from 'dayjs';
-import { AuthService } from '../../../../core/auth/services/auth.service';
 import { LayoutService } from '../../../../core/layout/layout/layout.service';
 import { ViewMode } from '../../../event/models/view-mode';
 // import { EventStore } from '../../../event/services/event.store';
 // import { FullCalendarEventDialogComponent2 } from '../full-calendar-event-dialog2/full-calendar-event-dialog.component';
-import { FullCalendarHeaderComponent } from '../full-calendar-header/full-calendar-header.component';
+import {
+  MAT_FORM_FIELD_DEFAULT_OPTIONS,
+  MatFormFieldModule,
+} from '@angular/material/form-field';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
+import { ActivatedRoute, Router } from '@angular/router';
+import { format } from '../../../../shared/utils/date.utils';
 
 @Component({
   selector: 'app-calendar',
@@ -45,10 +50,18 @@ import { FullCalendarHeaderComponent } from '../full-calendar-header/full-calend
     MatSidenavModule,
     MatButtonModule,
     MatDatepickerModule,
-    FullCalendarHeaderComponent,
     MatExpansionModule,
     MatIcon,
-    // FullCalendarSidebarComponent
+    MatFormFieldModule,
+    MatSelectModule,
+  ],
+  providers: [
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: {
+        subscriptSizing: 'dynamic',
+      },
+    },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './full-calendar.component.html',
@@ -56,16 +69,18 @@ import { FullCalendarHeaderComponent } from '../full-calendar-header/full-calend
 })
 export class FullCalendarComponent implements OnInit {
   private readonly layoutService = inject(LayoutService);
-  // private readonly eventStore = inject(EventStore);
-  private readonly matDialog = inject(MatDialog);
-  private readonly authService = inject(AuthService);
-
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly fullCalendar = viewChild.required(FullCalendar);
   private readonly sidebar = viewChild.required(MatSidenav);
   private readonly matCalendar = viewChild.required(MatCalendar<Date>);
+  private readonly viewModeSelect = viewChild.required(MatSelect);
 
   public isSideBarOpen = signal(false);
-  public selectedDate = signal(new Date());
+  public selectedDate = signal(
+    this.paramToDate(this.route.snapshot.queryParamMap.get('start')) ||
+      new Date()
+  );
   public calendarApi = computed(() => this.fullCalendar().getApi());
   public dateTitle = signal('');
   public viewMode = signal<ViewMode>('timeGridWeek');
@@ -73,8 +88,12 @@ export class FullCalendarComponent implements OnInit {
   public sidenavMode = computed(() => (this.showOver() ? 'over' : 'push'));
   public currentEvents = signal<EventApi[]>([]);
   public todayDisable = signal(true);
-
-  public calendarOptions = signal<CalendarOptions>({
+  private selectedRange = signal({
+    start: new Date(),
+    end: new Date(),
+  });
+  public showWeekend = signal(true);
+  public calendarOptions: Signal<CalendarOptions> = computed(() => ({
     plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin],
     headerToolbar: false,
     initialView: this.viewMode(), // initial view mode
@@ -108,37 +127,31 @@ export class FullCalendarComponent implements OnInit {
     events: this.fetch.bind(this),
     windowResize: this.autoResize.bind(this),
     datesSet: this.onDatesSet.bind(this),
-  });
+  }));
 
   private fetch(
     arg: EventSourceFuncArg,
     successCallback: (eventInputs: EventInput[]) => void,
     failureCallback: (error: Error) => void
-  ) {
-    // this.eventStore
-    //   .getEventsByUserId(
-    //     this.authService.currentUserInfo()!.id,
-    //     arg.start,
-    //     arg.end
-    //   )
-    //   .subscribe({
-    //     next: (events) => {
-    //       const fullCalendarEvents = events.map((event) => ({
-    //         id: event.id,
-    //         start: event.startDate,
-    //         end: event.endDate,
-    //       }));
-    //       successCallback(fullCalendarEvents);
-    //     },
-    //     error: (error) => {
-    //       console.error('Failed to fetch events:', error);
-    //       failureCallback(error);
-    //     },
-    //   });
-  }
+  ) {}
 
   public ngOnInit(): void {
     this.sidebar().openedChange.subscribe((x) => this.isSideBarOpen.set(x));
+    this.viewModeSelect().selectionChange.subscribe((x) => {
+      this.calendarApi().changeView(x.value);
+    });
+  }
+
+  private paramToDate(param?: string | null): Date | null {
+    if (!param) {
+      return null;
+    }
+    try {
+      const [day, month, year] = param.split('/').map(Number);
+      return new Date(year, month - 1, day);
+    } catch (error) {
+      return null;
+    }
   }
 
   selectedChange(selectedDate: Date) {
@@ -146,19 +159,30 @@ export class FullCalendarComponent implements OnInit {
   }
 
   onDatesSet(args: DatesSetArg) {
-    /** Set date title */
+    // set date title
     this.dateTitle.set(args.view.title);
-    /** Set today disable or not */
+    // set today disable or not
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     this.todayDisable.set(
       today >= args.view.currentStart && today < args.view.currentEnd
     );
-    /** Update the current month view if we change month */
+    // update the current month view if we change month for small calendar
     this.matCalendar().activeDate = this.selectedDate();
     this.matCalendar().updateTodaysDate();
-    /** update  */
-    // this.eventStore;
+    // update query params
+    this.router.navigate(['/agenda'], {
+      queryParams: {
+        start: format(args.view.currentStart, 'DD/MM/YYYY'),
+        end: format(args.view.currentEnd, 'DD/MM/YYYY'),
+      },
+      queryParamsHandling: 'merge',
+    });
+    // update selected range
+    this.selectedRange.set({
+      start: args.view.currentStart,
+      end: args.view.currentEnd,
+    });
   }
 
   getCurrentDateInput() {
@@ -169,32 +193,13 @@ export class FullCalendarComponent implements OnInit {
     };
   }
 
-  handleWeekendsToggle() {
-    this.calendarOptions.update((options) => ({
-      ...options,
-      weekends: !options.weekends,
-    }));
+  toggleShowWeekend() {
+    this.showWeekend.set(!this.showWeekend());
   }
 
   private handleDateSelect(selectInfo: DateSelectArg) {
-    this.calendarApi().unselect(); // clear date selectionÒ
-    // this.matDialog
-    //   .open(FullCalendarEventDialogComponent2, {
-    //     // hasBackdrop: false,
-    //     data: { start: selectInfo.start, end: selectInfo.end },
-    //     width: '100%',
-    //   })
-    //   .afterClosed()
-    //   .subscribe((x: Event) => {
-    //     if (x) {
-    //       this.calendarApi().addEvent({
-    //         id: x.id,
-    //         start: x.startDate,
-    //         end: x.endDate,
-    //         interactive: false,
-    //       });
-    //     }
-    //   });
+    this.calendarApi().unselect(); // clear date selection
+    // TODO open dialog
   }
 
   private handleEventClick(clickInfo: EventClickArg) {
@@ -209,10 +214,6 @@ export class FullCalendarComponent implements OnInit {
 
   handleEvents(events: EventApi[]) {
     this.currentEvents.set(events);
-  }
-
-  viewModeChange(mode: ViewMode) {
-    this.calendarApi().changeView(mode);
   }
 
   previous() {
@@ -264,11 +265,6 @@ export class FullCalendarComponent implements OnInit {
   setToday() {
     this.selectedDate.set(new Date());
     this.calendarApi().today();
-  }
-
-  setDate(date: Date) {
-    this.selectedDate.set(date);
-    this.calendarApi().gotoDate(date);
   }
 
   toggleSidebar() {

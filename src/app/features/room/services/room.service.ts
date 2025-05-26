@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import { firstValueFrom, tap } from 'rxjs';
+import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
@@ -43,106 +43,98 @@ export class RoomService {
     );
   }
 
-  public async getRoomsByAreaId(id: string) {
-    await firstValueFrom(
-      this.http
-        .get<Room[]>(`${environment.apiUrl}/api/room/area?id=${id}`)
-        .pipe(
-          tap({
-            next: (rooms) => {
-              this.store.setEntities('rooms', rooms);
-            },
-            error: (error) => {
-              console.error(error);
-              this.sonner.error(this.translate.translate('room.get.error'));
-            },
-          })
-        )
-    );
-  }
-
-  public async getRoomsByWorkspaceId(workspaceId: string) {
-    await firstValueFrom(
-      this.http
-        .get<Room[]>(
-          `${environment.apiUrl}/api/room/workspace?id=${workspaceId}`
-        )
-        .pipe(
-          tap({
-            next: (rooms) => {
-              this.store.setEntities('rooms', rooms);
-            },
-            error: (error) => {
-              console.error(error);
-              this.sonner.error(this.translate.translate('room.get.error'));
-            },
-          })
-        )
-    );
-  }
-
-  public async getById(id: string) {
-    await firstValueFrom(
-      this.http.get<Room>(`${environment.apiUrl}/api/room?id=${id}`).pipe(
-        tap({
-          next: (room) => {
-            this.store.setEntity('rooms', room);
-          },
-          error: (error) => {
-            console.error(error);
-            this.sonner.error(this.translate.translate('room.get.error'));
-          },
+  public getRoomsByAreaId(areaId: string): Observable<Room[]> {
+    if (this.store.areasRooms().has(areaId)) return of([]);
+    return this.http
+      .get<Room[]>(`${environment.apiUrl}/area/${areaId}/rooms`)
+      .pipe(
+        debounceTime(150),
+        tap((rooms) => {
+          this.store.setEntities('rooms', rooms);
+          this.store.setRelation(
+            'areasRooms',
+            areaId,
+            rooms.map((r) => r.id)
+          );
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.translate.translate('room.get.error'));
+          return of([]);
         })
-      )
+      );
+  }
+
+  public getRoomsByWorkspaceId(workspaceId: string) {
+    if (this.store.workspacesRooms().has(workspaceId)) return of([]);
+    return this.http
+      .get<Room[]>(`${environment.apiUrl}/workspace/${workspaceId}/rooms`)
+      .pipe(
+        debounceTime(150),
+        tap((rooms) => {
+          this.store.setEntities('rooms', rooms);
+          this.store.setRelation(
+            'workspacesRooms',
+            workspaceId,
+            rooms.map((r) => r.id)
+          );
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.translate.translate('room.get.error'));
+          return of([]);
+        })
+      );
+  }
+
+  public getById(id: string) {
+    if (this.store.rooms().has(id)) return of(this.store.rooms().get(id)!);
+    return this.http.get<Room>(`${environment.apiUrl}/room/${id}`).pipe(
+      debounceTime(150),
+      tap((room) => this.store.setEntity('rooms', room)),
+      catchError((err) => {
+        console.error(err);
+        this.sonner.error(this.translate.translate('room.get.error'));
+        return of(null);
+      })
     );
   }
 
-  public async createRoom(areaId: string, req: RoomRequest) {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http
-        .post<Room>(`${environment.apiUrl}/api/room`, {
-          ...req,
-          areaId,
+  public createRoom(areaId: string, req: RoomRequest) {
+    return this.http
+      .post<Room>(`${environment.apiUrl}/room`, {
+        areaId,
+        ...req,
+      })
+      .pipe(
+        debounceTime(150),
+        map((room) => {
+          this.store.setEntity('rooms', room);
+          this.store.addToRelation('areasRooms', areaId, room.id);
+          this.sonner.success(this.translate.translate('room.create.success'));
+          return true;
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.translate.translate('room.create.error'));
+          return of(false);
         })
-        .pipe(
-          tap({
-            next: (room) => {
-              this.store.setEntity('rooms', room);
-              this.sonner.success(
-                this.translate.translate('room.create.success')
-              );
-            },
-            error: (error) => {
-              console.error(error);
-              isSuccess = false;
-              this.sonner.error(this.translate.translate('room.create.error'));
-            },
-          })
-        )
-    );
-    return isSuccess;
+      );
   }
 
-  public async updateRoom(id: string, req: RoomRequest) {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http.put<Room>(`${environment.apiUrl}/api/room?id=${id}`, req).pipe(
-        tap({
-          next: (room) => {
-            this.store.setEntity('rooms', room);
-            this.sonner.success(
-              this.translate.translate('room.update.success')
-            );
-          },
-          error: (error) => {
-            console.error(error);
-            isSuccess = false;
-            this.sonner.error(this.translate.translate('room.update.error'));
-          },
-        })
-      )
+  public updateRoom(id: string, req: RoomRequest) {
+    return this.http.put<Room>(`${environment.apiUrl}/room/${id}`, req).pipe(
+      debounceTime(150),
+      map((room) => {
+        this.store.setEntity('rooms', room);
+        this.sonner.success(this.translate.translate('room.update.success'));
+        return true;
+      }),
+      catchError((err) => {
+        console.error(err);
+        this.sonner.error(this.translate.translate('room.update.error'));
+        return of(false);
+      })
     );
-    return isSuccess;
   }
 }

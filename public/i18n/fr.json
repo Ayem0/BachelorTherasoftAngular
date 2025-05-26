@@ -1,8 +1,9 @@
 {
     "navigation": {
         "agenda": "Agenda",
-        "workspace": "Espace de travail",
-        "contacts": "Contacts"
+        "workspaces": "Workspaces",
+        "contacts": "Contacts",
+        "conversations": "Conversations"
     },
     "action": {
         "add": "Ajouter",

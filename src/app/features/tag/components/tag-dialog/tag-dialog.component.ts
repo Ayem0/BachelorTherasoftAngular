@@ -33,8 +33,10 @@ export class TagDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<TagDialogComponent>);
   private readonly matDialogData: { workspaceId: Id; tagId: Id | undefined } =
     inject(MAT_DIALOG_DATA);
+  private readonly workspaceId = this.matDialogData.workspaceId;
+  private readonly tagId = this.matDialogData.tagId;
   public tag = this.tagService.tagById(this.matDialogData.tagId);
-  public isUpdate = !!this.matDialogData.tagId;
+  public isUpdate = signal(!!this.matDialogData.tagId);
   public isLoading = signal(false);
 
   public form = new FormGroup<TagForm>({
@@ -59,29 +61,19 @@ export class TagDialogComponent {
     ),
   });
 
-  public async submit() {
-    if (
-      this.form.valid &&
-      this.form.value &&
-      this.form.value.name &&
-      this.form.value.color &&
-      this.form.value.icon
-    ) {
+  public submit() {
+    if (this.form.valid) {
       const req = this.form.getRawValue();
-      let canClose = false;
       this.isLoading.set(true);
-      if (this.tag()) {
-        canClose = await this.tagService.updateTag(this.tag()!.id, req);
-      } else {
-        canClose = await this.tagService.createTag(
-          this.matDialogData.workspaceId,
-          req
-        );
-      }
-      if (canClose) {
-        this.dialogRef.close();
-      }
-      this.isLoading.set(false);
+      const sub = this.tagId
+        ? this.tagService.updateTag(this.tagId, req)
+        : this.tagService.createTag(this.workspaceId, req);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }

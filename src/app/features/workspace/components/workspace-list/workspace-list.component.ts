@@ -48,8 +48,8 @@ import { WorkspaceDialogComponent } from '../workspace-dialog/workspace-dialog.c
 export class WorkspaceListComponent implements OnInit, AfterViewInit {
   private readonly matDialog = inject(MatDialog);
   private readonly workspaceService = inject(WorkspaceService);
-  private paginator = viewChild.required(MatPaginator);
-  private sort = viewChild.required(MatSort);
+  private paginator = viewChild(MatPaginator);
+  private sort = viewChild(MatSort);
 
   public search = new FormControl('');
   public isLoading = signal(false);
@@ -60,9 +60,8 @@ export class WorkspaceListComponent implements OnInit, AfterViewInit {
   constructor() {
     effect(() => {
       this.dataSource.data = this.workspaces();
-      if (this.paginator && this.paginator()) {
-        this.paginator().length = this.dataSource.data.length;
-      }
+      if (this.paginator())
+        this.paginator()!.length = this.dataSource.data.length;
     });
   }
 
@@ -74,13 +73,15 @@ export class WorkspaceListComponent implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator();
-    this.dataSource.sort = this.sort();
-    this.paginator().length = this.dataSource.data.length;
+    this.dataSource.paginator = this.paginator() ?? null;
+    this.dataSource.sort = this.sort() ?? null;
+    if (this.paginator())
+      this.paginator()!.length = this.dataSource.data.length;
     this.search.valueChanges.pipe(debounceTime(200)).subscribe((x) => {
       this.dataSource.filter = x?.trim().toLowerCase() || '';
       this.dataSource.paginator?.firstPage();
-      this.paginator().length = this.dataSource.data.length;
+      if (this.paginator())
+        this.paginator()!.length = this.dataSource.data.length;
     });
   }
 

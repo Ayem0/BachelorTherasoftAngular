@@ -49,11 +49,11 @@ export class ParticipantListComponent {
   private readonly matDialog = inject(MatDialog);
   private readonly participantService = inject(ParticipantService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
+  private readonly paginator = viewChild(MatPaginator);
+  private readonly sort = viewChild(MatSort);
 
   public isLoading = signal(false);
   public search = new FormControl('');
-  private paginator = viewChild.required(MatPaginator);
-  private sort = viewChild.required(MatSort);
   public participants = this.participantService.participantsByWorkspaceId(
     this.workspaceId()
   );
@@ -75,27 +75,28 @@ export class ParticipantListComponent {
     effect(() => {
       this.dataSource.data = this.participants();
       if (this.paginator()) {
-        this.paginator().length = this.dataSource.data.length;
+        this.paginator()!.length = this.dataSource.data.length;
       }
     });
   }
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoading.set(true);
-    await this.participantService.getParticipantsByWorkspaceId(
-      this.workspaceId()
-    );
-    this.isLoading.set(false);
+    this.participantService
+      .getByWorkspaceId(this.workspaceId())
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator();
-    this.dataSource.sort = this.sort();
-    this.paginator().length = this.dataSource.data.length;
+    this.dataSource.paginator = this.paginator() ?? null;
+    this.dataSource.sort = this.sort() ?? null;
+    if (this.paginator())
+      this.paginator()!.length = this.dataSource.data.length;
     this.search.valueChanges.pipe(debounceTime(200)).subscribe((x) => {
       this.dataSource.filter = x?.trim().toLowerCase() || '';
       this.dataSource.paginator?.firstPage();
-      this.paginator().length = this.dataSource.data.length;
+      if (this.paginator())
+        this.paginator()!.length = this.dataSource.data.length;
     });
   }
 

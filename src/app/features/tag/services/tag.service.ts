@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import { firstValueFrom, tap } from 'rxjs';
+import { catchError, debounceTime, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
@@ -32,93 +32,78 @@ export class TagService {
     return computed(() => (id ? this.store.tags().get(id) : undefined));
   }
 
-  public async getTagsByWorkspaceId(id: Id) {
-    if (this.store.workspacesTags().has(id)) return;
+  public getTagsByWorkspaceId(id: Id) {
+    if (this.store.workspacesTags().has(id)) return of([]);
 
-    await firstValueFrom(
-      this.http
-        .get<Tag[]>(`${environment.apiUrl}/api/tag/workspace?id=${id}`)
-        .pipe(
-          tap({
-            next: (tags) => {
-              this.store.setEntities('tags', tags);
-              this.store.setRelation(
-                'workspacesTags',
-                id,
-                tags.map((t) => t.id)
-              );
-            },
-            error: (err) => {
-              console.log(err);
-              this.sonner.error(this.translate.translate('tag.get.error'));
-            },
-          })
-        )
+    return this.http
+      .get<Tag[]>(`${environment.apiUrl}/workspace/${id}/tags`)
+      .pipe(
+        debounceTime(150),
+        tap((tags) => {
+          this.store.setEntities('tags', tags);
+          this.store.setRelation(
+            'workspacesTags',
+            id,
+            tags.map((w) => w.id)
+          );
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.translate.translate('tag.get.error'));
+          return of([]);
+        })
+      );
+  }
+
+  public createTag(workspaceId: Id, req: TagRequest) {
+    return this.http
+      .post<Tag>(`${environment.apiUrl}/tag`, {
+        workspaceId: workspaceId,
+        ...req,
+      })
+      .pipe(
+        debounceTime(150),
+        map((tag) => {
+          this.store.setEntity('tags', tag);
+          this.store.addToRelation('workspacesTags', workspaceId, tag.id);
+          this.sonner.success(this.translate.translate('tag.create.success'));
+          return true;
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.translate.translate('tag.create.error'));
+          return of(false);
+        })
+      );
+  }
+
+  public updateTag(id: Id, req: TagRequest) {
+    return this.http.put<Tag>(`${environment.apiUrl}/tag/${id}`, req).pipe(
+      debounceTime(150),
+      map((tag) => {
+        this.store.setEntity('tags', tag);
+        this.sonner.success(this.translate.translate('tag.update.success'));
+        return true;
+      }),
+      catchError((err) => {
+        console.error(err);
+        this.sonner.error(this.translate.translate('tag.update.error'));
+        return of(false);
+      })
     );
   }
 
-  public async createTag(workspaceId: Id, req: TagRequest) {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http
-        .post<Tag>(`${environment.apiUrl}/api/tag`, {
-          workspaceId: workspaceId,
-          ...req,
-        })
-        .pipe(
-          tap({
-            next: (tag) => {
-              this.store.setEntity('tags', tag);
-              this.sonner.success(
-                this.translate.translate('tag.create.success')
-              );
-            },
-            error: (err) => {
-              console.log(err);
-              isSuccess = false;
-              this.sonner.error(this.translate.translate('tag.create.error'));
-            },
-          })
-        )
-    );
-    return isSuccess;
-  }
+  public getTagById(id: Id) {
+    if (this.store.tags().has(id)) return of(this.store.tags().get(id)!);
 
-  public async updateTag(id: Id, req: TagRequest) {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http.put<Tag>(`${environment.apiUrl}/api/tag?id=${id}`, req).pipe(
-        tap({
-          next: (tag) => {
-            this.store.setEntity('tags', tag);
-            this.sonner.success(this.translate.translate('tag.update.success'));
-          },
-          error: (err) => {
-            console.log(err);
-            isSuccess = false;
-            this.sonner.error(this.translate.translate('tag.update.error'));
-          },
-        })
-      )
-    );
-    return isSuccess;
-  }
-
-  public async getTagById(id: Id) {
-    if (this.store.tags().has(id)) return;
-
-    await firstValueFrom(
-      this.http.get<Tag>(`${environment.apiUrl}/api/tag?id=${id}`).pipe(
-        tap({
-          next: (tag) => {
-            this.store.setEntity('tags', tag);
-          },
-          error: (err) => {
-            console.log(err);
-            this.sonner.error(this.translate.translate('tag.get.error'));
-          },
-        })
-      )
+    return this.http.get<Tag>(`${environment.apiUrl}/tag/${id}`).pipe(
+      debounceTime(150),
+      tap((tag) => this.store.setEntity('tags', tag)),
+      catchError((err) => {
+        console.error(err);
+        this.sonner.error(this.translate.translate('workspaceRole.get.error'));
+        return of(null);
+      })
     );
   }
 }

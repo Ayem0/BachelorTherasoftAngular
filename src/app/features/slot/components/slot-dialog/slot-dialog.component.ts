@@ -56,8 +56,10 @@ export class SlotDialogComponent implements OnInit {
   private readonly matDialogData: { workspaceId: Id; slotId: Id | undefined } =
     inject(MAT_DIALOG_DATA);
 
+  private readonly workspaceId = this.matDialogData.workspaceId;
+  private readonly slotId = this.matDialogData.slotId;
   public slot = this.slotService.slotById(this.matDialogData.slotId);
-  public isUpdate = !!this.matDialogData.slotId;
+  public isUpdate = signal(!!this.matDialogData.slotId);
   public eventCategories =
     this.eventCategoryService.eventCategoriesByWorkspaceId(
       this.matDialogData.workspaceId
@@ -129,12 +131,11 @@ export class SlotDialogComponent implements OnInit {
     ),
   });
 
-  public async ngOnInit() {
+  public ngOnInit() {
     this.isLoading.set(true);
-    await this.eventCategoryService.getEventCategoriesByWorkspaceId(
-      this.matDialogData.workspaceId
-    );
-    this.isLoading.set(false);
+    this.eventCategoryService
+      .getEventCategoriesByWorkspaceId(this.matDialogData.workspaceId)
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public openRepetitionDialog() {
@@ -147,31 +148,19 @@ export class SlotDialogComponent implements OnInit {
     this.matDialog.open(RepetitionComponent, { data: repetition });
   }
 
-  public async submit() {
-    if (
-      this.form.valid &&
-      this.form.value &&
-      this.form.value.name &&
-      this.form.value.startDate &&
-      this.form.value.endDate &&
-      this.form.value.startTime &&
-      this.form.value.endTime
-    ) {
+  public submit() {
+    if (this.form.valid) {
       const req = this.form.getRawValue();
-      let canClose = false;
       this.isLoading.set(true);
-      if (this.slot()) {
-        canClose = await this.slotService.updateSlot(this.slot()!.id, req);
-      } else {
-        canClose = await this.slotService.createSlot(
-          this.matDialogData.workspaceId,
-          req
-        );
-      }
-      if (canClose) {
-        this.dialogRef.close();
-      }
-      this.isLoading.set(false);
+      const sub = this.slotId
+        ? this.slotService.updateSlot(this.slotId, req)
+        : this.slotService.createSlot(this.workspaceId, req);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }

@@ -48,8 +48,8 @@ import { RoomDialogComponent } from '../room-dialog/room-dialog.component';
 export class RoomListComponent {
   private readonly matDialog = inject(MatDialog);
   private readonly roomService = inject(RoomService);
-  private paginator = viewChild.required(MatPaginator);
-  private sort = viewChild.required(MatSort);
+  private paginator = viewChild(MatPaginator);
+  private sort = viewChild(MatSort);
   readonly areaId = input.required<string>();
 
   public search = new FormControl('');
@@ -62,27 +62,30 @@ export class RoomListComponent {
     effect(() => {
       this.dataSource.data = this.rooms();
       if (this.paginator && this.paginator()) {
-        this.paginator().length = this.dataSource.data.length;
+        this.paginator()!.length = this.dataSource.data.length;
       }
     });
   }
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoading.set(true);
-    await this.roomService.getRoomsByAreaId(this.areaId());
-    this.isLoading.set(false);
+    this.roomService
+      .getRoomsByAreaId(this.areaId())
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator();
-    this.dataSource.sort = this.sort();
-    this.paginator().length = this.dataSource.data.length;
+    this.dataSource.paginator = this.paginator() ?? null;
+    this.dataSource.sort = this.sort() ?? null;
+    if (this.paginator())
+      this.paginator()!.length = this.dataSource.data.length;
     this.search.valueChanges
       .pipe(debounceTime(200))
       .subscribe((searchValue) => {
         this.dataSource.filter = searchValue?.trim().toLowerCase() || '';
         this.dataSource.paginator?.firstPage();
-        this.paginator().length = this.dataSource.data.length;
+        if (this.paginator())
+          this.paginator()!.length = this.dataSource.data.length;
       });
   }
 

@@ -107,32 +107,26 @@ export class ParticipantDialogComponent implements OnInit {
     ),
   });
 
-  public async ngOnInit() {
+  public ngOnInit() {
     this.isLoading.set(true);
-    await this.participantCategoryService.getParticipantCategoriesByWorkspaceId(
-      this.workspaceId
-    );
-    this.isLoading.set(false);
+    this.participantCategoryService
+      .getParticipantCategoriesByWorkspaceId(this.workspaceId)
+      .subscribe(() => this.isLoading.set(false));
   }
 
-  public async submit() {
+  public submit() {
     if (this.form.valid) {
       const req = this.form.getRawValue();
-      let canClose = false;
-      if (this.participant()) {
-        canClose = await this.participantService.updateParticipant(
-          this.participant()!.id,
-          req
-        );
-      } else {
-        canClose = await this.participantService.createParticipant(
-          this.workspaceId,
-          req
-        );
-      }
-      if (canClose) {
-        this.dialogRef.close();
-      }
+      this.isLoading.set(true);
+      const sub = this.participantId
+        ? this.participantService.updateParticipant(this.participantId, req)
+        : this.participantService.createParticipant(this.workspaceId, req);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }

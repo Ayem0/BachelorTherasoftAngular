@@ -49,11 +49,11 @@ export class LocationListComponent {
   private readonly matDialog = inject(MatDialog);
   private readonly locationService = inject(LocationService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-
-  public search = new FormControl('');
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);
 
+  public search = new FormControl('');
+  public isLoading = signal(false);
   public dataSource = new MatTableDataSource<Location>([]);
   public displayedColumns: string[] = [
     'name',
@@ -63,24 +63,22 @@ export class LocationListComponent {
     'country',
     'action',
   ];
-  public isLoading = signal(false);
-  private locations = this.locationService.locationsByWorkspaceId(
+  public locations = this.locationService.locationsByWorkspaceId(
     this.workspaceId()
   );
 
   constructor() {
     effect(() => {
       this.dataSource.data = this.locations();
-      if (this.paginator()) {
-        this.paginator().length = this.dataSource.data.length;
-      }
+      this.paginator().length = this.dataSource.data.length;
     });
   }
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.isLoading.set(true);
-    await this.locationService.getLocationsByWorkspaceId(this.workspaceId());
-    this.isLoading.set(false);
+    this.locationService
+      .getLocationsByWorkspaceId(this.workspaceId())
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public ngAfterViewInit(): void {

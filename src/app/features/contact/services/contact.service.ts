@@ -41,7 +41,7 @@ export class ContactService {
   public getContacts(): Observable<User[]> {
     const id = this.auth.currentUserInfo()?.id ?? '';
     if (this.store.usersContacts().has(id)) return of([]);
-    return this.http.get<User[]>(`${environment.apiUrl}/api/user/contact`).pipe(
+    return this.http.get<User[]>(`${environment.apiUrl}/user/contacts`).pipe(
       debounceTime(150),
       tap((contacts) => this.addContactsToStore(id, contacts)),
       catchError((err) => {

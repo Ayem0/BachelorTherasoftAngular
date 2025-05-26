@@ -84,7 +84,7 @@ export class EventService {
   public isSideBarOpen = signal(false);
 
   public getById(id: string) {
-    return this.http.get<Event>(`${environment.apiUrl}/api/event`, {
+    return this.http.get<Event>(`${environment.apiUrl}/event`, {
       params: { id },
     });
   }
@@ -92,7 +92,7 @@ export class EventService {
   public async createEvent(req: EventRequest): Promise<boolean> {
     let isSuccess = true;
     await firstValueFrom(
-      this.http.post<Event<{}>>(`${environment.apiUrl}/api/event`, req).pipe(
+      this.http.post<Event<{}>>(`${environment.apiUrl}/event`, req).pipe(
         tap({
           next: (event) => {
             this.store.setEntity('events', event);
@@ -114,23 +114,21 @@ export class EventService {
   public async updateEvent(id: string, req: EventRequest): Promise<boolean> {
     let isSuccess = true;
     await firstValueFrom(
-      this.http
-        .put<Event>(`${environment.apiUrl}/api/event?id=${id}`, req)
-        .pipe(
-          tap({
-            next: (event) => {
-              this.sonner.success(
-                this.translate.translate('event.update.success')
-              );
-              this.store.setEntity('events', event);
-            },
-            error: (err) => {
-              console.error(err);
-              isSuccess = false;
-              this.sonner.error(this.translate.translate('event.update.error'));
-            },
-          })
-        )
+      this.http.put<Event>(`${environment.apiUrl}/event?id=${id}`, req).pipe(
+        tap({
+          next: (event) => {
+            this.sonner.success(
+              this.translate.translate('event.update.success')
+            );
+            this.store.setEntity('events', event);
+          },
+          error: (err) => {
+            console.error(err);
+            isSuccess = false;
+            this.sonner.error(this.translate.translate('event.update.error'));
+          },
+        })
+      )
     );
     return isSuccess;
   }
@@ -138,7 +136,7 @@ export class EventService {
   public getEventsByRoomId(id: string, start: Date, end: Date) {
     const startDate = start.toString();
     const endDate = end.toString();
-    return this.http.get<Event[]>(`${environment.apiUrl}/api/event/room`, {
+    return this.http.get<Event[]>(`${environment.apiUrl}/event/room`, {
       params: {
         id: id,
         start: startDate,
@@ -157,7 +155,7 @@ export class EventService {
             eventCategory: EventCategory;
             tags: Tag[];
           }>[]
-        >(`${environment.apiUrl}/api/event/user`, {
+        >(`${environment.apiUrl}/event/user`, {
           params: {
             id: id,
             start: startDate,
@@ -195,7 +193,7 @@ export class EventService {
     const endDate = range.end.toJSON();
     const jsonUserIds = JSON.stringify(userIds);
     const jsonRoomId = JSON.stringify(roomId);
-    return this.http.get<Event[]>(`${environment.apiUrl}/api/event/user`, {
+    return this.http.get<Event[]>(`${environment.apiUrl}/event/user`, {
       params: {
         userIds: jsonUserIds,
         roomId: jsonRoomId,

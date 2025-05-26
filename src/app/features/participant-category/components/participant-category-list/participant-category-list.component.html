@@ -1,23 +1,24 @@
 <div class="flex size-full flex-col">
-  <div class="flex w-full justify-between items-center pt-4">
-    <mat-form-field appearance="outline">
-      <input matInput type="text" [formControl]="search" />
-      <mat-label>Search</mat-label>
-      <mat-icon matPrefix>search</mat-icon>
-    </mat-form-field>
-    <button mat-flat-button (click)="openDialog()">
-      <mat-icon>add</mat-icon>
-      <span>Add</span>
-    </button>
-  </div>
-  <div class="flex flex-1 flex-col">
-    <div class="overflow-auto h-96">
-      @if (isLoading()) {
-      <div class="flex size-full items-center justify-center">
+  @if (isLoading()) {
+    <div class="flex flex-1 items-center justify-center">
         <mat-spinner diameter="50"></mat-spinner>
-      </div>
-      }
-      <mat-table [dataSource]="dataSource" matSort class="w-full">
+    </div>
+  } @else {
+    <div class="flex w-full justify-between items-center pt-4">
+      <mat-form-field appearance="outline">
+          <input matInput type="text" [formControl]="search">
+          <mat-label>Search</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+      <button mat-flat-button (click)="openDialog()">
+          <mat-icon>add</mat-icon>
+          <span>Add</span>
+      </button>
+  </div>
+  <div class="flex flex-1 flex-col relative">
+ 
+      <mat-table [dataSource]="dataSource" matSort class="overflow-auto absolute left-0 top-0 right-0 bottom-0">
+
         <ng-container matColumnDef="name">
           <mat-header-cell *matHeaderCellDef mat-sort-header>
             Name
@@ -74,10 +75,21 @@
           </mat-cell>
         </ng-container>
         <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        <tr *matNoDataRow>
+            <td colspan="3">
+                <div class="flex justify-center p-4">
+                    No participant categories found
+                    @if (search.value) {
+                    matching "{{search.value}}"
+                    }
+                </div>
+            </td>
+          </tr>
       </mat-table>
-    </div>
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of participants">
-    </mat-paginator>
   </div>
+  <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of participant categories">
+  </mat-paginator>
+  } 
+ 
 </div>

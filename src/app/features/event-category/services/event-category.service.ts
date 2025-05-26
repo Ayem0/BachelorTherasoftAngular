@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable } from '@angular/core';
-import { firstValueFrom, tap } from 'rxjs';
+import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
@@ -37,97 +37,91 @@ export class EventCategoryService {
     );
   }
 
-  public async getEventCategoriesByWorkspaceId(id: string): Promise<void> {
+  public getEventCategoriesByWorkspaceId(
+    id: string
+  ): Observable<EventCategory[]> {
     if (this.store.workspacesEventCategories().has(id)) {
-      return;
+      return of([]);
     }
-    await firstValueFrom(
-      this.http
-        .get<EventCategory[]>(
-          `${environment.apiUrl}/api/EventCategory/workspace?id=${id}`
-        )
-        .pipe(
-          tap({
-            next: (eventCategories) => {
-              this.store.setEntities('eventCategories', eventCategories);
-              this.store.setRelation(
-                'workspacesEventCategories',
-                id,
-                eventCategories.map((eventCategory) => eventCategory.id)
-              );
-            },
-            error: (err) => {
-              console.log(err);
-              this.sonner.error(
-                this.translate.translate('eventCategory.get.error')
-              );
-            },
-          })
-        )
-    );
+    return this.http
+      .get<EventCategory[]>(
+        `${environment.apiUrl}/workspace/${id}/eventCategories`
+      )
+      .pipe(
+        debounceTime(150),
+        tap((ecs) => {
+          this.store.setEntities('eventCategories', ecs);
+          this.store.setRelation(
+            'workspacesEventCategories',
+            id,
+            ecs.map((eventCategory) => eventCategory.id)
+          );
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(
+            this.translate.translate('eventCategory.get.error')
+          );
+          return of([]);
+        })
+      );
   }
 
-  public async createEventCategory(
+  public createEventCategory(
     workspaceId: string,
     req: EventCategoryRequest
-  ): Promise<boolean> {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http
-        .post<EventCategory>(`${environment.apiUrl}/api/EventCategory`, {
-          workspaceId,
-          ...req,
+  ): Observable<boolean> {
+    return this.http
+      .post<EventCategory>(`${environment.apiUrl}/EventCategory`, {
+        workspaceId,
+        ...req,
+      })
+      .pipe(
+        debounceTime(150),
+        map((ec) => {
+          this.store.setEntity('eventCategories', ec);
+          this.store.addToRelation(
+            'workspacesEventCategories',
+            workspaceId,
+            ec.id
+          );
+          this.sonner.success(
+            this.translate.translate('eventCategory.create.success')
+          );
+          return true;
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(
+            this.translate.translate('eventCategory.create.error')
+          );
+          return of(false);
         })
-        .pipe(
-          tap({
-            next: (eventCategory) => {
-              this.store.setEntity('eventCategories', eventCategory);
-              this.sonner.success(
-                this.translate.translate('eventCategory.create.success')
-              );
-            },
-            error: (err) => {
-              console.log(err);
-              isSuccess = false;
-              this.sonner.error(
-                this.translate.translate('eventCategory.create.error')
-              );
-            },
-          })
-        )
-    );
-    return isSuccess;
+      );
   }
 
-  public async updateEventCategory(
+  public updateEventCategory(
     id: string,
     req: EventCategoryRequest
-  ): Promise<boolean> {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http
-        .put<EventCategory>(
-          `${environment.apiUrl}/api/EventCategory?id=${id}`,
-          req
-        )
-        .pipe(
-          tap({
-            next: (eventCategory) => {
-              this.store.setEntity('eventCategories', eventCategory);
-              this.sonner.success(
-                this.translate.translate('eventCategory.update.success')
-              );
-            },
-            error: (err) => {
-              console.log(err);
-              isSuccess = false;
-              this.sonner.error(
-                this.translate.translate('eventCategory.update.error')
-              );
-            },
-          })
-        )
-    );
-    return isSuccess;
+  ): Observable<boolean> {
+    return this.http
+      .put<EventCategory>(`${environment.apiUrl}/EventCategory/${id}`, req)
+      .pipe(
+        debounceTime(150),
+        map((ec) => {
+          this.store.setEntity('eventCategories', ec);
+          this.sonner.success(
+            this.translate.translate('eventCategory.update.success')
+          );
+          return true;
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(
+            this.translate.translate('eventCategory.update.error')
+          );
+          return of(false);
+        })
+      );
   }
 }

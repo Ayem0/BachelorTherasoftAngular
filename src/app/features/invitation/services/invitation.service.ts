@@ -97,7 +97,7 @@ export class InvitationService {
       .get<
         | ContactInvitation<{ sender: User }>[]
         | WorkspaceInvitation<{ workspace: Workspace; sender: User }>[]
-      >(`${environment.apiUrl}/api/invitation`)
+      >(`${environment.apiUrl}/invitation`)
       .pipe(
         debounceTime(150),
         tap((invitations) =>
@@ -122,7 +122,7 @@ export class InvitationService {
     if (!id || this.store.usersSentInvitations().has(id)) return of([]);
     return this.http
       .get<ContactInvitation<{ receiver: User }>[]>(
-        `${environment.apiUrl}/api/invitation/contact/send`
+        `${environment.apiUrl}/invitation/contact/send`
       )
       .pipe(
         debounceTime(150),
@@ -147,7 +147,7 @@ export class InvitationService {
           receiver: User;
           sender: User;
         }>
-      >(`${environment.apiUrl}/api/invitation/workspace/create`, {
+      >(`${environment.apiUrl}/invitation/workspace/create`, {
         workspaceId: workspaceId,
         receiverUserId: receiverId,
       })
@@ -172,7 +172,7 @@ export class InvitationService {
 
   public acceptWorkspaceInvitation(id: Id): Observable<boolean> {
     return this.http
-      .post(`${environment.apiUrl}/api/invitation/workspace/${id}/accept`, {})
+      .post(`${environment.apiUrl}/invitation/workspace/${id}/accept`, {})
       .pipe(
         debounceTime(150),
         tap(() => this.removeWorkspaceInvitationFromStore(id)),
@@ -189,7 +189,7 @@ export class InvitationService {
 
   public cancelWorkspaceInvitation(id: Id) {
     return this.http
-      .post(`${environment.apiUrl}/api/invitation/workspace/${id}/cancel`, {})
+      .post(`${environment.apiUrl}/invitation/workspace/${id}/cancel`, {})
       .pipe(
         debounceTime(150),
         tap(() => this.removeWorkspaceInvitationFromStore(id)),
@@ -206,7 +206,7 @@ export class InvitationService {
 
   public refuseWorkspaceInvitation(id: Id) {
     return this.http
-      .post(`${environment.apiUrl}/api/invitation/workspace/${id}/refuse`, {})
+      .post(`${environment.apiUrl}/invitation/workspace/${id}/refuse`, {})
       .pipe(
         debounceTime(150),
         tap(() => this.removeWorkspaceInvitationFromStore(id)),
@@ -234,7 +234,7 @@ export class InvitationService {
           receiver: User;
           sender: User;
         }>[]
-      >(`${environment.apiUrl}/api/invitation/workspace/${id}/send`)
+      >(`${environment.apiUrl}/invitation/workspace/${id}/send`)
       .pipe(
         debounceTime(150),
         tap((invitations) =>
@@ -254,7 +254,7 @@ export class InvitationService {
   public createContactInvitation(email: string): Observable<boolean> {
     return this.http
       .post<ContactInvitation<{ receiver: User; sender: User }>>(
-        `${environment.apiUrl}/api/invitation/contact/create`,
+        `${environment.apiUrl}/invitation/contact/create`,
         {
           contactEmail: email,
         }
@@ -280,7 +280,7 @@ export class InvitationService {
 
   public acceptContactInvitation(id: Id): Observable<boolean> {
     return this.http
-      .post(`${environment.apiUrl}/api/invitation/contact/${id}/accept`, {})
+      .post(`${environment.apiUrl}/invitation/contact/${id}/accept`, {})
       .pipe(
         debounceTime(150),
         tap(() => this.removeContactInvitationFromStore(id)),
@@ -297,7 +297,7 @@ export class InvitationService {
 
   public cancelContactInvitation(id: Id): Observable<boolean> {
     return this.http
-      .post(`${environment.apiUrl}/api/invitation/contact/${id}/cancel`, {})
+      .post(`${environment.apiUrl}/invitation/contact/${id}/cancel`, {})
       .pipe(
         debounceTime(150),
         tap(() => this.removeContactInvitationFromStore(id)),
@@ -314,7 +314,7 @@ export class InvitationService {
 
   public refuseContactInvitation(id: Id): Observable<boolean> {
     return this.http
-      .post(`${environment.apiUrl}/api/invitation/contact/${id}/refuse`, {})
+      .post(`${environment.apiUrl}/invitation/contact/${id}/refuse`, {})
       .pipe(
         debounceTime(150),
         tap(() => this.removeContactInvitationFromStore(id)),
@@ -381,6 +381,7 @@ export class InvitationService {
       | ContactInvitation<{ sender: User }>[]
       | WorkspaceInvitation<{ workspace: Workspace; sender: User }>[]
   ) {
+    console.log(invitations);
     if (invitations.length > 0) {
       const workspaceInv = invitations.filter(
         (i) => i.invitationType === InvitationType.Workspace

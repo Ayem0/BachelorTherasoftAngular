@@ -38,6 +38,9 @@ export class ParticipantCategoryDialogComponent {
     workspaceId: string;
     participantCategoryId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
+  private workspaceId = this.matDialogData.workspaceId;
+  private participantCategoryId = this.matDialogData.participantCategoryId;
+
   public participantCategory =
     this.participantCategoryService.participantCategoryById(
       this.matDialogData.participantCategoryId
@@ -76,28 +79,25 @@ export class ParticipantCategoryDialogComponent {
     ),
   });
 
-  public async submit() {
+  public submit() {
     if (this.form.valid) {
       const req = this.form.getRawValue();
       this.isLoading.set(true);
-      let canClose = false;
-      if (this.participantCategory()) {
-        canClose =
-          await this.participantCategoryService.updateParticipantCategory(
-            this.participantCategory()!.id,
+      const sub = this.participantCategoryId
+        ? this.participantCategoryService.updateParticipantCategory(
+            this.participantCategoryId,
+            req
+          )
+        : this.participantCategoryService.createParticipantCategory(
+            this.workspaceId,
             req
           );
-      } else {
-        canClose =
-          await this.participantCategoryService.createParticipantCategory(
-            this.matDialogData.workspaceId,
-            req
-          );
-      }
-      if (canClose) {
-        this.dialogRef.close();
-      }
-      this.isLoading.set(false);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }

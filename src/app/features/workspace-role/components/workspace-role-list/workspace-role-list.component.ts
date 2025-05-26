@@ -50,8 +50,8 @@ export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
   private readonly matDialog = inject(MatDialog);
   private readonly workspaceRoleService = inject(WorkspaceRoleService);
   private readonly workspaceId = inject(ROUTER_OUTLET_DATA) as Signal<string>;
-  private paginator = viewChild.required(MatPaginator);
-  private sort = viewChild.required(MatSort);
+  private paginator = viewChild(MatPaginator);
+  private sort = viewChild(MatSort);
 
   public search = new FormControl('');
   public isLoading = signal(false);
@@ -64,23 +64,23 @@ export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
   constructor() {
     effect(() => {
       this.dataSource.data = this.workspaceRoles();
-      if (this.paginator && this.paginator()) {
-        this.paginator().length = this.dataSource.data.length;
-      }
+      if (this.paginator())
+        this.paginator()!.length = this.dataSource.data.length;
     });
   }
 
-  public async ngOnInit() {
+  public ngOnInit() {
     this.isLoading.set(true);
-    await this.workspaceRoleService.getWorkspaceRolesByWorkspaceId(
-      this.workspaceId()
-    );
-    this.isLoading.set(false);
+    this.workspaceRoleService
+      .getWorkspaceRolesByWorkspaceId(this.workspaceId())
+      .subscribe(() => this.isLoading.set(false));
   }
 
   public ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator();
-    this.dataSource.sort = this.sort();
+    this.dataSource.paginator = this.paginator() ?? null;
+    this.dataSource.sort = this.sort() ?? null;
+    if (this.paginator())
+      this.paginator()!.length = this.dataSource.data.length;
     this.search.valueChanges
       .pipe(debounceTime(200))
       .subscribe((searchValue) => {
@@ -88,7 +88,8 @@ export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
         if (this.dataSource.paginator) {
           this.dataSource.paginator.firstPage();
         }
-        this.paginator().length = this.dataSource.filteredData.length;
+        if (this.paginator())
+          this.paginator()!.length = this.dataSource.data.length;
       });
   }
 

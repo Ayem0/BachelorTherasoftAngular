@@ -36,10 +36,12 @@ export class WorkspaceRoleDialogComponent {
     workspaceId: string;
     workspaceRoleId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
+  private workspaceId = this.matDialogData.workspaceId;
+  private workspaceRoleId = this.matDialogData.workspaceRoleId;
   private workspaceRole = this.workspaceRoleService.workspaceRoleById(
     this.matDialogData.workspaceRoleId
   );
-  public isUpdate = this.matDialogData.workspaceRoleId;
+  public isUpdate = signal(!!this.matDialogData.workspaceRoleId);
   public isLoading = signal(false);
 
   public form = new FormGroup<WorkspaceRoleForm>({
@@ -56,26 +58,22 @@ export class WorkspaceRoleDialogComponent {
     ),
   });
 
-  public async submit() {
-    if (this.form.valid && this.form.value && this.form.value.name) {
+  public submit() {
+    if (this.form.valid) {
       const req = this.form.getRawValue();
-      let canClose = true;
       this.isLoading.set(true);
-      if (this.workspaceRole()) {
-        canClose = await this.workspaceRoleService.updateWorkspaceRole(
-          this.workspaceRole()!.id,
-          req
-        );
-      } else {
-        canClose = await this.workspaceRoleService.createWorkspaceRole(
-          this.matDialogData.workspaceId,
-          req
-        );
-      }
-      if (canClose) {
-        this.dialogRef.close();
-      }
-      this.isLoading.set(false);
+      const sub = this.workspaceRoleId
+        ? this.workspaceRoleService.updateWorkspaceRole(
+            this.workspaceRoleId,
+            req
+          )
+        : this.workspaceRoleService.createWorkspaceRole(this.workspaceId, req);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }

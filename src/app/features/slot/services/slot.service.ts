@@ -1,14 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable } from '@angular/core';
-import { filter, firstValueFrom, tap } from 'rxjs';
+import { catchError, debounceTime, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { Id } from '../../../shared/models/entity';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
 import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { format } from '../../../shared/utils/date.utils';
-import { EventCategory } from '../../event-category/models/event-category';
-import { Room } from '../../room/models/room';
 import { Slot, SlotRequest, UNKNOWN_SLOT } from '../models/slot';
 
 @Injectable({
@@ -41,102 +39,94 @@ export class SlotService {
   //   });
   // }
 
-  public async getSlotsByWorkspaceId(id: Id) {
-    await firstValueFrom(
-      this.http
-        .get<Slot[]>(`${environment.apiUrl}/api/slot/workspace?id=${id}`)
-        .pipe(
-          tap({
-            next: (slots) => {
-              // this.store.setRelation('workspacesSlots', slots.map((slot) => slot.id));
-              this.store.setEntities('slots', slots);
-            },
-            error: (err) => {
-              console.error(err);
-              this.sonner.error(this.translate.translate('slot.get.error'));
-            },
-          })
-        )
-    );
+  public getSlotsByWorkspaceId(id: Id) {
+    if (this.store.workspacesSlots().has(id)) return of([]);
+    return this.http
+      .get<Slot[]>(`${environment.apiUrl}/workspace/${id}/slots`)
+      .pipe(
+        debounceTime(150),
+        tap((slots) => {
+          this.store.setEntities('slots', slots);
+          this.store.setRelation(
+            'workspacesSlots',
+            id,
+            slots.map((s) => s.id)
+          );
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.translate.translate('slot.get.error'));
+          return of([]);
+        })
+      );
   }
 
-  public async createSlot(workspaceId: Id, req: SlotRequest) {
+  public createSlot(workspaceId: Id, req: SlotRequest) {
     const formatedStartTime = format(req.startTime, 'HH:mm:ss.SSS') + '000';
     const formatedEndTime = format(req.endTime, 'HH:mm:ss.SSS') + '000';
     const formatedStartDate = format(req.startDate, 'YYYY-MM-DD');
     const formatedEndDate = format(req.endDate, 'YYYY-MM-DD');
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http
-        .post<Slot>(`${environment.apiUrl}/api/slot`, {
-          ...req,
-          workspaceId: workspaceId,
-          startDate: formatedStartDate,
-          endDate: formatedEndDate,
-          startTime: formatedStartTime,
-          endTime: formatedEndTime,
+    return this.http
+      .post<Slot>(`${environment.apiUrl}/slot`, {
+        ...req,
+        workspaceId: workspaceId,
+        startDate: formatedStartDate,
+        endDate: formatedEndDate,
+        startTime: formatedStartTime,
+        endTime: formatedEndTime,
+      })
+      .pipe(
+        debounceTime(150),
+        map((slot) => {
+          this.store.setEntity('slots', slot);
+          this.store.addToRelation('workspacesSlots', workspaceId, slot.id);
+          this.sonner.success(this.translate.translate('slot.create.success'));
+          return true;
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.translate.translate('slot.create.error'));
+          return of(false);
         })
-        .pipe(
-          tap({
-            next: (slot) => {
-              this.store.setEntity('slots', slot);
-              this.sonner.success(
-                this.translate.translate('slot.create.success')
-              );
-            },
-            error: (err) => {
-              console.error(err);
-              isSuccess = false;
-              this.sonner.error(this.translate.translate('slot.create.error'));
-            },
-          })
-        )
-    );
-    return isSuccess;
+      );
   }
 
-  public async updateSlot(id: string, req: SlotRequest) {
-    let isSuccess = true;
-    await firstValueFrom(
-      this.http.put<Slot>(`${environment.apiUrl}/api/slot?id=${id}`, req).pipe(
-        tap({
-          next: (slot) => {
-            this.store.setEntity('slots', slot);
-            this.sonner.success(
-              this.translate.translate('slot.update.success')
-            );
-          },
-          error: (err) => {
-            console.error(err);
-            isSuccess = false;
-            this.sonner.error(this.translate.translate('slot.update.error'));
-          },
-        })
-      )
+  public updateSlot(id: string, req: SlotRequest) {
+    return this.http.put<Slot>(`${environment.apiUrl}/slot/${id}`, req).pipe(
+      debounceTime(150),
+      map((slot) => {
+        this.store.setEntity('slots', slot);
+        this.sonner.success(this.translate.translate('slot.update.success'));
+        return true;
+      }),
+      catchError((err) => {
+        console.error(err);
+        this.sonner.error(this.translate.translate('slot.update.error'));
+        return of(false);
+      })
     );
-    return isSuccess;
   }
 
-  public async getSlotById(id: Id) {
-    await firstValueFrom(
-      this.http
-        .get<Slot<{ eventCategories: EventCategory[]; rooms: Room[] }>>(
-          `${environment.apiUrl}/api/slot?id=${id}`
-        )
-        .pipe(
-          filter(() => !this.store.slots().has(id)),
-          tap({
-            next: (slot) => {
-              this.store.setEntity('slots', slot);
-              this.store.setEntities('eventCategories', slot.eventCategories);
-              this.store.setEntities('rooms', slot.rooms);
-            },
-            error: (err) => {
-              console.error(err);
-              this.sonner.error(this.translate.translate('slot.get.error'));
-            },
-          })
-        )
-    );
-  }
+  // public async getSlotById(id: Id) {
+  //   await firstValueFrom(
+  //     this.http
+  //       .get<Slot<{ eventCategories: EventCategory[]; rooms: Room[] }>>(
+  //         `${environment.apiUrl}/slot?id=${id}`
+  //       )
+  //       .pipe(
+  //         filter(() => !this.store.slots().has(id)),
+  //         tap({
+  //           next: (slot) => {
+  //             this.store.setEntity('slots', slot);
+  //             this.store.setEntities('eventCategories', slot.eventCategories);
+  //             this.store.setEntities('rooms', slot.rooms);
+  //           },
+  //           error: (err) => {
+  //             console.error(err);
+  //             this.sonner.error(this.translate.translate('slot.get.error'));
+  //           },
+  //         })
+  //       )
+  //   );
+  // }
 }

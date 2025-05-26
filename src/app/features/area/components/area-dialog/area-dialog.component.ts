@@ -34,7 +34,8 @@ export class AreaDialogComponent {
     locationId: string;
     areaId: string | undefined;
   } = inject(MAT_DIALOG_DATA);
-
+  private areaId = this.matDialogData.areaId;
+  private locationId = this.matDialogData.locationId;
   public area = this.areaService.areaById(this.matDialogData.areaId);
   public isUpdate = !!this.matDialogData.areaId;
   public isLoading = signal(false);
@@ -53,23 +54,19 @@ export class AreaDialogComponent {
     ),
   });
 
-  public async submit() {
+  public submit() {
     if (this.form.valid) {
       const req: AreaRequest = this.form.getRawValue();
-      let canClose = true;
       this.isLoading.set(true);
-      if (this.area()) {
-        canClose = await this.areaService.updateArea(this.area()!.id, req);
-      } else {
-        canClose = await this.areaService.createArea(
-          this.matDialogData.locationId,
-          req
-        );
-      }
-      if (canClose) {
-        this.dialogRef.close();
-      }
-      this.isLoading.set(false);
+      const sub = this.areaId
+        ? this.areaService.updateArea(this.areaId, req)
+        : this.areaService.createArea(this.locationId, req);
+      sub.subscribe((x) => {
+        if (x) {
+          this.dialogRef.close();
+        }
+        this.isLoading.set(false);
+      });
     }
   }
 }
