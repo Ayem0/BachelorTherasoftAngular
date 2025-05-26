@@ -6,7 +6,7 @@ import { Id } from '../../../shared/models/entity';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
 import { TranslateService } from '../../../shared/services/translate/translate.service';
-import { Room, RoomRequest, UNKNOW_ROOM } from '../models/room';
+import { Room, RoomRequest, UNKNOWN_ROOM } from '../models/room';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,7 @@ export class RoomService {
       this.store.workspacesRooms().has(id)
         ? Array.from(
             this.store.workspacesRooms().get(id)!,
-            (i) => this.store.rooms().get(i) ?? UNKNOW_ROOM
+            (i) => this.store.rooms().get(i) ?? UNKNOWN_ROOM
           )
         : []
     );
@@ -37,7 +37,7 @@ export class RoomService {
       this.store.areasRooms().has(id())
         ? Array.from(
             this.store.areasRooms().get(id())!,
-            (i) => this.store.rooms().get(i) ?? UNKNOW_ROOM
+            (i) => this.store.rooms().get(i) ?? UNKNOWN_ROOM
           )
         : []
     );

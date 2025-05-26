@@ -4,7 +4,6 @@ import {
   computed,
   inject,
   OnInit,
-  Signal,
   signal,
   viewChild,
 } from '@angular/core';
@@ -41,7 +40,7 @@ import {
 } from '@angular/material/form-field';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from '../../../../core/auth/services/auth.service';
+import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import { format } from '../../../../shared/utils/date.utils';
 import { EventService } from '../../services/event.service';
 
@@ -78,7 +77,6 @@ export class FullCalendarComponent implements OnInit {
   private readonly sidebar = viewChild.required(MatSidenav);
   private readonly matCalendar = viewChild.required(MatCalendar<Date>);
   private readonly viewModeSelect = viewChild.required(MatSelect);
-  private readonly authService = inject(AuthService);
 
   public isSideBarOpen = signal(false);
   public selectedDate = signal(
@@ -97,7 +95,7 @@ export class FullCalendarComponent implements OnInit {
     end: new Date(),
   });
   public showWeekend = signal(true);
-  public calendarOptions: Signal<CalendarOptions> = computed(() => ({
+  public calendarOptions: CalendarOptions = {
     plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin],
     headerToolbar: false,
     initialView: this.viewMode(), // initial view mode
@@ -131,18 +129,20 @@ export class FullCalendarComponent implements OnInit {
     events: this.fetch.bind(this),
     windowResize: this.autoResize.bind(this),
     datesSet: this.onDatesSet.bind(this),
-  }));
+  };
+
+  private subject = new Subject<{
+    arg: EventSourceFuncArg;
+    successCallback: (eventInputs: EventInput[]) => void;
+    failureCallback: (error: Error) => void;
+  }>();
 
   private fetch(
     arg: EventSourceFuncArg,
     successCallback: (eventInputs: EventInput[]) => void,
     failureCallback: (error: Error) => void
   ) {
-    if (this.authService.currentUserInfo()?.id)
-      this.eventService.getEventsByUserId(
-        this.authService.currentUserInfo()!.id,
-        { start: arg.start, end: arg.end }
-      );
+    this.subject.next({ arg, successCallback, failureCallback });
   }
 
   public ngOnInit(): void {
@@ -150,6 +150,30 @@ export class FullCalendarComponent implements OnInit {
     this.viewModeSelect().selectionChange.subscribe((x) => {
       this.calendarApi().changeView(x.value);
     });
+    this.subject
+      .pipe(
+        debounceTime(200),
+        switchMap(({ arg, successCallback, failureCallback }) =>
+          this.eventService
+            .getAgendaEvents({
+              start: arg.start,
+              end: arg.end,
+            })
+            .pipe(
+              tap(() =>
+                successCallback(
+                  this.eventService.toEventInput(
+                    this.eventService.agendaEvents({
+                      start: arg.start,
+                      end: arg.end,
+                    })()
+                  )
+                )
+              )
+            )
+        )
+      )
+      .subscribe();
   }
 
   private paramToDate(param?: string | null): Date | null {

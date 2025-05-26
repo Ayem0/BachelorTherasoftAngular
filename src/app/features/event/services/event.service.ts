@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, Signal, signal } from '@angular/core';
+import { EventInput } from '@fullcalendar/core/index.js';
 import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/auth/services/auth.service';
@@ -7,11 +8,21 @@ import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
 import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { format, incrementDate } from '../../../shared/utils/date.utils';
-import { EventCategory } from '../../event-category/models/event-category';
-import { Room } from '../../room/models/room';
-import { Tag } from '../../tag/models/tag';
-import { Workspace } from '../../workspace/models/workspace';
-import { DateRange, Event, EventKey, EventRequest } from '../models/event';
+import { isIsRange } from '../../../shared/utils/event.utils';
+import {
+  EventCategory,
+  UNKNOWN_EVENT_CATEGORY,
+} from '../../event-category/models/event-category';
+import { Room, UNKNOWN_ROOM } from '../../room/models/room';
+import { Tag, UNKNOWN_TAG } from '../../tag/models/tag';
+import { UNKNOW_WORKSPACE, Workspace } from '../../workspace/models/workspace';
+import {
+  DateRange,
+  Event,
+  EventKey,
+  EventRequest,
+  UNKNOWN_EVENT,
+} from '../models/event';
 
 @Injectable({
   providedIn: 'root',
@@ -23,50 +34,72 @@ export class EventService {
   private readonly store = inject(Store);
   private readonly translate = inject(TranslateService);
 
-  // public getUserEventsByRange(
-  //   dateRange: DateRange,
-  //   userId: string
-  // ): Signal<
-  //   Event<{
-  //     eventCategory: EventCategory;
-  //     members: Member[];
-  //     participants: Participant[];
-  //     room: Room;
-  //     tags: Tag[];
-  //     workspace: Workspace;
-  //   }>[]
-  // > {
-  //   return computed(() =>
-  //     this.eventStore
-  //       .eventsArr()
-  //       .filter(
-  //         (event) =>
-  //           isIsRange(event, dateRange) && event.memberIds.includes(userId)
-  //       )
-  //       .map((event) => ({
-  //         ...event,
-  //         eventCategory:
-  //           this.eventCategoryStore
-  //             .eventCategories()
-  //             .get(event.eventCategoryId) ?? UNKNOWN_EVENT_CATEGORY,
-  //         members: event.memberIds.map(
-  //           (id) => this.memberStore.members().get(id) ?? UNKNOW_MEMBER
-  //         ),
-  //         participants: event.participantIds.map(
-  //           (id) =>
-  //             this.participantStore.participants().get(id) ??
-  //             UNKNOWN_PARTICIPANT
-  //         ),
-  //         room: this.roomStore.rooms().get(event.roomId) ?? UNKNOW_ROOM,
-  //         tags: event.tagIds.map(
-  //           (id) => this.tagStore.tags().get(id) ?? UNKNOWN_TAG
-  //         ),
-  //         workspace:
-  //           this.workspaceStore.workspaces().get(event.workspaceId) ??
-  //           UNKNOW_WORKSPACE,
-  //       }))
-  //   );
-  // }
+  public agendaEvents(dateRange: DateRange): Signal<
+    Event<{
+      eventCategory: EventCategory;
+      room: Room;
+      tags: Tag[];
+      workspace: Workspace;
+    }>[]
+  > {
+    const id = this.auth.currentUserInfo()?.id ?? '';
+    return computed(() => {
+      const keys = this.createKeys(id, dateRange);
+      const ids = keys
+        .map((key) => this.store.usersEvents().get(key))
+        .filter((x) => !!x)
+        .flatMap((s) => [...s]);
+      const events = ids.map(
+        (id) => this.store.events().get(id) ?? UNKNOWN_EVENT
+      );
+      const mapped: Event<{
+        eventCategory: EventCategory;
+        room: Room;
+        tags: Tag[];
+        workspace: Workspace;
+      }>[] = events.map((event) => ({
+        ...event,
+        workspace:
+          event.workspaceId && this.store.workspaces().has(event.workspaceId)
+            ? this.store.workspaces().get(event.workspaceId)!
+            : UNKNOW_WORKSPACE,
+        room:
+          event.roomId && this.store.rooms().has(event.roomId)
+            ? this.store.rooms().get(event.roomId)!
+            : UNKNOWN_ROOM,
+        eventCategory:
+          event.eventCategoryId &&
+          this.store.eventCategories().has(event.eventCategoryId)
+            ? this.store.eventCategories().get(event.eventCategoryId)!
+            : UNKNOWN_EVENT_CATEGORY,
+        tags: event.tagIds
+          ? event.tagIds.map(
+              (tagId) => this.store.tags().get(tagId) ?? UNKNOWN_TAG
+            )
+          : [],
+      }));
+      return mapped;
+    });
+  }
+
+  public toEventInput(
+    events: Event<{
+      eventCategory: EventCategory;
+      room: Room;
+      tags: Tag[];
+      workspace: Workspace;
+    }>[]
+  ): EventInput[] {
+    return events.map((event) => ({
+      id: event.id,
+      title: event.description,
+      start: event.startDate,
+      end: event.endDate,
+      extendedProps: {
+        event: event,
+      },
+    }));
+  }
 
   // public dialogEventsByRange(
   //   dateRange: DateRange,
@@ -95,29 +128,38 @@ export class EventService {
 
   public createEvent(req: EventRequest): Observable<boolean> {
     const id = this.auth.currentUserInfo()?.id ?? '';
-    return this.http.post<Event<{}>>(`${environment.apiUrl}/event`, req).pipe(
-      debounceTime(150),
-      map((event) => {
-        this.store.setEntity('events', event);
-        const keys = this.createKeys(id, {
-          start: req.startDate,
-          end: req.endDate,
-        });
-        keys.forEach((key) =>
-          this.store.addToRelation('usersEvents', key, event.id)
-        );
-        this.sonner.success(
-          this.translate.translate('event.create.success'),
-          format(event.startDate, 'dddd, MMMM DD, YYYY [at] HH:mm')
-        );
-        return true;
-      }),
-      catchError((err) => {
-        console.error('Error creating event:', err);
-        this.sonner.error(this.translate.translate('event.create.error'));
-        return of(false);
-      })
-    );
+    return this.http
+      .post<
+        Event<{
+          eventCategory: EventCategory;
+          tags: Tag[];
+          workspace: Workspace;
+          room: Room;
+        }>
+      >(`${environment.apiUrl}/event`, req)
+      .pipe(
+        debounceTime(150),
+        map((event) => {
+          this.setEventToStore(event);
+          const keys = this.createKeys(id, {
+            start: req.startDate,
+            end: req.endDate,
+          });
+          keys.forEach((key) =>
+            this.store.setRelation('usersEvents', key, [event.id])
+          );
+          this.sonner.success(
+            this.translate.translate('event.create.success'),
+            format(event.startDate, 'dddd, MMMM DD, YYYY [at] HH:mm')
+          );
+          return true;
+        }),
+        catchError((err) => {
+          console.error('Error creating event:', err);
+          this.sonner.error(this.translate.translate('event.create.error'));
+          return of(false);
+        })
+      );
   }
 
   // public async updateEvent(id: string, req: EventRequest): Promise<boolean> {
@@ -155,31 +197,85 @@ export class EventService {
   // }
 
   private createKeys(id: string, range: DateRange): EventKey[] {
-    const date = new Date(range.start);
+    let date = new Date(range.start);
     const keys: EventKey[] = [];
     while (date < range.end) {
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
       const day = date.getDate();
       keys.push(`${id}/${year}/${month}/${day}`);
+      date = incrementDate(date, 1, 'day');
     }
     return keys;
   }
 
   private isAlreadyLoaded(id: string, range: DateRange) {
-    const date = new Date(range.start);
+    let date = new Date(range.start);
     while (date < range.end) {
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
       const day = date.getDate();
       const key: EventKey = `${id}/${year}/${month}/${day}`;
       if (!this.store.usersEvents().has(key)) return false;
-      incrementDate(date, 1, 'day');
+      date = incrementDate(date, 1, 'day');
     }
     return true;
   }
 
-  public getEventsByUserId(id: string, range: DateRange) {
+  private setEventToStore(
+    event: Event<{
+      eventCategory: EventCategory;
+      tags: Tag[];
+      workspace: Workspace;
+      room: Room;
+    }>
+  ) {
+    this.store.setEntity('events', event);
+    this.store.setEntities('tags', event.tags);
+    this.store.setEntity('eventCategories', event.eventCategory);
+    this.store.setEntity('workspaces', event.workspace);
+    this.store.setEntity('rooms', event.room);
+  }
+
+  private setEventsToStore(
+    id: string,
+    range: DateRange,
+    events: Event<{
+      eventCategory: EventCategory;
+      tags: Tag[];
+      workspace: Workspace;
+      room: Room;
+    }>[]
+  ) {
+    events.forEach((event) => this.setEventToStore(event));
+    let date = new Date(range.start);
+    while (date < range.end) {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const key: EventKey = `${id}/${year}/${month}/${day}`;
+      this.store.setRelation(
+        'usersEvents',
+        key,
+        events
+          .filter((e) =>
+            isIsRange(e, { start: date, end: incrementDate(date, 1, 'day') })
+          )
+          .map((e) => e.id)
+      );
+      date = incrementDate(date, 1, 'day');
+    }
+  }
+
+  public getAgendaEvents(range: DateRange): Observable<
+    Event<{
+      eventCategory: EventCategory;
+      tags: Tag[];
+      workspace: Workspace;
+      room: Room;
+    }>[]
+  > {
+    const id = this.auth.currentUserInfo()?.id ?? '';
     const startDate = range.start.toJSON();
     const endDate = range.end.toJSON();
     if (this.isAlreadyLoaded(id, range)) return of([]);
@@ -198,29 +294,11 @@ export class EventService {
         },
       })
       .pipe(
-        debounceTime(150),
-        tap((events) => {
-          this.store.setEntities('events', events);
-          this.store.setEntities(
-            'tags',
-            events.flatMap((event) => event.tags)
-          );
-          this.store.setEntities(
-            'eventCategories',
-            events.map((event) => event.eventCategory)
-          );
-          const keys = this.createKeys(id, range);
-          keys.forEach((key) =>
-            this.store.setRelation(
-              'usersEvents',
-              key,
-              events.map((event) => event.id)
-            )
-          );
-        }),
+        debounceTime(200),
+        tap((events) => this.setEventsToStore(id, range, events)),
         catchError((err) => {
-          console.error('Error creating event:', err);
-          this.sonner.error(this.translate.translate('event.create.error'));
+          console.error(err);
+          this.sonner.error(this.translate.translate('event.get.error'));
           return of([]);
         })
       );

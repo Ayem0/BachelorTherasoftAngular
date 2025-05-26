@@ -28,7 +28,7 @@ type BaseRoom = {
 
 export type Room<R extends RoomRelations = {}> = BaseRoom & FilterRelations<R>;
 
-export const UNKNOW_ROOM: Room = {
+export const UNKNOWN_ROOM: Room = {
   id: '',
   name: 'Unknown Room',
   workspaceId: '',

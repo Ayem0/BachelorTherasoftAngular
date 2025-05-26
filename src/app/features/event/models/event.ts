@@ -13,6 +13,12 @@ interface EventRelations {
 }
 
 type BaseEvent = {
+  memberIds?: Id[];
+  tagIds?: Id[];
+  participantIds?: Id[];
+  roomId?: Id;
+  workspaceId?: Id;
+  eventCategoryId?: Id;
   description?: string;
   startDate: Date;
   endDate: Date;
@@ -23,15 +29,6 @@ type BaseEvent = {
 
 export type Event<R extends EventRelations = {}> = BaseEvent &
   FilterRelations<R>;
-
-export type StoreEvent = {
-  roomId: Id;
-  workspaceId: Id;
-  eventCategoryId: Id;
-  memberIds: Id[];
-  tagIds: Id[];
-  participantIds: Id[];
-} & BaseEvent;
 
 export interface EventRequest {
   description?: string;
@@ -72,3 +69,9 @@ type year = number;
 type month = number;
 type day = number;
 export type EventKey = `${Id}/${year}/${month}/${day}`;
+
+export const UNKNOWN_EVENT: Event = {
+  id: 'unknown',
+  startDate: new Date(),
+  endDate: new Date(),
+};
