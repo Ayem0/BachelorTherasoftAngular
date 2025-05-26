@@ -67,3 +67,8 @@ export interface DateRange {
   start: Date;
   end: Date;
 }
+
+type year = number;
+type month = number;
+type day = number;
+export type EventKey = `${Id}/${year}/${month}/${day}`;

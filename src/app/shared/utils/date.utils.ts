@@ -13,7 +13,11 @@ type ManipulateDate =
   | 'month'
   | 'year';
 
-export function add(date: Date, amount: number, unit: ManipulateDate) {
+export function incrementDate(
+  date: Date,
+  amount: number,
+  unit: ManipulateDate
+) {
   return dayjs(date).add(amount, unit).toDate();
 }
 

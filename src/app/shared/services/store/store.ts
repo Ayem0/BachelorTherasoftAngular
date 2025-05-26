@@ -2,7 +2,7 @@ import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { User } from '../../../core/auth/models/auth';
 import { Area } from '../../../features/area/models/area';
 import { EventCategory } from '../../../features/event-category/models/event-category';
-import { DateRange, Event } from '../../../features/event/models/event';
+import { Event, EventKey } from '../../../features/event/models/event';
 import { Invitation } from '../../../features/invitation/models/invitation.model';
 import { Location } from '../../../features/location/models/location';
 import { ParticipantCategory } from '../../../features/participant-category/models/participant-category';
@@ -13,11 +13,6 @@ import { Tag } from '../../../features/tag/models/tag';
 import { WorkspaceRole } from '../../../features/workspace-role/models/workspace-role';
 import { Workspace } from '../../../features/workspace/models/workspace';
 import { Entity, Id } from '../../models/entity';
-
-export interface EventLoadedKey {
-  id: Id;
-  range: DateRange;
-}
 
 export type StoreState = {
   // Area
@@ -68,7 +63,7 @@ export type StoreState = {
 
   // User
   users: Map<Id, User>;
-  usersEvents: Map<EventLoadedKey, Set<Id>>;
+  usersEvents: Map<EventKey, Set<Id>>;
   usersContacts: Map<Id, Set<Id>>;
   usersBlockedUsers: Map<Id, Set<Id>>;
   usersWorkspaces: Map<Id, Set<Id>>;
@@ -83,7 +78,7 @@ export type StoreState = {
   // Room
   rooms: Map<Id, Room>;
   roomsSlots: Map<Id, Set<Id>>;
-  roomsEvents: Map<EventLoadedKey, Set<Id>>;
+  roomsEvents: Map<EventKey, Set<Id>>;
 };
 
 type MapEntity<T> = T extends Map<unknown, infer V extends Entity> ? V : never;

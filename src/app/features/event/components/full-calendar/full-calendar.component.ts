@@ -41,7 +41,9 @@ import {
 } from '@angular/material/form-field';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../../../core/auth/services/auth.service';
 import { format } from '../../../../shared/utils/date.utils';
+import { EventService } from '../../services/event.service';
 
 @Component({
   selector: 'app-calendar',
@@ -69,12 +71,14 @@ import { format } from '../../../../shared/utils/date.utils';
 })
 export class FullCalendarComponent implements OnInit {
   private readonly layoutService = inject(LayoutService);
+  private readonly eventService = inject(EventService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fullCalendar = viewChild.required(FullCalendar);
   private readonly sidebar = viewChild.required(MatSidenav);
   private readonly matCalendar = viewChild.required(MatCalendar<Date>);
   private readonly viewModeSelect = viewChild.required(MatSelect);
+  private readonly authService = inject(AuthService);
 
   public isSideBarOpen = signal(false);
   public selectedDate = signal(
@@ -133,7 +137,13 @@ export class FullCalendarComponent implements OnInit {
     arg: EventSourceFuncArg,
     successCallback: (eventInputs: EventInput[]) => void,
     failureCallback: (error: Error) => void
-  ) {}
+  ) {
+    if (this.authService.currentUserInfo()?.id)
+      this.eventService.getEventsByUserId(
+        this.authService.currentUserInfo()!.id,
+        { start: arg.start, end: arg.end }
+      );
+  }
 
   public ngOnInit(): void {
     this.sidebar().openedChange.subscribe((x) => this.isSideBarOpen.set(x));
