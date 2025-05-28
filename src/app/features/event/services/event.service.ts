@@ -3,16 +3,22 @@ import { computed, inject, Injectable, Signal, signal } from '@angular/core';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { UNKNOW_USER, User } from '../../../core/auth/models/auth';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { Id } from '../../../shared/models/entity';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
 import { TranslateService } from '../../../shared/services/translate/translate.service';
-import { format, incrementDate } from '../../../shared/utils/date.utils';
+import { format, incrementDate, toUtc } from '../../../shared/utils/date.utils';
 import { isIsRange } from '../../../shared/utils/event.utils';
 import {
   EventCategory,
   UNKNOWN_EVENT_CATEGORY,
 } from '../../event-category/models/event-category';
+import {
+  Participant,
+  UNKNOWN_PARTICIPANT,
+} from '../../participant/models/participant';
 import { Room, UNKNOWN_ROOM } from '../../room/models/room';
 import { Tag, UNKNOWN_TAG } from '../../tag/models/tag';
 import { UNKNOW_WORKSPACE, Workspace } from '../../workspace/models/workspace';
@@ -33,6 +39,53 @@ export class EventService {
   private readonly auth = inject(AuthService);
   private readonly store = inject(Store);
   private readonly translate = inject(TranslateService);
+
+  public detailedEvent(id: Id | null | undefined): Signal<Event<{
+    eventCategory: EventCategory;
+    room: Room;
+    tags: Tag[];
+    workspace: Workspace;
+    users: User[];
+    participants: Participant[];
+  }> | null> {
+    return computed(() => {
+      if (!id) return null;
+      const event = this.store.events().get(id) ?? UNKNOWN_EVENT;
+      return {
+        ...event,
+        workspace:
+          event.workspaceId && this.store.workspaces().has(event.workspaceId)
+            ? this.store.workspaces().get(event.workspaceId)!
+            : UNKNOW_WORKSPACE,
+        room:
+          event.roomId && this.store.rooms().has(event.roomId)
+            ? this.store.rooms().get(event.roomId)!
+            : UNKNOWN_ROOM,
+        eventCategory:
+          event.eventCategoryId &&
+          this.store.eventCategories().has(event.eventCategoryId)
+            ? this.store.eventCategories().get(event.eventCategoryId)!
+            : UNKNOWN_EVENT_CATEGORY,
+        tags: event.tagIds
+          ? event.tagIds.map(
+              (tagId) => this.store.tags().get(tagId) ?? UNKNOWN_TAG
+            )
+          : [],
+        users: event.userIds
+          ? event.userIds.map(
+              (userId) => this.store.users().get(userId) ?? UNKNOW_USER
+            )
+          : [],
+        participants: event.participantIds
+          ? event.participantIds.map(
+              (participantId) =>
+                this.store.participants().get(participantId) ??
+                UNKNOWN_PARTICIPANT
+            )
+          : [],
+      };
+    });
+  }
 
   public agendaEvents(dateRange: DateRange): Signal<
     Event<{
@@ -128,6 +181,8 @@ export class EventService {
 
   public createEvent(req: EventRequest): Observable<boolean> {
     const id = this.auth.currentUserInfo()?.id ?? '';
+    req.startDate = toUtc(req.startDate);
+    req.endDate = toUtc(req.endDate);
     return this.http
       .post<
         Event<{

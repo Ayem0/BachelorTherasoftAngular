@@ -56,7 +56,7 @@ export class MemberListComponent implements OnInit, AfterViewInit {
   public isLoading = signal(false);
   public dataSource = new MatTableDataSource<User>([]);
   public displayedColumns: string[] = ['firstName', 'lastName', 'action'];
-  public members = this.memberService.membersByWorkspaceId(this.workspaceId());
+  public members = this.memberService.membersByWorkspaceId(this.workspaceId);
 
   constructor() {
     effect(() => {

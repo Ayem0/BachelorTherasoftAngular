@@ -34,6 +34,9 @@ import { LayoutService } from '../../../../core/layout/layout/layout.service';
 import { ViewMode } from '../../../event/models/view-mode';
 // import { EventStore } from '../../../event/services/event.store';
 // import { FullCalendarEventDialogComponent2 } from '../full-calendar-event-dialog2/full-calendar-event-dialog.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
 import {
   MAT_FORM_FIELD_DEFAULT_OPTIONS,
   MatFormFieldModule,
@@ -42,7 +45,9 @@ import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import { format } from '../../../../shared/utils/date.utils';
+import { WorkspaceService } from '../../../workspace/services/workspace.service';
 import { EventService } from '../../services/event.service';
+import { FullCalendarEventDialogComponent } from '../full-calendar-event-dialog/full-calendar-event-dialog.component';
 
 @Component({
   selector: 'app-calendar',
@@ -55,6 +60,8 @@ import { EventService } from '../../services/event.service';
     MatIcon,
     MatFormFieldModule,
     MatSelectModule,
+    ReactiveFormsModule,
+    MatCheckboxModule,
   ],
   providers: [
     {
@@ -71,13 +78,17 @@ import { EventService } from '../../services/event.service';
 export class FullCalendarComponent implements OnInit {
   private readonly layoutService = inject(LayoutService);
   private readonly eventService = inject(EventService);
+  private readonly workspaceService = inject(WorkspaceService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fullCalendar = viewChild.required(FullCalendar);
   private readonly sidebar = viewChild.required(MatSidenav);
   private readonly matCalendar = viewChild.required(MatCalendar<Date>);
   private readonly viewModeSelect = viewChild.required(MatSelect);
+  private readonly matDialog = inject(MatDialog);
 
+  public workspaces = this.workspaceService.workspaces();
+  public isLoadingWorkspaces = signal(false);
   public isSideBarOpen = signal(false);
   public selectedDate = signal(
     this.paramToDate(this.route.snapshot.queryParamMap.get('start')) ||
@@ -146,6 +157,11 @@ export class FullCalendarComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.isLoadingWorkspaces.set(true);
+    this.workspaceService
+      .getWorkspaces()
+      .subscribe(() => this.isLoadingWorkspaces.set(false));
+
     this.sidebar().openedChange.subscribe((x) => this.isSideBarOpen.set(x));
     this.viewModeSelect().selectionChange.subscribe((x) => {
       this.calendarApi().changeView(x.value);
@@ -233,7 +249,13 @@ export class FullCalendarComponent implements OnInit {
 
   private handleDateSelect(selectInfo: DateSelectArg) {
     this.calendarApi().unselect(); // clear date selection
-    // TODO open dialog
+    this.matDialog.open(FullCalendarEventDialogComponent, {
+      data: {
+        eventId: null,
+        start: selectInfo.start,
+        end: selectInfo.end,
+      },
+    });
   }
 
   private handleEventClick(clickInfo: EventClickArg) {

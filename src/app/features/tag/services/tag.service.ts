@@ -17,15 +17,14 @@ export class TagService {
   private readonly sonner = inject(SonnerService);
   private readonly translate = inject(TranslateService);
 
-  public tagsByWorkspaceId(id: Id): Signal<Tag[]> {
-    return computed(() =>
-      this.store.workspacesTags().has(id)
-        ? Array.from(
-            this.store.workspacesTags().get(id)!,
-            (i) => this.store.tags().get(i) ?? UNKNOWN_TAG
-          )
-        : []
-    );
+  public tagsByWorkspaceId(id: Signal<string>): Signal<Tag[]> {
+    return computed(() => {
+      if (!this.store.workspacesTags().has(id())) return [];
+      return Array.from(
+        this.store.workspacesTags().get(id())!,
+        (i) => this.store.tags().get(i) ?? UNKNOWN_TAG
+      );
+    });
   }
 
   public tagById(id: Id | null | undefined) {

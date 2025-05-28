@@ -62,7 +62,7 @@ export class EventCategoryListComponent {
     'action',
   ];
   private eventCategories =
-    this.eventCategoryService.eventCategoriesByWorkspaceId(this.workspaceId());
+    this.eventCategoryService.eventCategoriesByWorkspaceId(this.workspaceId);
 
   constructor() {
     effect(() => {

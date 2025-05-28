@@ -56,14 +56,12 @@ export class SlotDialogComponent implements OnInit {
   private readonly matDialogData: { workspaceId: Id; slotId: Id | undefined } =
     inject(MAT_DIALOG_DATA);
 
-  private readonly workspaceId = this.matDialogData.workspaceId;
+  private readonly workspaceId = signal(this.matDialogData.workspaceId);
   private readonly slotId = this.matDialogData.slotId;
   public slot = this.slotService.slotById(this.matDialogData.slotId);
   public isUpdate = signal(!!this.matDialogData.slotId);
   public eventCategories =
-    this.eventCategoryService.eventCategoriesByWorkspaceId(
-      this.matDialogData.workspaceId
-    );
+    this.eventCategoryService.eventCategoriesByWorkspaceId(this.workspaceId);
   public useRepetition = false;
   public isLoading = signal(false);
 
@@ -154,7 +152,7 @@ export class SlotDialogComponent implements OnInit {
       this.isLoading.set(true);
       const sub = this.slotId
         ? this.slotService.updateSlot(this.slotId, req)
-        : this.slotService.createSlot(this.workspaceId, req);
+        : this.slotService.createSlot(this.workspaceId(), req);
       sub.subscribe((x) => {
         if (x) {
           this.dialogRef.close();

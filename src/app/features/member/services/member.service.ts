@@ -22,11 +22,11 @@ export class MemberService {
     this.listenForSocketEvents();
   }
 
-  public membersByWorkspaceId(id: string): Signal<User[]> {
+  public membersByWorkspaceId(id: Signal<string>): Signal<User[]> {
     return computed(() => {
-      if (!this.store.workspacesUsers().has(id)) return [];
+      if (!this.store.workspacesUsers().has(id())) return [];
       return Array.from(
-        this.store.workspacesUsers().get(id)!,
+        this.store.workspacesUsers().get(id())!,
         (i) => this.store.users().get(i) ?? UNKNOW_USER
       );
     });

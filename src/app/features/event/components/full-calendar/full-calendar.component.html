@@ -23,7 +23,11 @@
                     <mat-expansion-panel-header>
                         <mat-panel-title> Workspaces </mat-panel-title>
                     </mat-expansion-panel-header>
-                    <p>This is the primary content of the panel.</p>
+                    <div class="flex flex-col ">
+                        @for (w of workspaces(); track w.id) {
+                            <mat-checkbox>{{ w.name }}</mat-checkbox>
+                        }
+                    </div>
                 </mat-expansion-panel>
             </div>
         </mat-sidenav>

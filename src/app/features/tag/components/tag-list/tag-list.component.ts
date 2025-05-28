@@ -61,7 +61,7 @@ export class TagListComponent {
     'description',
     'action',
   ];
-  public tags = this.tagService.tagsByWorkspaceId(this.workspaceId());
+  public tags = this.tagService.tagsByWorkspaceId(this.workspaceId);
   constructor() {
     effect(() => {
       this.dataSource.data = this.tags();

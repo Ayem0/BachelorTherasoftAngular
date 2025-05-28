@@ -4,7 +4,7 @@ import { Entity, Id } from '../../../shared/models/entity';
 import { Interval } from '../../../shared/models/interval';
 
 interface EventRelations {
-  members?: unknown;
+  users?: unknown;
   room?: unknown;
   participants?: unknown;
   eventCategory?: unknown;
@@ -13,7 +13,7 @@ interface EventRelations {
 }
 
 type BaseEvent = {
-  memberIds?: Id[];
+  userIds?: Id[];
   tagIds?: Id[];
   participantIds?: Id[];
   roomId?: Id;

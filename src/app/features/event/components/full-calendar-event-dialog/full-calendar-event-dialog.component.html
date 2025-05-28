@@ -1,14 +1,14 @@
 <div
   class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
-  <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate() ? "Update Event " : "Create Event" }}</h2>
+  <h2 class="p-4 dark:text-white text-2xl">{{ isUpdate ? "Update Event " : "Create Event" }}</h2>
   <div class="flex size-full flex-row gap-2">
     <form [formGroup]="form" class="flex flex-col px-4 pb-4" (ngSubmit)="submit()">
 
       <mat-form-field appearance="outline" [hideRequiredMarker]="true">
         <mat-label>Workspace</mat-label>
         <mat-select placeholder="Workspace" formControlName="workspaceId">
-          @for (e of workspaces(); track e.id) {
-          <mat-option [value]="e.id">{{e.name}}</mat-option>
+          @for (w of workspaces(); track w.id) {
+          <mat-option [value]="w.id">{{w.name}}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -79,18 +79,18 @@
         </mat-form-field>
       </div>
       <button type="button" mat-flat-button (click)="openRepetitionDialog()">Make recurring</button>
-      <button mat-flat-button type="submit" [disabled]="disabled() || !form.valid" class="my-4">
-        @if(disabled()) {
+      <button mat-flat-button type="submit" [disabled]="isSubmitting() || !form.valid" class="my-4">
+        @if(isSubmitting()) {
         <mat-spinner diameter="24"></mat-spinner>
         } @else {
-        <span>{{ isUpdate() ? "Update" : "Create"}}</span>
+        <span>{{ isUpdate ? "Update" : "Create"}}</span>
         }
       </button>
     </form>
-    @if(canShowCalendar()) {
+    <!-- @if(canShowCalendar()) {
     <div class="flex flex-1 relative">
       <full-calendar [options]="calendarOptions()" class="absolute inset-0"></full-calendar>
     </div>
-    }
+    } -->
   </div>
 </div>

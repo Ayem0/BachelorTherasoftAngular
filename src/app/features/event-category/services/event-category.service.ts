@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable } from '@angular/core';
+import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
@@ -20,15 +20,16 @@ export class EventCategoryService {
   private readonly sonner = inject(SonnerService);
   private readonly translate = inject(TranslateService);
 
-  public eventCategoriesByWorkspaceId(id: string) {
-    return computed(() =>
-      this.store.workspacesEventCategories().has(id)
-        ? Array.from(
-            this.store.workspacesEventCategories().get(id)!,
-            (i) => this.store.eventCategories().get(i) ?? UNKNOWN_EVENT_CATEGORY
-          )
-        : []
-    );
+  public eventCategoriesByWorkspaceId(
+    id: Signal<string>
+  ): Signal<EventCategory[]> {
+    return computed(() => {
+      if (!this.store.workspacesEventCategories().has(id())) return [];
+      return Array.from(
+        this.store.workspacesEventCategories().get(id())!,
+        (i) => this.store.eventCategories().get(i) ?? UNKNOWN_EVENT_CATEGORY
+      );
+    });
   }
 
   public eventCategoryById(id: string | null | undefined) {

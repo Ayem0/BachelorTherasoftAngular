@@ -1,4 +1,7 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 export function format(date: Date, format: string) {
   return dayjs(date).format(format);
@@ -23,4 +26,8 @@ export function incrementDate(
 
 export function dateTimeToDate(date: Date) {
   return new Date(dayjs(date).format('YYYY-MM-DD'));
+}
+
+export function toUtc(date: Date) {
+  return dayjs(date).utc().toDate();
 }

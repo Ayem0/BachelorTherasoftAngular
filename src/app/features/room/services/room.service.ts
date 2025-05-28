@@ -17,15 +17,14 @@ export class RoomService {
   private readonly sonner = inject(SonnerService);
   private readonly translate = inject(TranslateService);
 
-  public roomsByWorkspaceId(id: Id): Signal<Room[]> {
-    return computed(() =>
-      this.store.workspacesRooms().has(id)
-        ? Array.from(
-            this.store.workspacesRooms().get(id)!,
-            (i) => this.store.rooms().get(i) ?? UNKNOWN_ROOM
-          )
-        : []
-    );
+  public roomsByWorkspaceId(id: Signal<string>): Signal<Room[]> {
+    return computed(() => {
+      if (!this.store.workspacesRooms().has(id())) return [];
+      return Array.from(
+        this.store.workspacesRooms().get(id())!,
+        (i) => this.store.rooms().get(i) ?? UNKNOWN_ROOM
+      );
+    });
   }
 
   public roomById(id: Id | null | undefined): Signal<Room | undefined> {
