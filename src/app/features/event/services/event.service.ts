@@ -98,10 +98,18 @@ export class EventService {
     const id = this.auth.currentUserInfo()?.id ?? '';
     return computed(() => {
       const keys = this.createKeys(id, dateRange);
-      const ids = keys
-        .map((key) => this.store.usersEvents().get(key))
-        .filter((x) => !!x)
-        .flatMap((s) => [...s]);
+      console.log(keys, id);
+      console.log(this.store.usersEvents());
+      const ids = Array.from(
+        new Set(
+          keys
+            .map((key) => this.store.usersEvents().get(key))
+            .filter((x) => !!x)
+            .flatMap((s) => [...s])
+        )
+      );
+      console.log(ids);
+
       const events = ids.map(
         (id) => this.store.events().get(id) ?? UNKNOWN_EVENT
       );
@@ -303,7 +311,9 @@ export class EventService {
     }>[]
   ) {
     events.forEach((event) => this.setEventToStore(event));
+    console.log(events);
     let date = new Date(range.start);
+
     while (date < range.end) {
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
@@ -313,8 +323,9 @@ export class EventService {
         'usersEvents',
         key,
         events
-          .filter((e) =>
-            isIsRange(e, { start: date, end: incrementDate(date, 1, 'day') })
+          .filter(
+            (e) =>
+              !isIsRange(e, { start: date, end: incrementDate(date, 1, 'day') })
           )
           .map((e) => e.id)
       );

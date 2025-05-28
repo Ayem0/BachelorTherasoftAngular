@@ -153,6 +153,31 @@ export class FullCalendarComponent implements OnInit {
     successCallback: (eventInputs: EventInput[]) => void,
     failureCallback: (error: Error) => void
   ) {
+    // const event: EventInput = {
+    //   extendedProps: {
+    //     test: 'ezezez',
+    //   },
+    //   start: new Date(),
+    //   end: incrementDate(new Date(), 30, 'minute'),
+    //   title: '',
+    // };
+    // successCallback([event]);
+    // this.eventService
+    //   .getAgendaEvents({
+    //     start: arg.start,
+    //     end: arg.end,
+    //   })
+
+    //   .subscribe((x) =>
+    //     successCallback(
+    //       this.eventService.toEventInput(
+    //         this.eventService.agendaEvents({
+    //           start: arg.start,
+    //           end: arg.end,
+    //         })()
+    //       )
+    //     )
+    //   );
     this.subject.next({ arg, successCallback, failureCallback });
   }
 
@@ -176,7 +201,7 @@ export class FullCalendarComponent implements OnInit {
               end: arg.end,
             })
             .pipe(
-              tap(() =>
+              tap(() => {
                 successCallback(
                   this.eventService.toEventInput(
                     this.eventService.agendaEvents({
@@ -184,8 +209,14 @@ export class FullCalendarComponent implements OnInit {
                       end: arg.end,
                     })()
                   )
-                )
-              )
+                );
+                console.log(
+                  this.eventService.agendaEvents({
+                    start: arg.start,
+                    end: arg.end,
+                  })()
+                );
+              })
             )
         )
       )
