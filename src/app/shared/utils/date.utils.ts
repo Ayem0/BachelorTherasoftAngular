@@ -14,7 +14,8 @@ type ManipulateDate =
   | 'hour'
   | 'day'
   | 'month'
-  | 'year';
+  | 'year'
+  | 'week';
 
 export function incrementDate(
   date: Date,
@@ -24,10 +25,22 @@ export function incrementDate(
   return dayjs(date).add(amount, unit).toDate();
 }
 
+export function decrementDate(
+  date: Date,
+  amount: number,
+  unit: ManipulateDate
+) {
+  return dayjs(date).subtract(amount, unit).toDate();
+}
+
 export function dateTimeToDate(date: Date) {
   return new Date(dayjs(date).format('YYYY-MM-DD'));
 }
 
 export function toUtc(date: Date) {
   return dayjs(date).utc().toDate();
+}
+
+export function getDifferenceInDays(date1: Date, date2: Date) {
+  return dayjs(date1).diff(date2, 'day');
 }

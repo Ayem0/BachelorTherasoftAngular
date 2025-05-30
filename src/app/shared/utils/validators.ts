@@ -16,7 +16,7 @@ export function isFutureDate(
 ): ValidationErrors | null {
   const startDate: Date = control.get('startDate')?.value;
   const endDate: Date = control.get('endDate')?.value;
-  if (startDate > endDate) {
+  if (startDate >= endDate) {
     return { isNotFutureDate: true };
   }
   return null;

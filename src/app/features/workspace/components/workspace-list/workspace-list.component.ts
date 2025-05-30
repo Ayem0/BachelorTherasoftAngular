@@ -9,8 +9,12 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import {
+  MAT_FORM_FIELD_DEFAULT_OPTIONS,
+  MatFormFieldModule,
+} from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
@@ -41,6 +45,15 @@ import { WorkspaceDialogComponent } from '../workspace-dialog/workspace-dialog.c
     MatTableModule,
     MatSortModule,
     ReactiveFormsModule,
+    MatCardModule,
+  ],
+  providers: [
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: {
+        subscriptSizing: 'dynamic',
+      },
+    },
   ],
   templateUrl: './workspace-list.component.html',
   styleUrl: './workspace-list.component.scss',

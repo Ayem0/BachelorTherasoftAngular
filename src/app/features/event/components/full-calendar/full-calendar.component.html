@@ -5,63 +5,78 @@
     <mat-sidenav-container [hasBackdrop]="showOver()" [style.flex]="'1 0 auto'" class="z-50 !flex">
         <mat-sidenav #sidebar [(opened)]="isSideBarOpen" autoFocus="false" [mode]="sidenavMode()"
             [fixedInViewport]="true" [fixedTopGap]="56" class="!w-64 !rounded-none">
-            <div class="flex flex-col overflow-hidden pt-2"> 
+            <div class="flex flex-col overflow-hidden pt-3"> 
                 <!-- <div class="flex justify-between w-full px-2">  -->
                 <!-- @if(isSideBarOpen()) {
                     <button mat-icon-button (click)="toggleSidebar()">
                         <mat-icon>menu</mat-icon>
                     </button>
                     } -->
-                <button mat-flat-button class="mx-2">
+                <button mat-flat-button class="mx-2" (click)="openDialog()">
                     <mat-icon>add</mat-icon>
-                    Create
+                    {{ "action.create" | translate }}
                 </button>
                 <!-- </div> -->
-                <mat-calendar #calendar [(selected)]="selectedDate" (selectedChange)="selectedChange($event)">
+                <mat-calendar [dateFilter]="weekEndFilter" [headerComponent]="customHeader" #calendar [(selected)]="selectedDate" (selectedChange)="selectedChange($event)" class="h-80">
                 </mat-calendar>
-                <mat-expansion-panel class="!shadow-none">
+                <mat-expansion-panel class="!shadow-none px-2">
                     <mat-expansion-panel-header>
-                        <mat-panel-title> Workspaces </mat-panel-title>
+                        <mat-panel-title> {{ "workspace.title" | translate }} </mat-panel-title>
                     </mat-expansion-panel-header>
-                    <div class="flex flex-col ">
-                        @for (w of workspaces(); track w.id) {
-                            <mat-checkbox>{{ w.name }}</mat-checkbox>
-                        }
-                    </div>
+                        <mat-selection-list [(ngModel)]="selectedWorkspaceIds" #list>
+                            @if (isLoadingWorkspaces()) {
+                                <mat-spinner diameter="24"></mat-spinner>
+                            } 
+                            @else {
+                                @for (w of workspaces(); track w.id) {
+                                    <mat-list-option togglePosition="before" [value]="w.id">{{ w.name }}</mat-list-option>
+                                }
+                            }
+                        </mat-selection-list>
                 </mat-expansion-panel>
             </div>
         </mat-sidenav>
-        <mat-sidenav-content class="!mr-0 !flex size-full">
-            <div class="left-0 top-0 right-0 bottom-0 flex flex-col size-full p-4 pt-0">
-                <div class="flex w-full justify-between overflow-hidden p-2 flex-col md:flex-row">
-                    <div class="flex items-center gap-2">
-                        <button mat-icon-button aria-label="TODO" (click)="toggleSidebar()">
-                            <mat-icon>{{ isSideBarOpen() ? "keyboard_double_arrow_left" : "keyboard_double_arrow_right" }}</mat-icon>
-                        </button>
-                        <span class="text-2xl">{{ dateTitle() }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button mat-stroked-button aria-label="TODO" [disabled]="todayDisable()"
-                            (click)="setToday()">Today</button>
-                        <button mat-icon-button aria-label="TODO" (click)="previous()">
-                            <mat-icon>arrow_back_ios_new</mat-icon>
-                        </button>
-                        <button mat-icon-button aria-label="TODO" (click)="next()">
-                            <mat-icon>arrow_forward_ios</mat-icon>
-                        </button>
-                        <mat-form-field appearance="outline" class="w-24 form-field-h40">
-                            <mat-select [value]="viewMode()">
-                                <mat-option value="timeGridDay">Day</mat-option>
-                                <mat-option value="timeGridWeek">Week</mat-option>
-                                <mat-option value="dayGridMonth">Month</mat-option>
-                            </mat-select>
-                        </mat-form-field>
-                        <button mat-icon-button>
-                            <mat-icon>settings</mat-icon>
-                        </button>
-                    </div>
+        <mat-sidenav-content class="!mr-0 !flex size-full flex-col">
+            <div class="flex w-full justify-between overflow-hidden pb-2 px-4 pt-3 flex-col md:flex-row">
+                <div class="flex items-center gap-2">
+                    <button mat-icon-button aria-label="TODO" (click)="toggleSidebar()">
+                        <mat-icon>{{ isSideBarOpen() ? "keyboard_double_arrow_left" : "keyboard_double_arrow_right" }}</mat-icon>
+                    </button>
+                    <span class="text-2xl">{{ dateTitle() }}</span>
                 </div>
-                <full-calendar #fullCalendar [options]="calendarOptions"></full-calendar>
+                <div class="flex items-center gap-2">
+                    <button mat-stroked-button aria-label="TODO" [disabled]="todayDisable()"
+                        (click)="setToday()">{{ "calendar.today" | translate }}</button>
+                    <button mat-icon-button aria-label="TODO" (click)="previous()">
+                        <mat-icon>arrow_back_ios_new</mat-icon>
+                    </button>
+                    <button mat-icon-button aria-label="TODO" (click)="next()">
+                        <mat-icon>arrow_forward_ios</mat-icon>
+                    </button>
+                    <mat-form-field appearance="outline" class="w-28 form-field-h40">
+                        <mat-select [value]="viewMode()">
+                            <mat-option value="timeGridDay">{{ "calendar.day" | translate }}</mat-option>
+                            <mat-option value="timeGridWeek">{{ "calendar.week" | translate }}</mat-option>
+                            <mat-option value="dayGridMonth">{{ "calendar.month" | translate }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <button mat-icon-button [matMenuTriggerFor]="calendarSettings" aria-label="Calendar settings">
+                        <mat-icon>settings</mat-icon>
+                    </button>
+                    <mat-menu #calendarSettings>
+                        <button mat-menu-item aria-label="French" aria-label="French">
+                            <mat-slide-toggle [(ngModel)]="showWeekend" (click)="$event.stopPropagation()">{{ "calendar.weekends" | translate }}</mat-slide-toggle>
+                        </button>
+                    </mat-menu>
+                </div>
+            </div>
+            <div class="flex size-full sm:px-2 xl:px-3 sm:pb-2 xl:pb-3 relative">
+                <full-calendar #fullCalendar [options]="calendarOptions" class="w-full rounded-3xl dark:bg-[--mdc-elevated-card-container-color] overflow-hidden border-transparent"></full-calendar>
+                @if (isLoading()) {
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <mat-spinner diameter="150"></mat-spinner>
+                    </div>
+                }
             </div>
         </mat-sidenav-content>
     </mat-sidenav-container>

@@ -1,67 +1,71 @@
-<div class="flex size-full flex-col">
-    <div class="flex w-full justify-between items-center pt-4">
-        <mat-form-field appearance="outline">
-            <input matInput type="text" [formControl]="search">
-            <mat-label>Search</mat-label>
-            <mat-icon matPrefix>search</mat-icon>
-        </mat-form-field>
-        <button mat-flat-button (click)="openDialog()">
-            <mat-icon>add</mat-icon>
-            <span>Add</span>
-        </button>
-    </div>
-    <div class="flex flex-1 flex-col relative">
-        @if (isLoading()) {
-        <div class="flex items-center justify-center">
-            <mat-spinner diameter="50"></mat-spinner>
-        </div>
-        }
-        <mat-table [dataSource]="dataSource" matSort class="overflow-auto absolute left-0 top-0 right-0 bottom-0">
-  
-            <ng-container matColumnDef="firstName">
-                <mat-header-cell *matHeaderCellDef mat-sort-header> FirstName </mat-header-cell>
-                <mat-cell *matCellDef="let member" [routerLink]="['/member', member.id]"> {{ member.firstName}}
-                </mat-cell>
-            </ng-container>
 
-            <ng-container matColumnDef="lastName">
-                <mat-header-cell *matHeaderCellDef mat-sort-header> LastName </mat-header-cell>
-                <mat-cell *matCellDef="let member" [routerLink]="['/member', member.id]"> {{ member.lastName }}
-                </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="action">
-                <mat-header-cell *matHeaderCellDef></mat-header-cell>
-                <mat-cell *matCellDef="let event">
-                    <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="member actions"
-                        (click)="$event.stopPropagation()">
-                        <mat-icon>more_vert</mat-icon>
-                    </button>
-                    <mat-menu #menu="matMenu">
-                        <button mat-menu-item>
-                            <mat-icon>delete</mat-icon>
-                            <span>Delete</span>
-                        </button>
-                    </mat-menu>
-                </mat-cell>
-            </ng-container>
-            
-            <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-            <!-- No data row -->
-            <tr *matNoDataRow>
-                <td colspan="3">
-                    <div class="flex justify-center p-4">
-                        No members found
-                        @if (search.value) {
-                        matching "{{search.value}}"
-                        }
-                    </div>
-                </td>
-            </tr>
-        </mat-table>
-    </div>
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of members">
-    </mat-paginator>
-  </div>
+    <mat-card class="!flex size-full !rounded-t-none">
+        <mat-card-content class="!flex size-full flex-col">
+            <div class="flex w-full justify-between items-center pt-4">
+                <mat-form-field appearance="outline">
+                    <input matInput type="text" [formControl]="search">
+                    <mat-label>Search</mat-label>
+                    <mat-icon matPrefix>search</mat-icon>
+                </mat-form-field>
+                <button mat-flat-button (click)="openDialog()">
+                    <mat-icon>add</mat-icon>
+                    <span>Add</span>
+                </button>
+            </div>
+            <div class="flex flex-1 flex-col relative">
+                @if (isLoading()) {
+                <div class="flex items-center justify-center">
+                    <mat-spinner diameter="50"></mat-spinner>
+                </div>
+                }
+                <mat-table [dataSource]="dataSource" matSort class="overflow-auto absolute left-0 top-0 right-0 bottom-0 !bg-transparent">
+          
+                    <ng-container matColumnDef="firstName">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> FirstName </mat-header-cell>
+                        <mat-cell *matCellDef="let member" [routerLink]="['/member', member.id]"> {{ member.firstName}}
+                        </mat-cell>
+                    </ng-container>
+        
+                    <ng-container matColumnDef="lastName">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> LastName </mat-header-cell>
+                        <mat-cell *matCellDef="let member" [routerLink]="['/member', member.id]"> {{ member.lastName }}
+                        </mat-cell>
+                    </ng-container>
+        
+                    <ng-container matColumnDef="action">
+                        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                        <mat-cell *matCellDef="let event">
+                            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="member actions"
+                                (click)="$event.stopPropagation()">
+                                <mat-icon>more_vert</mat-icon>
+                            </button>
+                            <mat-menu #menu="matMenu">
+                                <button mat-menu-item>
+                                    <mat-icon>delete</mat-icon>
+                                    <span>Delete</span>
+                                </button>
+                            </mat-menu>
+                        </mat-cell>
+                    </ng-container>
+                    
+                    <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+                    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+                    <!-- No data row -->
+                    <tr *matNoDataRow>
+                        <td colspan="3">
+                            <div class="flex justify-center p-4">
+                                No members found
+                                @if (search.value) {
+                                matching "{{search.value}}"
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </mat-table>
+            </div>
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of members">
+            </mat-paginator>
+        </mat-card-content>
+       
+    </mat-card>
   

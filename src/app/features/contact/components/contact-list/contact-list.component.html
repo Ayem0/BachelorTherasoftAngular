@@ -1,5 +1,5 @@
 <div>
     @for (item of contacts(); track item.id) {
-    <app-contact [contact]="item"></app-contact>
+    <app-contact [contact]="item" [workspaces]="workspaces()"></app-contact>
     }
 </div>

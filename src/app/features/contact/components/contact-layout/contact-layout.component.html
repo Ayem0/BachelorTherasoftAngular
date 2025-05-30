@@ -1,8 +1,8 @@
-<div class="grid gap-2 grid-cols-2 md:grid-cols-3 h-full md:px-2">
+<div class="grid gap-2 grid-cols-2 md:grid-cols-3 h-full md:px-2 pt-1">
     <div class="border dark:border-[--mdc-outlined-card-outline-color] rounded-lg">
         <div class="flex flex-row w-full items-center justify-between px-2 py-1 border-b border-gray-400">
-            <h2 class="text-2xl text-center">Contacts</h2>
-            <button mat-icon-button matTooltip="Add contact" (click)="openDialog()">
+            <h2 class="text-2xl text-center">{{ 'contact.title' | translate }}</h2>
+            <button mat-icon-button matTooltip="{{ 'contact.add' | translate }}" (click)="openDialog()">
                 <mat-icon>person_add</mat-icon>
             </button>
         </div>
@@ -10,7 +10,7 @@
             @if (isLoading()) {
             <!-- TODO make a spinner -->
             } @else {
-            <app-contact-list [contacts]="contacts()"></app-contact-list>
+            <app-contact-list [contacts]="contacts()" [workspaces]="workspaces()"></app-contact-list>
             }
         </div>
     </div>

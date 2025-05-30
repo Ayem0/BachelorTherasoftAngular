@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { DateService } from './date.service';
+import { LocaleService } from './locale.service';
 
-describe('DateService', () => {
-  let service: DateService;
+describe('LocaleService', () => {
+  let service: LocaleService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(DateService);
+    service = TestBed.inject(LocaleService);
   });
 
   it('should be created', () => {

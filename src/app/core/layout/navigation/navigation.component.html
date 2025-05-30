@@ -8,42 +8,31 @@
     </div>
     }
 
-    <!-- Make the `ul` scrollable while keeping the rest of the component static -->
-    <ul class="overflow-y-auto flex-grow">
+    <ul class="overflow-y-auto flex-grow space-y-2 px-2 py-3">
         <li>
             <a routerLink="/agenda">
                 <div routerLinkActive="bg-[--mat-app-background-hover-color]"
-                    class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
+                    class="flex items-center hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
                     <mat-icon aria-label="calendar">calendar_month</mat-icon>
-                    <span class="text-base align-bottom">{{ "navigation.agenda" | translate }}</span>
+                    <span class="text-base align-bottom">{{ "calendar.title" | translate }}</span>
                 </div>
             </a>
         </li>
         <li>
             <a routerLink="/workspaces">
                 <div routerLinkActive="bg-[--mat-app-background-hover-color]"
-                    class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
+                    class="flex items-center hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
                     <mat-icon aria-label="Workspace">business_center</mat-icon>
-                    <span class="text-base align-bottom">{{ "navigation.workspaces" | translate }}</span>
+                    <span class="text-base align-bottom">{{ "workspace.title" | translate }}</span>
                 </div>
             </a>
         </li>
         <li>
             <a routerLink="/contacts">
                 <div routerLinkActive="bg-[--mat-app-background-hover-color]"
-                    class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
+                    class="flex items-center hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
                     <mat-icon aria-label="Contacts">group</mat-icon>
-                    <span class="text-base align-bottom">{{ "navigation.contacts" | translate }}</span>
-                </div>
-            </a>
-        </li>
-
-        <li>
-            <a routerLink="/conversations">
-                <div routerLinkActive="bg-[--mat-app-background-hover-color]"
-                    class="flex items-center m-2 hover:bg-[--mat-app-background-hover-color] gap-4 rounded-md p-2 md:pl-4">
-                    <mat-icon aria-label="Contacts">forum</mat-icon>
-                    <span class="text-base align-bottom">{{ "navigation.conversations" | translate }}</span>
+                    <span class="text-base align-bottom">{{ "contact.title" | translate }}</span>
                 </div>
             </a>
         </li>

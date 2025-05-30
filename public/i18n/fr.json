@@ -1,18 +1,17 @@
 {
-    "navigation": {
-        "agenda": "Agenda",
-        "workspaces": "Workspaces",
-        "contacts": "Contacts",
-        "conversations": "Conversations"
-    },
     "action": {
         "add": "Ajouter",
-        "edit": "Éditer",
         "create": "Créer",
         "update": "Modifier",
-        "delete": "Supprimer"
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "refuse": "Refuser",
+        "accept": "Accepter",
+        "invite": "Inviter",
+        "search": "Rechercher"
     },
     "area": {
+        "title": "Zones",
         "create": {
             "success": "Zone créée avec succès",
             "error": "Erreur lors de la création de la zone"
@@ -24,5 +23,162 @@
         "get": {
             "error": "Erreur lors de la récupération de la zone"
         }
+    },
+    "location": {
+        "title": "Sites",
+        "create": {
+            "success": "Site créé avec succès",
+            "error": "Erreur lors de la création du site"
+        },
+        "update": {
+            "success": "Site mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour du site"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération du site"
+        }
+    },
+    "room": {
+        "title": "Salles",
+        "create": {
+            "success": "Salle créée avec succès",
+            "error": "Erreur lors de la création de la salle"
+        },
+        "update": {
+            "success": "Salle mise à jour avec succès",
+            "error": "Erreur lors de la mise à jour de la salle"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération de la salle"
+        }
+    },
+    "tag": {
+        "title": "Tags",
+        "create": {
+            "success": "Tag créé avec succès",
+            "error": "Erreur lors de la création du tag"
+        },
+        "update": {
+            "success": "Tag mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour du tag"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération du tag"
+        }
+    },
+    "slot": {
+        "title": "Créneaux",
+        "create": {
+            "success": "Créneau créé avec succès",
+            "error": "Erreur lors de la création du créneau"
+        },
+        "update": {
+            "success": "Créneau mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour du créneau"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération du créneau"
+        }
+    },
+    "event-category": {
+        "title": "Catégories d'événement",
+        "create": {
+            "success": "Catégorie d'événement créée avec succès",
+            "error": "Erreur lors de la création de la catégorie d'événement"
+        },
+        "update": {
+            "success": "Catégorie d'événement mise à jour avec succès",
+            "error": "Erreur lors de la mise à jour de la catégorie d'événement"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération de la catégorie d'événement"
+        }
+    },
+    "participant-category": {
+        "title": "Catégories de participant",
+        "create": {
+            "success": "Catégorie de participant créée avec succès",
+            "error": "Erreur lors de la création de la catégorie de participant"
+        },
+        "update": {
+            "success": "Catégorie de participant mise à jour avec succès",
+            "error": "Erreur lors de la mise à jour de la catégorie de participant"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération de la catégorie de participant"
+        }
+    },
+    "participant": {
+        "title": "Participants",
+        "create": {
+            "success": "Participant créé avec succès",
+            "error": "Erreur lors de la création du participant"
+        },
+        "update": {
+            "success": "Participant mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour du participant"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération du participant"
+        }
+    },
+    "role": {
+        "title": "Rôles",
+        "create": {
+            "success": "Rôle créé avec succès",
+            "error": "Erreur lors de la création du rôle"
+        },
+        "update": {
+            "success": "Rôle mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour du rôle"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération du rôle"
+        }
+    },
+    "workspace": {
+        "title": "Espaces de travail",
+        "create": {
+            "success": "Espace de travail créé avec succès",
+            "error": "Erreur lors de la création de l'espace de travail"
+        },
+        "update": {
+            "success": "Espace de travail mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour de l'espace de travail"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération de l'espace de travail"
+        }
+    },
+    "member": {
+        "title": "Membres",
+        "no-options": "Aucun membre trouvé",
+        "update": {
+            "success": "Membre mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour du membre"
+        },
+        "get": {
+            "error": "Erreur lors de la récupération du membre"
+        }
+    },
+    "calendar": {
+        "title": "Calendrier",
+        "today": "Aujourd'hui",
+        "day": "Jour",
+        "week": "Semaine",
+        "month": "Mois",
+        "weekends": "Afficher les weekends"
+    },
+    "settings": {
+        "title": "Paramètres",
+        "language": "Langue",
+        "theme": "Apparence",
+        "profile": "Profil",
+        "logout": "Se déconnecter"
+    },
+    "contact": {
+        "title": "Contacts",
+        "invite": "Inviter dans l'espace de travail",
+        "add": "Ajouter un contact"
     }
 }

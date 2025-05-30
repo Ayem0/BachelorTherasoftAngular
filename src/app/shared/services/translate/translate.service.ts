@@ -1,4 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 import { Lang } from '../../models/lang';
 
@@ -9,6 +10,10 @@ export class TranslateService {
   private readonly ngxTranslateService = inject(NgxTranslateService);
   private readonly langKey = 'lang';
   private readonly validLangs: string[] = ['en', 'fr'];
+  public readonly currentLang = signal(
+    this.ngxTranslateService.currentLang as Lang
+  );
+  public currentLang$ = toObservable(this.currentLang);
 
   public loadLang() {
     this.ngxTranslateService.setDefaultLang('en');
@@ -25,6 +30,7 @@ export class TranslateService {
     const currentLang = this.ngxTranslateService.currentLang;
     if (currentLang !== lang) {
       this.ngxTranslateService.use(lang);
+      this.currentLang.set(lang);
       localStorage.setItem(this.langKey, lang);
       document.documentElement.lang = lang;
     }

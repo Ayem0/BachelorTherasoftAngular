@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, Signal, signal } from '@angular/core';
-import { EventInput } from '@fullcalendar/core/index.js';
-import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
+import { computed, inject, Injectable, Signal } from '@angular/core';
+import { catchError, debounceTime, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { UNKNOW_USER, User } from '../../../core/auth/models/auth';
 import { AuthService } from '../../../core/auth/services/auth.service';
@@ -87,7 +86,7 @@ export class EventService {
     });
   }
 
-  public agendaEvents(dateRange: DateRange): Signal<
+  public agendaEvents(dateRange: Signal<DateRange>): Signal<
     Event<{
       eventCategory: EventCategory;
       room: Room;
@@ -95,11 +94,10 @@ export class EventService {
       workspace: Workspace;
     }>[]
   > {
-    const id = this.auth.currentUserInfo()?.id ?? '';
     return computed(() => {
-      const keys = this.createKeys(id, dateRange);
-      console.log(keys, id);
-      console.log(this.store.usersEvents());
+      const id = this.auth.currentUserInfo()?.id ?? '';
+      const range = dateRange();
+      const keys = this.createKeys(id, range);
       const ids = Array.from(
         new Set(
           keys
@@ -108,8 +106,6 @@ export class EventService {
             .flatMap((s) => [...s])
         )
       );
-      console.log(ids);
-
       const events = ids.map(
         (id) => this.store.events().get(id) ?? UNKNOWN_EVENT
       );
@@ -143,25 +139,6 @@ export class EventService {
     });
   }
 
-  public toEventInput(
-    events: Event<{
-      eventCategory: EventCategory;
-      room: Room;
-      tags: Tag[];
-      workspace: Workspace;
-    }>[]
-  ): EventInput[] {
-    return events.map((event) => ({
-      id: event.id,
-      title: event.description,
-      start: event.startDate,
-      end: event.endDate,
-      extendedProps: {
-        event: event,
-      },
-    }));
-  }
-
   // public dialogEventsByRange(
   //   dateRange: DateRange,
   //   userIds: string[],
@@ -179,15 +156,18 @@ export class EventService {
   //   );
   // }
 
-  public isSideBarOpen = signal(false);
-
   public getById(id: string) {
     return this.http.get<Event>(`${environment.apiUrl}/event`, {
       params: { id },
     });
   }
 
-  public createEvent(req: EventRequest): Observable<boolean> {
+  public createEvent(req: EventRequest): Observable<Event<{
+    eventCategory: EventCategory;
+    tags: Tag[];
+    workspace: Workspace;
+    room: Room;
+  }> | null> {
     const id = this.auth.currentUserInfo()?.id ?? '';
     req.startDate = toUtc(req.startDate);
     req.endDate = toUtc(req.endDate);
@@ -202,7 +182,7 @@ export class EventService {
       >(`${environment.apiUrl}/event`, req)
       .pipe(
         debounceTime(150),
-        map((event) => {
+        tap((event) => {
           this.setEventToStore(event);
           const keys = this.createKeys(id, {
             start: req.startDate,
@@ -215,12 +195,11 @@ export class EventService {
             this.translate.translate('event.create.success'),
             format(event.startDate, 'dddd, MMMM DD, YYYY [at] HH:mm')
           );
-          return true;
         }),
         catchError((err) => {
           console.error('Error creating event:', err);
           this.sonner.error(this.translate.translate('event.create.error'));
-          return of(false);
+          return of(null);
         })
       );
   }
@@ -293,8 +272,16 @@ export class EventService {
       room: Room;
     }>
   ) {
-    this.store.setEntity('events', event);
+    const tagIds = event.tags.map((tag) => tag.id);
+    this.store.setEntity('events', {
+      ...event,
+      workspaceId: event.workspace.id,
+      eventCategoryId: event.eventCategory.id,
+      roomId: event.room.id,
+      tagIds: tagIds,
+    });
     this.store.setEntities('tags', event.tags);
+    this.store.setRelation('eventsTags', event.id, tagIds);
     this.store.setEntity('eventCategories', event.eventCategory);
     this.store.setEntity('workspaces', event.workspace);
     this.store.setEntity('rooms', event.room);
@@ -311,9 +298,7 @@ export class EventService {
     }>[]
   ) {
     events.forEach((event) => this.setEventToStore(event));
-    console.log(events);
     let date = new Date(range.start);
-
     while (date < range.end) {
       const year = date.getFullYear();
       const month = date.getMonth() + 1;

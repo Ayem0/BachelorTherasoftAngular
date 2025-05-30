@@ -10,6 +10,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { TranslateModule } from '@ngx-translate/core';
 import { takeUntil } from 'rxjs';
 import { PendingInvitationListComponent } from '../../../invitation/components/pending-invitation-list/pending-invitation-list.component';
 import { InvitationService } from '../../../invitation/services/invitation.service';
@@ -24,6 +25,7 @@ import { ContactForm } from '../../models/contact';
     MatInput,
     MatProgressSpinner,
     PendingInvitationListComponent,
+    TranslateModule,
   ],
   templateUrl: './contact-dialog.component.html',
   styleUrl: './contact-dialog.component.scss',

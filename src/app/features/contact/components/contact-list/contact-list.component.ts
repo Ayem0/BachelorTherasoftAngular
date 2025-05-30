@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { User } from '../../../../core/auth/models/auth';
+import { Workspace } from '../../../workspace/models/workspace';
 import { ContactComponent } from '../contact/contact.component';
 
 @Component({
@@ -10,4 +11,5 @@ import { ContactComponent } from '../contact/contact.component';
 })
 export class ContactListComponent {
   public contacts = input.required<User[]>();
+  public workspaces = input.required<Workspace[]>();
 }

@@ -78,7 +78,7 @@ $_palettes: (
     99: #f6feff,
     100: #ffffff,
     4: #0e0e0e,
-    6: hsl(40 10% 3.9%), 
+    6: #0f0f0f, 
     12: #201f1f,
     17: #2a2a2a,
     22: #353434,
@@ -158,6 +158,7 @@ $dark: mat.define-theme((
 ));
 
 :root {
+ 
   --mat-app-background-hover-color: #e6e6e6;
   @include mat.elevation-classes();
   @include mat.app-background();
@@ -186,11 +187,37 @@ $dark: mat.define-theme((
   @include mat.dialog-overrides((
     container-max-width: 100%,
   ));
+
   
+
+
+  // Calendar
+  .fc-theme-standard .fc-scrollgrid {
+    border: none !important;
+  }
+  .fc-theme-standard th {
+    border: none !important;
+  }
+  .fc-scrollgrid-section {
+    [role="presentation"] {
+      border: none!important;
+    }
+  }
+  .fc-timegrid-col {
+    border-left: none !important;
+  }
+  .fc-scrollgrid-section-header {
+    .fc-scroller-harness {
+      .fc-scroller {
+        overflow: hidden!important;
+        border-bottom: 1 px solid var(--fc-border-color) !important;
+      }
+    }
+  }
 }
 
 .dark {
-  --mat-app-background-color: hsl(40 10% 3.9%);
+  --fc-border-color: #4b4c4e !important;
   --mat-app-background-hover-color: #252629;
   @include mat.button-color($dark);
   @include mat.icon-color($dark);
@@ -214,6 +241,9 @@ $dark: mat.define-theme((
   @include mat.expansion-color($dark);
   @include mat.tooltip-color($dark);
   @include mat.badge-color($dark);
+  @include mat.paginator-overrides((
+    container-background-color: var(--mdc-elevated-card-container-color),
+  ))
 }
 
 // Global styles
@@ -252,3 +282,4 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     filled-with-label-container-padding-bottom: none,
   ))
 }
+

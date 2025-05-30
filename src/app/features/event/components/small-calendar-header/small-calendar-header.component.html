@@ -1,0 +1,11 @@
+<div class="flex flex-row items-center justify-between p-3 pl-4">
+  <span class="font-medium">{{periodLabel()}}</span>
+  <div class="flex flex-row">
+    <button mat-icon-button (click)="previousClicked()">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <button mat-icon-button (click)="nextClicked()">
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+  </div>
+</div>

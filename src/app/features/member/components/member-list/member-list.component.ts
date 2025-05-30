@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -41,6 +42,7 @@ import { AddMemberDialogComponent } from '../add-member-dialog/add-member-dialog
     MatTableModule,
     MatSortModule,
     ReactiveFormsModule,
+    MatCardModule,
   ],
   templateUrl: './member-list.component.html',
   styleUrl: './member-list.component.scss',

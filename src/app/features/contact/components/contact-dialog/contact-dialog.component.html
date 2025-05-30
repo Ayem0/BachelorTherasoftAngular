@@ -1,5 +1,5 @@
 <div class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
-    <h2 class="p-4 dark:text-white text-2xl">Add contact</h2>
+    <h2 class="p-4 dark:text-white text-2xl">{{ 'contact.add' | translate }}</h2>
     <form [formGroup]="form" class="flex flex-col px-4 pb-4" (ngSubmit)="submit()">
         <mat-form-field appearance="outline" [hideRequiredMarker]="true">
             <mat-label>Email</mat-label>
@@ -9,7 +9,7 @@
             @if(isLoading()) {
             <mat-spinner diameter="24"></mat-spinner>
             } @else {
-            Submit
+                {{ 'action.invite' | translate }}
             }
         </button>
     </form>
