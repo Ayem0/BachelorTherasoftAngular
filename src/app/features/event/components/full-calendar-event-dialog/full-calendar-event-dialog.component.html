@@ -1,101 +1,107 @@
 <div
   class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
-  <h2 class="p-4 dark:text-white text-2xl">Create Event</h2>
   <div class="flex size-full flex-row gap-2">
-    <form [formGroup]="form" class="flex flex-col px-4 pb-4" (ngSubmit)="submit()">
-
-      <mat-form-field appearance="outline" [hideRequiredMarker]="true">
-        <mat-label>Workspace</mat-label>
-        <mat-select placeholder="Workspace" formControlName="workspaceId">
-          @for (w of workspaces(); track w.id) {
-          <mat-option [value]="w.id">{{w.name}}</mat-option>
-          }@empty {
-            <mat-option [disabled]="true">{{ "workspace.no-options" | translate }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" [hideRequiredMarker]="true">
-        <mat-label>Event category</mat-label>
-        <mat-select placeholder="Event category" formControlName="eventCategoryId">
-          @for (e of eventCategories(); track e.id) {
-            <mat-option [value]="e.id">{{e.name}}</mat-option>
-          }@empty {
-            <mat-option [disabled]="true">{{ "event-category.no-options" | translate }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" [hideRequiredMarker]="true">
-        <mat-label>Room</mat-label>
-        <mat-select placeholder="Room" formControlName="roomId">
-          @for (e of rooms(); track e.id) {
-            <mat-option [value]="e.id">{{e.name}}</mat-option>
-          } @empty {
-            <mat-option [disabled]="true">{{ "room.no-options" | translate }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" [hideRequiredMarker]="true">
-        <mat-label>Members</mat-label>
-        <mat-select placeholder="Members" multiple formControlName="userIds">
-          @for (e of members(); track e.id) {
-            <mat-option [value]="e.id">{{e.firstName}} {{e.lastName}}</mat-option>
-          }@empty {
-            <mat-option [disabled]="true">{{ "member.no-options" | translate }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Description</mat-label>
-        <textarea matInput placeholder="Description" formControlName="description"></textarea>
-      </mat-form-field>
-
-      <div class="flex flex-row gap-2">
+    <div class="flex flex-col relative">
+      @if(canShowCalendar()) {
+        <button mat-icon-button type="button" class="absolute top-2 right-2" (click)="togglePlanner()">
+          <mat-icon> {{ isPlannerOpen() ? "add" : "close" | translate }}</mat-icon>
+        </button>
+      }
+      <h2 class="p-4 dark:text-white text-2xl">Create Event</h2>
+      <form [formGroup]="form" class="flex flex-col px-4 pb-4" (ngSubmit)="submit()">
         <mat-form-field appearance="outline" [hideRequiredMarker]="true">
-          <mat-label>Start date</mat-label>
-          <input matInput [matDatepicker]="startDate" formControlName="startDate">
-          <mat-datepicker-toggle matIconSuffix [for]="startDate"></mat-datepicker-toggle>
-          <mat-datepicker #startDate></mat-datepicker>
+          <mat-label>Workspace</mat-label>
+          <mat-select placeholder="Workspace" formControlName="workspaceId">
+            @for (w of workspaces(); track w.id) {
+            <mat-option [value]="w.id">{{w.name}}</mat-option>
+            }@empty {
+              <mat-option [disabled]="true">{{ "workspace.no-options" | translate }}</mat-option>
+            }
+          </mat-select>
         </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Start time</mat-label>
-          <input matInput [matTimepicker]="startTime" formControlName="startDate">
-          <mat-timepicker #startTime interval="5m" />
-          <mat-timepicker-toggle [for]="startTime" matSuffix />
-        </mat-form-field>
-      </div>
-
-      <div class="flex flex-row gap-2">
+  
         <mat-form-field appearance="outline" [hideRequiredMarker]="true">
-          <mat-label>End date</mat-label>
-          <input matInput [matDatepicker]="endDate" formControlName="endDate">
-          <mat-datepicker-toggle matIconSuffix [for]="endDate"></mat-datepicker-toggle>
-          <mat-datepicker #endDate></mat-datepicker>
+          <mat-label>Event category</mat-label>
+          <mat-select placeholder="Event category" formControlName="eventCategoryId">
+            @for (e of eventCategories(); track e.id) {
+              <mat-option [value]="e.id">{{e.name}}</mat-option>
+            }@empty {
+              <mat-option [disabled]="true">{{ "event-category.no-options" | translate }}</mat-option>
+            }
+          </mat-select>
         </mat-form-field>
-
+  
+        <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+          <mat-label>Room</mat-label>
+          <mat-select placeholder="Room" formControlName="roomId">
+            @for (e of rooms(); track e.id) {
+              <mat-option [value]="e.id">{{e.name}}</mat-option>
+            } @empty {
+              <mat-option [disabled]="true">{{ "room.no-options" | translate }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+  
+        <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+          <mat-label>Members</mat-label>
+          <mat-select placeholder="Members" multiple formControlName="userIds">
+            @for (e of members(); track e.id) {
+              <mat-option [value]="e.id">{{e.firstName}} {{e.lastName}}</mat-option>
+            }@empty {
+              <mat-option [disabled]="true">{{ "member.no-options" | translate }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+  
         <mat-form-field appearance="outline">
-          <mat-label>End time</mat-label>
-          <input matInput [matTimepicker]="endTime" formControlName="endDate">
-          <mat-timepicker #endTime interval="5m" />
-          <mat-timepicker-toggle [for]="endTime" matSuffix />
+          <mat-label>Description</mat-label>
+          <textarea matInput placeholder="Description" formControlName="description"></textarea>
         </mat-form-field>
-      </div>
-      <button type="button" mat-flat-button (click)="openRepetitionDialog()">Make recurring</button>
-      <button mat-flat-button type="submit" [disabled]="isSubmitting() || !form.valid" class="my-4">
-        @if(isSubmitting()) {
-        <mat-spinner diameter="24"></mat-spinner>
-        } @else {
-        <span>{{ "action.create" | translate }}</span>
-        }
-      </button>
-    </form>
-    @if(canShowCalendar()) { 
+  
+        <div class="flex flex-row gap-2">
+          <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+            <mat-label>Start date</mat-label>
+            <input matInput [matDatepicker]="startDate" formControlName="startDate">
+            <mat-datepicker-toggle matIconSuffix [for]="startDate"></mat-datepicker-toggle>
+            <mat-datepicker #startDate></mat-datepicker>
+          </mat-form-field>
+  
+          <mat-form-field appearance="outline">
+            <mat-label>Start time</mat-label>
+            <input matInput [matTimepicker]="startTime" formControlName="startDate">
+            <mat-timepicker #startTime interval="5m" />
+            <mat-timepicker-toggle [for]="startTime" matSuffix />
+          </mat-form-field>
+        </div>
+  
+        <div class="flex flex-row gap-2">
+          <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+            <mat-label>End date</mat-label>
+            <input matInput [matDatepicker]="endDate" formControlName="endDate">
+            <mat-datepicker-toggle matIconSuffix [for]="endDate"></mat-datepicker-toggle>
+            <mat-datepicker #endDate></mat-datepicker>
+          </mat-form-field>
+  
+          <mat-form-field appearance="outline">
+            <mat-label>End time</mat-label>
+            <input matInput [matTimepicker]="endTime" formControlName="endDate">
+            <mat-timepicker #endTime interval="5m" />
+            <mat-timepicker-toggle [for]="endTime" matSuffix />
+          </mat-form-field>
+        </div>
+        <button type="button" mat-flat-button (click)="openRepetitionDialog()">Make recurring</button>
+        <button mat-flat-button type="submit" [disabled]="isSubmitting() || !form.valid" class="my-4">
+          @if(isSubmitting()) {
+          <mat-spinner diameter="24"></mat-spinner>
+          } @else {
+          <span>{{ "action.create" | translate }}</span>
+          }
+        </button>
+      </form>
+    </div>
+    @if(isPlannerOpen()) {
     <div class="flex flex-grow relative">
-      <full-calendar [options]="calendarOptions" class="w-full rounded-3xl dark:bg-[--mdc-elevated-card-container-color] overflow-hidden border-transparent"></full-calendar>
+      <full-calendar [options]="calendarOptions" class="w-full dark:bg-[--mdc-elevated-card-container-color]"></full-calendar>
     </div>
     } 
   </div>

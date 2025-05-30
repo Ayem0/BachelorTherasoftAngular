@@ -445,7 +445,9 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
           start: start,
           end: end,
         },
-        width: '100%',
+        // width: '100%',
+        maxWidth: 'none',
+        maxHeight: '100%',
       })
       .afterClosed()
       .subscribe(() => this.calendarApi().refetchEvents());

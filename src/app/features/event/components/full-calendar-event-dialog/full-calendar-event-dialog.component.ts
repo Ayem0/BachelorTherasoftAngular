@@ -22,6 +22,7 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
@@ -68,6 +69,7 @@ import { EventService } from '../../services/event.service';
     MatButtonModule,
     FullCalendarModule,
     TranslateModule,
+    MatIcon,
   ],
   templateUrl: './full-calendar-event-dialog.component.html',
   styleUrl: './full-calendar-event-dialog.component.scss',
@@ -239,6 +241,8 @@ export class FullCalendarEventDialogComponent implements OnInit {
     // resources: this.resources(),
     allDaySlot: false,
     height: '100%',
+    handleWindowResize: true,
+    expandRows: true,
     slotDuration: '00:05:00',
     locale: this.translate.currentLang(),
     schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
@@ -259,6 +263,15 @@ export class FullCalendarEventDialogComponent implements OnInit {
       resourceId: r.id,
     }))
   );
+
+  public togglePlanner() {
+    this.isPlannerOpen.update((x) => !x);
+    if (this.isPlannerOpen()) {
+      this.matDialogRef.updateSize('100%', '100%');
+    } else {
+      this.matDialogRef.updateSize('', '');
+    }
+  }
 
   constructor() {
     this.form.valueChanges
