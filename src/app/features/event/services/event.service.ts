@@ -5,9 +5,9 @@ import { environment } from '../../../../environments/environment';
 import { UNKNOW_USER, User } from '../../../core/auth/models/auth';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { format, incrementDate, toUtc } from '../../../shared/utils/date.utils';
 import { isIsRange } from '../../../shared/utils/event.utils';
 import {
@@ -37,7 +37,7 @@ export class EventService {
   private readonly sonner = inject(SonnerService);
   private readonly auth = inject(AuthService);
   private readonly store = inject(Store);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   public detailedEvent(id: Id | null | undefined): Signal<Event<{
     eventCategory: EventCategory;
@@ -192,13 +192,13 @@ export class EventService {
             this.store.setRelation('usersEvents', key, [event.id])
           );
           this.sonner.success(
-            this.translate.translate('event.create.success'),
+            this.locale.translate('event.create.success'),
             format(event.startDate, 'dddd, MMMM DD, YYYY [at] HH:mm')
           );
         }),
         catchError((err) => {
           console.error('Error creating event:', err);
-          this.sonner.error(this.translate.translate('event.create.error'));
+          this.sonner.error(this.locale.translate('event.create.error'));
           return of(null);
         })
       );
@@ -211,14 +211,14 @@ export class EventService {
   //       tap({
   //         next: (event) => {
   //           this.sonner.success(
-  //             this.translate.translate('event.update.success')
+  //             this.locale.translate('event.update.success')
   //           );
   //           this.store.setEntity('events', event);
   //         },
   //         error: (err) => {
   //           console.error(err);
   //           isSuccess = false;
-  //           this.sonner.error(this.translate.translate('event.update.error'));
+  //           this.sonner.error(this.locale.translate('event.update.error'));
   //         },
   //       })
   //     )
@@ -349,7 +349,7 @@ export class EventService {
         tap((events) => this.setEventsToStore(id, range, events)),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('event.get.error'));
+          this.sonner.error(this.locale.translate('event.get.error'));
           return of([]);
         })
       );

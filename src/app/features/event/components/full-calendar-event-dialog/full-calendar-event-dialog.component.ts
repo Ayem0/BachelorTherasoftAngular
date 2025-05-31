@@ -46,7 +46,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { debounceTime, distinctUntilChanged, forkJoin, tap } from 'rxjs';
 import { AuthService } from '../../../../core/auth/services/auth.service';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
-import { TranslateService } from '../../../../shared/services/translate/translate.service';
+import { LocaleService } from '../../../../shared/services/locale/locale.service';
 import { getDifferenceInDays } from '../../../../shared/utils/date.utils';
 import { isFutureDate } from '../../../../shared/utils/validators';
 import { EventCategoryService } from '../../../event-category/services/event-category.service';
@@ -90,7 +90,7 @@ export class FullCalendarEventDialogComponent implements OnInit {
   private readonly roomService = inject(RoomService);
   private readonly memberService = inject(MemberService);
   private readonly authService = inject(AuthService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   public isLoading = signal(false);
   public isLoadingRes = signal(false);
@@ -243,8 +243,9 @@ export class FullCalendarEventDialogComponent implements OnInit {
     height: '100%',
     handleWindowResize: true,
     expandRows: true,
+    timeZone: this.locale.currentTz(),
     slotDuration: '00:05:00',
-    locale: this.translate.currentLang(),
+    locale: this.locale.currentLang(),
     schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
     events: this.fetch.bind(this),
     resources: this.handleResources.bind(this),
@@ -341,6 +342,7 @@ export class FullCalendarEventDialogComponent implements OnInit {
       const req = this.form.getRawValue();
       console.log(req);
       this.eventService.createEvent(req).subscribe((res) => {
+        // TODO a changer par is assign to me si oui return true pour dire de refetch
         if (res) {
           this.matDialogRef.close(res);
         }

@@ -37,6 +37,14 @@ export function dateTimeToDate(date: Date) {
   return new Date(dayjs(date).format('YYYY-MM-DD'));
 }
 
+export const toLocaleString = (date: Date): string => {
+  return dayjs(date).utc().tz().format('YYYY-MM-DD HH:mm:ss');
+};
+
+export const toLocale = (date: Date): Date => {
+  return dayjs(date).tz().toDate();
+};
+
 export function toUtc(date: Date) {
   return dayjs(date).utc().toDate();
 }

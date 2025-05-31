@@ -14,12 +14,12 @@
             <button matTooltip="Settings" mat-icon-button [matMenuTriggerFor]="settings" aria-label="Settings Menu">
                 <mat-icon>more_vert</mat-icon>
             </button>
-            <mat-menu #settings="matMenu">
+            <mat-menu #settings>
                 <button mat-menu-item [matMenuTriggerFor]="theme" aria-label="Theme Menu">
                     <mat-icon>contrast</mat-icon>
                     <span>Appearance</span>
                 </button>
-                <mat-menu #theme="matMenu">
+                <mat-menu #theme>
                     <button mat-menu-item aria-label="Dark" (click)="setTheme('dark')">
                         <mat-icon>dark_mode</mat-icon>
                         <span>Dark</span>
@@ -34,7 +34,7 @@
                     <mat-icon>translate</mat-icon>
                     <span>Language</span>
                 </button>
-                <mat-menu #language="matMenu">
+                <mat-menu #language>
                     <button mat-menu-item aria-label="French" aria-label="French" (click)="setLang('fr')">
                         <mat-icon>language_french</mat-icon>
                         <span>French</span>
@@ -43,6 +43,17 @@
                         <mat-icon>language_gb_english</mat-icon>
                         <span>English</span>
                     </button>
+                </mat-menu>
+                <button mat-menu-item [matMenuTriggerFor]="timezone" aria-label="Language Menu">
+                    <mat-icon>schedule</mat-icon>
+                    <span>Timezone</span>
+                </button>
+                <mat-menu #timezone>
+                    @for (timezone of timezones; track $index) {
+                    <button mat-menu-item aria-label="Timezone" (click)="setTz(timezone)">
+                        <span>{{ timezone }}</span>
+                    </button>
+                    }
                 </mat-menu>
             </mat-menu>
             @if (isLoggedIn()) {

@@ -3,9 +3,9 @@ import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { Room, RoomRequest, UNKNOWN_ROOM } from '../models/room';
 
 @Injectable({
@@ -15,7 +15,7 @@ export class RoomService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   public roomsByWorkspaceId(id: Signal<string>): Signal<Room[]> {
     return computed(() => {
@@ -58,7 +58,7 @@ export class RoomService {
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('room.get.error'));
+          this.sonner.error(this.locale.translate('room.get.error'));
           return of([]);
         })
       );
@@ -80,7 +80,7 @@ export class RoomService {
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('room.get.error'));
+          this.sonner.error(this.locale.translate('room.get.error'));
           return of([]);
         })
       );
@@ -93,7 +93,7 @@ export class RoomService {
       tap((room) => this.store.setEntity('rooms', room)),
       catchError((err) => {
         console.error(err);
-        this.sonner.error(this.translate.translate('room.get.error'));
+        this.sonner.error(this.locale.translate('room.get.error'));
         return of(null);
       })
     );
@@ -110,12 +110,12 @@ export class RoomService {
         map((room) => {
           this.store.setEntity('rooms', room);
           this.store.addToRelation('areasRooms', areaId, room.id);
-          this.sonner.success(this.translate.translate('room.create.success'));
+          this.sonner.success(this.locale.translate('room.create.success'));
           return true;
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('room.create.error'));
+          this.sonner.error(this.locale.translate('room.create.error'));
           return of(false);
         })
       );
@@ -126,12 +126,12 @@ export class RoomService {
       debounceTime(150),
       map((room) => {
         this.store.setEntity('rooms', room);
-        this.sonner.success(this.translate.translate('room.update.success'));
+        this.sonner.success(this.locale.translate('room.update.success'));
         return true;
       }),
       catchError((err) => {
         console.error(err);
-        this.sonner.error(this.translate.translate('room.update.error'));
+        this.sonner.error(this.locale.translate('room.update.error'));
         return of(false);
       })
     );

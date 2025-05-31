@@ -3,9 +3,9 @@ import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { Tag, TagRequest, UNKNOWN_TAG } from '../models/tag';
 
 @Injectable({
@@ -15,7 +15,7 @@ export class TagService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   public tagsByWorkspaceId(id: Signal<string>): Signal<Tag[]> {
     return computed(() => {
@@ -48,7 +48,7 @@ export class TagService {
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('tag.get.error'));
+          this.sonner.error(this.locale.translate('tag.get.error'));
           return of([]);
         })
       );
@@ -65,12 +65,12 @@ export class TagService {
         map((tag) => {
           this.store.setEntity('tags', tag);
           this.store.addToRelation('workspacesTags', workspaceId, tag.id);
-          this.sonner.success(this.translate.translate('tag.create.success'));
+          this.sonner.success(this.locale.translate('tag.create.success'));
           return true;
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('tag.create.error'));
+          this.sonner.error(this.locale.translate('tag.create.error'));
           return of(false);
         })
       );
@@ -81,12 +81,12 @@ export class TagService {
       debounceTime(150),
       map((tag) => {
         this.store.setEntity('tags', tag);
-        this.sonner.success(this.translate.translate('tag.update.success'));
+        this.sonner.success(this.locale.translate('tag.update.success'));
         return true;
       }),
       catchError((err) => {
         console.error(err);
-        this.sonner.error(this.translate.translate('tag.update.error'));
+        this.sonner.error(this.locale.translate('tag.update.error'));
         return of(false);
       })
     );
@@ -100,7 +100,7 @@ export class TagService {
       tap((tag) => this.store.setEntity('tags', tag)),
       catchError((err) => {
         console.error(err);
-        this.sonner.error(this.translate.translate('workspaceRole.get.error'));
+        this.sonner.error(this.locale.translate('workspaceRole.get.error'));
         return of(null);
       })
     );

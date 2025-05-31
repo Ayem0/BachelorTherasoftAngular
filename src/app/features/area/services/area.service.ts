@@ -3,9 +3,9 @@ import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { Area, AreaRequest, UNKNOW_AREA } from '../models/area';
 
 @Injectable({
@@ -15,7 +15,7 @@ export class AreaService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   public areaById(id: Id | undefined | null): Signal<Area | undefined> {
     return computed(() => (id ? this.store.areas().get(id) : undefined));
@@ -39,7 +39,7 @@ export class AreaService {
       tap((area) => this.store.setEntity('areas', area)),
       catchError((err) => {
         console.error('Error fetching area:', err);
-        this.sonner.error(this.translate.translate('area.get.error'));
+        this.sonner.error(this.locale.translate('area.get.error'));
         return of(null);
       })
     );
@@ -61,7 +61,7 @@ export class AreaService {
         }),
         catchError((err) => {
           console.error('Error fetching areas:', err);
-          this.sonner.error(this.translate.translate('area.get.error'));
+          this.sonner.error(this.locale.translate('area.get.error'));
           return of([]);
         })
       );
@@ -78,12 +78,12 @@ export class AreaService {
         map((area) => {
           this.store.setEntity('areas', area);
           this.store.addToRelation('locationsAreas', locationId, area.id);
-          this.sonner.success(this.translate.translate('area.create.success'));
+          this.sonner.success(this.locale.translate('area.create.success'));
           return true;
         }),
         catchError((err) => {
           console.error('Error creating area:', err);
-          this.sonner.error(this.translate.translate('area.create.error'));
+          this.sonner.error(this.locale.translate('area.create.error'));
           return of(false);
         })
       );
@@ -95,12 +95,12 @@ export class AreaService {
       map((area) => {
         this.store.setEntity('areas', area);
         this.store.addToRelation('locationsAreas', area.locationId, area.id);
-        this.sonner.success(this.translate.translate('area.update.success'));
+        this.sonner.success(this.locale.translate('area.update.success'));
         return true;
       }),
       catchError((err) => {
         console.error('Error updating area:', err);
-        this.sonner.error(this.translate.translate('area.update.error'));
+        this.sonner.error(this.locale.translate('area.update.error'));
         return of(false);
       })
     );

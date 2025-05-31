@@ -4,10 +4,10 @@ import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SocketService } from '../../../shared/services/socket/socket.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import {
   UNKNOW_WORKSPACE,
   Workspace,
@@ -21,7 +21,7 @@ export class WorkspaceService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
   private readonly auth = inject(AuthService);
   private readonly socket = inject(SocketService);
 
@@ -52,7 +52,7 @@ export class WorkspaceService {
       tap((workspaces) => this.setWorkspacesToStore(id, workspaces)),
       catchError((err) => {
         console.error('Error fetching workspaces:', err);
-        this.sonner.error(this.translate.translate('workspace.get.error'));
+        this.sonner.error(this.locale.translate('workspace.get.error'));
         return of([]);
       })
     );
@@ -66,13 +66,13 @@ export class WorkspaceService {
         tap((workspace) => {
           this.addWorkspaceToStore(workspace);
           this.sonner.success(
-            this.translate.translate('workspace.create.success')
+            this.locale.translate('workspace.create.success')
           );
         }),
         map(() => true),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('workspace.create.error'));
+          this.sonner.error(this.locale.translate('workspace.create.error'));
           return of(false);
         })
       );
@@ -89,13 +89,13 @@ export class WorkspaceService {
         tap((workspace) => {
           this.addWorkspaceToStore(workspace);
           this.sonner.success(
-            this.translate.translate('workspace.update.success')
+            this.locale.translate('workspace.update.success')
           );
         }),
         map(() => true),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('workspace.update.error'));
+          this.sonner.error(this.locale.translate('workspace.update.error'));
           return of(false);
         })
       );
@@ -110,7 +110,7 @@ export class WorkspaceService {
         tap((workspace) => this.addWorkspaceToStore(workspace)),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('workspace.get.error'));
+          this.sonner.error(this.locale.translate('workspace.get.error'));
           return of(undefined);
         })
       );

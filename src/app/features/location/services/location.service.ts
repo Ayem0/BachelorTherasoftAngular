@@ -2,9 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { Location, LocationRequest, UNKNOW_LOCATION } from '../models/location';
 
 @Injectable({
@@ -14,7 +14,7 @@ export class LocationService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   constructor() {}
 
@@ -52,7 +52,7 @@ export class LocationService {
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('location.get.error'));
+          this.sonner.error(this.locale.translate('location.get.error'));
           return of([]);
         })
       );
@@ -66,7 +66,7 @@ export class LocationService {
       tap((location) => this.store.setEntity('locations', location)),
       catchError((err) => {
         console.error(err);
-        this.sonner.error(this.translate.translate('location.get.error'));
+        this.sonner.error(this.locale.translate('location.get.error'));
         return of(null);
       })
     );
@@ -87,14 +87,12 @@ export class LocationService {
             workspaceId,
             location.id
           );
-          this.sonner.success(
-            this.translate.translate('location.create.success')
-          );
+          this.sonner.success(this.locale.translate('location.create.success'));
           return true;
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('location.create.error'));
+          this.sonner.error(this.locale.translate('location.create.error'));
           return of(false);
         })
       );
@@ -112,14 +110,12 @@ export class LocationService {
             location.workspaceId,
             location.id
           );
-          this.sonner.success(
-            this.translate.translate('location.update.success')
-          );
+          this.sonner.success(this.locale.translate('location.update.success'));
           return true;
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('location.update.error'));
+          this.sonner.error(this.locale.translate('location.update.error'));
           return of(false);
         })
       );

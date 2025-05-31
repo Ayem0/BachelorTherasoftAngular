@@ -8,7 +8,10 @@ import { NotificationMenuComponent } from '../../../features/notification/compon
 import { Theme } from '../../../features/theme/models/theme';
 import { ThemeService } from '../../../features/theme/services/theme.service';
 import { Lang } from '../../../shared/models/lang';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
+import {
+  LocaleService,
+  timeZones,
+} from '../../../shared/services/locale/locale.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { SidebarService } from '../sidebar/sidebar.service';
 
@@ -29,10 +32,11 @@ export class HeaderComponent {
   private readonly themeService = inject(ThemeService);
   private readonly sidebarService = inject(SidebarService);
   private readonly authService = inject(AuthService);
-  private readonly translateService = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
   private readonly router = inject(Router);
 
   public isLoggedIn = this.authService.isLoggedIn;
+  public timezones = timeZones;
 
   public setTheme(theme: Theme) {
     this.themeService.setTheme(theme);
@@ -43,7 +47,11 @@ export class HeaderComponent {
   }
 
   public setLang(lang: Lang) {
-    this.translateService.setLang(lang);
+    this.locale.setLang(lang);
+  }
+
+  public setTz(tz: string) {
+    this.locale.setTz(tz);
   }
 
   public logout() {

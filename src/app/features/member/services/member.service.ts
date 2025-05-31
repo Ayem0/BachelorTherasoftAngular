@@ -3,10 +3,10 @@ import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { UNKNOW_USER, User } from '../../../core/auth/models/auth';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SocketService } from '../../../shared/services/socket/socket.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +15,7 @@ export class MemberService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
   private readonly socket = inject(SocketService);
 
   constructor() {
@@ -41,7 +41,7 @@ export class MemberService {
         tap((users) => this.addMembersToStore(id, users)),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('members.get.error'));
+          this.sonner.error(this.locale.translate('members.get.error'));
           return of([]);
         })
       );

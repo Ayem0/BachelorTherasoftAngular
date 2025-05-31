@@ -5,10 +5,10 @@ import { environment } from '../../../../environments/environment.development';
 import { UNKNOW_USER, User } from '../../../core/auth/models/auth';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SocketService } from '../../../shared/services/socket/socket.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +16,7 @@ import { TranslateService } from '../../../shared/services/translate/translate.s
 export class ContactService {
   private readonly http = inject(HttpClient);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
   private readonly store = inject(Store);
   private readonly auth = inject(AuthService);
   private readonly socket = inject(SocketService);
@@ -46,7 +46,7 @@ export class ContactService {
       tap((contacts) => this.addContactsToStore(id, contacts)),
       catchError((err) => {
         console.error('Error fetching contacts:', err);
-        this.sonner.error(this.translate.translate('contact.get.error'));
+        this.sonner.error(this.locale.translate('contact.get.error'));
         return of([]);
       })
     );

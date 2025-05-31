@@ -3,9 +3,9 @@ import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import {
   UNKNOW_WORKSPACE_ROLE,
   WorkspaceRole,
@@ -19,7 +19,7 @@ export class WorkspaceRoleService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   public workspaceRolesByWorkspaceId(id: Id): Signal<WorkspaceRole[]> {
     return computed(() =>
@@ -58,9 +58,7 @@ export class WorkspaceRoleService {
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(
-            this.translate.translate('workspaceRole.get.error')
-          );
+          this.sonner.error(this.locale.translate('workspaceRole.get.error'));
           return of([]);
         })
       );
@@ -82,14 +80,14 @@ export class WorkspaceRoleService {
             wr.id
           );
           this.sonner.success(
-            this.translate.translate('workspaceRole.create.success')
+            this.locale.translate('workspaceRole.create.success')
           );
           return true;
         }),
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('workspaceRole.create.error')
+            this.locale.translate('workspaceRole.create.error')
           );
           return of(false);
         })
@@ -104,14 +102,14 @@ export class WorkspaceRoleService {
         map((wr) => {
           this.store.setEntity('workspaceRoles', wr);
           this.sonner.success(
-            this.translate.translate('workspaceRole.update.success')
+            this.locale.translate('workspaceRole.update.success')
           );
           return true;
         }),
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('workspaceRole.update.error')
+            this.locale.translate('workspaceRole.update.error')
           );
           return of(false);
         })
@@ -129,9 +127,7 @@ export class WorkspaceRoleService {
         tap((wr) => this.store.setEntity('workspaceRoles', wr)),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(
-            this.translate.translate('workspaceRole.get.error')
-          );
+          this.sonner.error(this.locale.translate('workspaceRole.get.error'));
           return of(null);
         })
       );

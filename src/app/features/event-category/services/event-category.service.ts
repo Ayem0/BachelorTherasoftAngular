@@ -2,9 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import {
   EventCategory,
   EventCategoryRequest,
@@ -18,7 +18,7 @@ export class EventCategoryService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   public eventCategoriesByWorkspaceId(
     id: Signal<string>
@@ -60,9 +60,7 @@ export class EventCategoryService {
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(
-            this.translate.translate('eventCategory.get.error')
-          );
+          this.sonner.error(this.locale.translate('eventCategory.get.error'));
           return of([]);
         })
       );
@@ -87,14 +85,14 @@ export class EventCategoryService {
             ec.id
           );
           this.sonner.success(
-            this.translate.translate('eventCategory.create.success')
+            this.locale.translate('eventCategory.create.success')
           );
           return true;
         }),
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('eventCategory.create.error')
+            this.locale.translate('eventCategory.create.error')
           );
           return of(false);
         })
@@ -112,14 +110,14 @@ export class EventCategoryService {
         map((ec) => {
           this.store.setEntity('eventCategories', ec);
           this.sonner.success(
-            this.translate.translate('eventCategory.update.success')
+            this.locale.translate('eventCategory.update.success')
           );
           return true;
         }),
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('eventCategory.update.error')
+            this.locale.translate('eventCategory.update.error')
           );
           return of(false);
         })

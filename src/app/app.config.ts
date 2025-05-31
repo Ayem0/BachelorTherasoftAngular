@@ -20,7 +20,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/interceptors/auth.interceptor';
 import { AuthService } from './core/auth/services/auth.service';
 import { ThemeService } from './features/theme/services/theme.service';
-import { TranslateService } from './shared/services/translate/translate.service';
+import { LocaleService } from './shared/services/locale/locale.service';
 
 const httpLoaderFactory: (http: HttpClient) => TranslateHttpLoader = (
   http: HttpClient
@@ -53,8 +53,9 @@ export const appConfig: ApplicationConfig = {
       themeService.loadTheme();
     }),
     provideAppInitializer(() => {
-      const translateService = inject(TranslateService);
-      translateService.loadLang();
+      const locale = inject(LocaleService);
+      locale.loadLang();
+      locale.loadTz();
     }),
   ],
 };

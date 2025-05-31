@@ -3,9 +3,9 @@ import { computed, inject, Injectable, Signal } from '@angular/core';
 import { catchError, debounceTime, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { ParticipantCategory } from '../../participant-category/models/participant-category';
 import { Workspace } from '../../workspace/models/workspace';
 import {
@@ -21,7 +21,7 @@ export class ParticipantService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
 
   constructor() {}
 
@@ -62,7 +62,7 @@ export class ParticipantService {
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(this.translate.translate('participant.get.error'));
+          this.sonner.error(this.locale.translate('participant.get.error'));
           return of([]);
         })
       );
@@ -87,15 +87,13 @@ export class ParticipantService {
             participant.id
           );
           this.sonner.success(
-            this.translate.translate('participant.create.success')
+            this.locale.translate('participant.create.success')
           );
           return true;
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(
-            this.translate.translate('participant.create.error')
-          );
+          this.sonner.error(this.locale.translate('participant.create.error'));
           return of(false);
         })
       );
@@ -112,15 +110,13 @@ export class ParticipantService {
         map((participant) => {
           this.store.setEntity('participants', participant);
           this.sonner.success(
-            this.translate.translate('participant.update.success')
+            this.locale.translate('participant.update.success')
           );
           return true;
         }),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(
-            this.translate.translate('participant.update.error')
-          );
+          this.sonner.error(this.locale.translate('participant.update.error'));
           return of(false);
         })
       );
@@ -143,9 +139,7 @@ export class ParticipantService {
           },
           error: (err) => {
             console.error(err);
-            this.sonner.error(
-              this.translate.translate('participant.get.error')
-            );
+            this.sonner.error(this.locale.translate('participant.get.error'));
           },
         })
       );

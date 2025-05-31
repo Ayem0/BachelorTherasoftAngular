@@ -5,10 +5,10 @@ import { environment } from '../../../../environments/environment';
 import { UNKNOW_USER, User } from '../../../core/auth/models/auth';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { Id } from '../../../shared/models/entity';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SocketService } from '../../../shared/services/socket/socket.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { TranslateService } from '../../../shared/services/translate/translate.service';
 import { Workspace } from '../../workspace/models/workspace';
 import {
   ContactInvitation,
@@ -25,7 +25,7 @@ export class InvitationService {
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
-  private readonly translate = inject(TranslateService);
+  private readonly locale = inject(LocaleService);
   private readonly auth = inject(AuthService);
   private readonly socket = inject(SocketService);
 
@@ -106,7 +106,7 @@ export class InvitationService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.received.get.error')
+            this.locale.translate('invitation.received.get.error')
           );
           return of([]);
         })
@@ -129,9 +129,7 @@ export class InvitationService {
         tap((invitations) => this.setSentInvitationsToStore(id, invitations)),
         catchError((err) => {
           console.error(err);
-          this.sonner.error(
-            this.translate.translate('invitation.sent.get.error')
-          );
+          this.sonner.error(this.locale.translate('invitation.sent.get.error'));
           return of([]);
         })
       );
@@ -156,14 +154,14 @@ export class InvitationService {
         tap((invitation) => {
           this.addWorkspaceInvitationToStore(invitation);
           this.sonner.success(
-            this.translate.translate('invitation.workspace.create.success')
+            this.locale.translate('invitation.workspace.create.success')
           );
         }),
         map(() => true),
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.workspace.create.error')
+            this.locale.translate('invitation.workspace.create.error')
           );
           return of(false);
         })
@@ -180,7 +178,7 @@ export class InvitationService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.workspace.accept.error')
+            this.locale.translate('invitation.workspace.accept.error')
           );
           return of(false);
         })
@@ -197,7 +195,7 @@ export class InvitationService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.workspace.cancel.error')
+            this.locale.translate('invitation.workspace.cancel.error')
           );
           return of();
         })
@@ -214,7 +212,7 @@ export class InvitationService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.workspace.refuse.error')
+            this.locale.translate('invitation.workspace.refuse.error')
           );
           return of();
         })
@@ -243,7 +241,7 @@ export class InvitationService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.workspace.get.error')
+            this.locale.translate('invitation.workspace.get.error')
           );
           return of([]);
         })
@@ -264,14 +262,14 @@ export class InvitationService {
         tap((invitation) => {
           this.addContactInvitationToStore(invitation);
           this.sonner.success(
-            this.translate.translate('invitation.contact.create.success')
+            this.locale.translate('invitation.contact.create.success')
           );
         }),
         map(() => true),
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.contact.create.error')
+            this.locale.translate('invitation.contact.create.error')
           );
           return of(false);
         })
@@ -288,7 +286,7 @@ export class InvitationService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.contact.accept.error')
+            this.locale.translate('invitation.contact.accept.error')
           );
           return of();
         })
@@ -305,7 +303,7 @@ export class InvitationService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.contact.cancel.error')
+            this.locale.translate('invitation.contact.cancel.error')
           );
           return of();
         })
@@ -322,7 +320,7 @@ export class InvitationService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(
-            this.translate.translate('invitation.contact.refuse.error')
+            this.locale.translate('invitation.contact.refuse.error')
           );
           return of();
         })
