@@ -55,7 +55,7 @@ import {
   format,
   incrementDate,
   toLocale,
-  toUtc,
+  toLocaleString,
 } from '../../../../shared/utils/date.utils';
 import { EventCategory } from '../../../event-category/models/event-category';
 import { ViewMode } from '../../../event/models/view-mode';
@@ -249,8 +249,8 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     return events.map((event) => ({
       id: event.id,
       title: event.description,
-      start: event.startDate,
-      end: event.endDate,
+      start: toLocaleString(event.startDate),
+      end: toLocaleString(event.endDate),
       extendedProps: {
         event: event,
       },
@@ -312,13 +312,9 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       this.viewMode.set(x.value);
       this.calendarApi().changeView(x.value);
       this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
-      if (this.viewMode() === 'timeGridDay') {
-        this.calendarApi().gotoDate(
-          incrementDate(this.selectedDate(), 1, 'day')
-        );
-      } else {
-        this.calendarApi().gotoDate(this.selectedDate());
-      }
+
+      this.calendarApi().gotoDate(this.selectedDate());
+
       this.setViewModeToParams();
     });
 
@@ -377,10 +373,15 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
 
   selectedChange(selectedDate: Date | null) {
     if (selectedDate) {
-      console.log(selectedDate);
-      const test = toUtc(selectedDate);
-      console.log(test);
-      this.selectedDate.set(selectedDate);
+      this.selectedDate.set(
+        new Date(
+          Date.UTC(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate()
+          )
+        )
+      );
       if (this.viewMode() === 'timeGridDay') {
         this.calendarApi().gotoDate(incrementDate(selectedDate, 1, 'day'));
       } else {
@@ -486,7 +487,11 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   }
 
   setToday() {
-    this.selectedDate.set(new Date());
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    this.selectedDate.set(
+      new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+    );
     this.calendarApi().today();
   }
 

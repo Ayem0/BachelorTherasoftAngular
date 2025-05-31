@@ -38,7 +38,7 @@ export function dateTimeToDate(date: Date) {
 }
 
 export const toLocaleString = (date: Date): string => {
-  return dayjs(date).utc().tz().format('YYYY-MM-DD HH:mm:ss');
+  return dayjs.utc(date).tz().format('YYYY-MM-DD HH:mm:ssZ');
 };
 
 export const toLocale = (date: Date): Date => {
@@ -46,7 +46,7 @@ export const toLocale = (date: Date): Date => {
 };
 
 export function toUtc(date: Date) {
-  return dayjs(date).utc().toDate();
+  return dayjs.utc(date).toDate();
 }
 
 export function getDifferenceInDays(date1: Date, date2: Date) {
