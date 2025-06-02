@@ -5,10 +5,10 @@ import { environment } from '../../../../environments/environment';
 import { UNKNOW_USER, User } from '../../../core/auth/models/auth';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { Id } from '../../../shared/models/entity';
+import { DateService } from '../../../shared/services/date/date.service';
 import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { format, incrementDate, toUtc } from '../../../shared/utils/date.utils';
 import { isIsRange } from '../../../shared/utils/event.utils';
 import {
   EventCategory,
@@ -38,6 +38,7 @@ export class EventService {
   private readonly auth = inject(AuthService);
   private readonly store = inject(Store);
   private readonly locale = inject(LocaleService);
+  private readonly date = inject(DateService);
 
   public detailedEvent(id: Id | null | undefined): Signal<Event<{
     eventCategory: EventCategory;
@@ -169,8 +170,9 @@ export class EventService {
     room: Room;
   }> | null> {
     const id = this.auth.currentUserInfo()?.id ?? '';
-    req.startDate = toUtc(req.startDate);
-    req.endDate = toUtc(req.endDate);
+    const startDate = this.date.toUtcString(req.startDate);
+    const endDate = this.date.toUtcString(req.endDate);
+    console.log(startDate, endDate);
     return this.http
       .post<
         Event<{
@@ -179,7 +181,12 @@ export class EventService {
           workspace: Workspace;
           room: Room;
         }>
-      >(`${environment.apiUrl}/event`, req)
+      >(`${environment.apiUrl}/event`, {
+        ...req,
+        startDate: startDate,
+        endDate: endDate,
+      })
+
       .pipe(
         debounceTime(150),
         tap((event) => {
@@ -189,11 +196,11 @@ export class EventService {
             end: req.endDate,
           });
           keys.forEach((key) =>
-            this.store.setRelation('usersEvents', key, [event.id])
+            this.store.addToRelation('usersEvents', key, event.id)
           );
           this.sonner.success(
             this.locale.translate('event.create.success'),
-            format(event.startDate, 'dddd, MMMM DD, YYYY [at] HH:mm')
+            this.date.format(event.startDate, 'dddd, MMMM DD, YYYY [at] HH:mm')
           );
         }),
         catchError((err) => {
@@ -246,7 +253,7 @@ export class EventService {
       const month = date.getMonth() + 1;
       const day = date.getDate();
       keys.push(`${id}/${year}/${month}/${day}`);
-      date = incrementDate(date, 1, 'day');
+      date = this.date.incrementDate(date, 1, 'day');
     }
     return keys;
   }
@@ -259,7 +266,7 @@ export class EventService {
       const day = date.getDate();
       const key: EventKey = `${id}/${year}/${month}/${day}`;
       if (!this.store.usersEvents().has(key)) return false;
-      date = incrementDate(date, 1, 'day');
+      date = this.date.incrementDate(date, 1, 'day');
     }
     return true;
   }
@@ -310,11 +317,14 @@ export class EventService {
         events
           .filter(
             (e) =>
-              !isIsRange(e, { start: date, end: incrementDate(date, 1, 'day') })
+              !isIsRange(e, {
+                start: date,
+                end: this.date.incrementDate(date, 1, 'day'),
+              })
           )
           .map((e) => e.id)
       );
-      date = incrementDate(date, 1, 'day');
+      date = this.date.incrementDate(date, 1, 'day');
     }
   }
 
@@ -345,7 +355,7 @@ export class EventService {
         },
       })
       .pipe(
-        debounceTime(200),
+        debounceTime(800),
         tap((events) => this.setEventsToStore(id, range, events)),
         catchError((err) => {
           console.error(err);

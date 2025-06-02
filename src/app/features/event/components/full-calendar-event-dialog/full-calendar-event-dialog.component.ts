@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -46,8 +47,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { debounceTime, distinctUntilChanged, forkJoin, tap } from 'rxjs';
 import { AuthService } from '../../../../core/auth/services/auth.service';
 import { RepetitionComponent } from '../../../../shared/components/repetition/repetition.component';
+import { DateService } from '../../../../shared/services/date/date.service';
 import { LocaleService } from '../../../../shared/services/locale/locale.service';
-import { getDifferenceInDays } from '../../../../shared/utils/date.utils';
 import { isFutureDate } from '../../../../shared/utils/validators';
 import { EventCategoryService } from '../../../event-category/services/event-category.service';
 import { MemberService } from '../../../member/services/member.service';
@@ -71,6 +72,7 @@ import { EventService } from '../../services/event.service';
     TranslateModule,
     MatIcon,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './full-calendar-event-dialog.component.html',
   styleUrl: './full-calendar-event-dialog.component.scss',
 })
@@ -91,6 +93,7 @@ export class FullCalendarEventDialogComponent implements OnInit {
   private readonly memberService = inject(MemberService);
   private readonly authService = inject(AuthService);
   private readonly locale = inject(LocaleService);
+  private readonly date = inject(DateService);
 
   public isLoading = signal(false);
   public isLoadingRes = signal(false);
@@ -221,11 +224,7 @@ export class FullCalendarEventDialogComponent implements OnInit {
   public endDate = signal(this.matDialogData.end ?? new Date());
   public calendarApi = computed(() => this.fullCalendar()?.getApi());
 
-  public duration = computed(() => {
-    const diff = getDifferenceInDays(this.endDate(), this.startDate());
-    console.log(diff);
-    return diff === 0 ? 1 : diff + 1;
-  });
+  public duration = computed(() => 1);
 
   public calendarOptions: CalendarOptions = {
     initialView: 'resourceTimeGrid',
@@ -243,9 +242,10 @@ export class FullCalendarEventDialogComponent implements OnInit {
     height: '100%',
     handleWindowResize: true,
     expandRows: true,
+    initialDate: this.startDate(),
+    locale: this.locale.currentLang(),
     timeZone: this.locale.currentTz(),
     slotDuration: '00:05:00',
-    locale: this.locale.currentLang(),
     schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
     events: this.fetch.bind(this),
     resources: this.handleResources.bind(this),
@@ -253,13 +253,12 @@ export class FullCalendarEventDialogComponent implements OnInit {
       hour: this.startDate().getHours(),
       minute: this.startDate().getMinutes(),
     },
-    initialDate: this.startDate(),
   };
 
   public temporaryEvents: Signal<EventInput[]> = computed(() =>
     this.resources().map((r) => ({
-      start: this.startDate(),
-      end: this.endDate(),
+      start: this.date.toLocaleString(this.startDate()),
+      end: this.date.toLocaleString(this.endDate()),
       title: 'test',
       resourceId: r.id,
     }))

@@ -49,14 +49,8 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import { TranslateModule } from '@ngx-translate/core';
 import { debounceTime, forkJoin, Subject, switchMap, tap } from 'rxjs';
 import { LayoutService } from '../../../../core/layout/layout/layout.service';
+import { DateService } from '../../../../shared/services/date/date.service';
 import { LocaleService } from '../../../../shared/services/locale/locale.service';
-import {
-  decrementDate,
-  format,
-  incrementDate,
-  toLocale,
-  toLocaleString,
-} from '../../../../shared/utils/date.utils';
 import { EventCategory } from '../../../event-category/models/event-category';
 import { ViewMode } from '../../../event/models/view-mode';
 import { Room } from '../../../room/models/room';
@@ -109,6 +103,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly agendaService = inject(AgendaService);
+  private readonly date = inject(DateService);
 
   private readonly fullCalendar = viewChild.required(FullCalendar);
   private readonly sidebar = viewChild.required(MatSidenav);
@@ -131,16 +126,13 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     this.toViewMode(this.route.snapshot.queryParamMap.get('view'))
   );
   public selectedDate = signal(
-    toLocale(
-      this.toClosestWeekDay(
-        this.paramToDate(this.route.snapshot.queryParamMap.get('s')) ||
-          new Date()
-      )
+    this.toClosestWeekDay(
+      this.paramToDate(this.route.snapshot.queryParamMap.get('s')) || new Date()
     )
   );
   public selectedRange = signal<DateRange>({
     start: new Date(),
-    end: incrementDate(new Date(), 1, 'day'),
+    end: this.date.incrementDate(new Date(), 1, 'day'),
   });
 
   private events = this.eventService.agendaEvents(this.selectedRange);
@@ -195,6 +187,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     events: this.fetch.bind(this),
     windowResize: this.autoResize.bind(this),
     datesSet: this.onDatesSet.bind(this),
+    schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
   };
 
   // for debouctime time
@@ -249,8 +242,8 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     return events.map((event) => ({
       id: event.id,
       title: event.description,
-      start: toLocaleString(event.startDate),
-      end: toLocaleString(event.endDate),
+      start: this.date.toLocaleString(event.startDate),
+      end: this.date.toLocaleString(event.endDate),
       extendedProps: {
         event: event,
       },
@@ -283,7 +276,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     forkJoin([
       this.eventService.getAgendaEvents({
         start: this.selectedDate(),
-        end: incrementDate(this.selectedDate(), 1, unit),
+        end: this.date.incrementDate(this.selectedDate(), 1, unit),
       }),
       this.workspaceService.getWorkspaces(),
     ]).subscribe(([events, ws]) => {
@@ -337,11 +330,19 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     }
     if (this.viewMode() === 'timeGridDay') {
       if (date.getDay() === 0 || date.getDay() === 6) {
-        return incrementDate(date, date.getDay() === 0 ? 1 : 2, 'day');
+        return this.date.incrementDate(
+          date,
+          date.getDay() === 0 ? 1 : 2,
+          'day'
+        );
       }
     } else if (this.viewMode() === 'timeGridWeek') {
       if (date.getDay() === 0 || date.getDay() === 6) {
-        return decrementDate(date, date.getDay() === 0 ? 2 : 1, 'day');
+        return this.date.incrementDate(
+          date,
+          date.getDay() === 0 ? 2 : 1,
+          'day'
+        );
       }
     }
     return date;
@@ -383,7 +384,9 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
         )
       );
       if (this.viewMode() === 'timeGridDay') {
-        this.calendarApi().gotoDate(incrementDate(selectedDate, 1, 'day'));
+        this.calendarApi().gotoDate(
+          this.date.incrementDate(selectedDate, 1, 'day')
+        );
       } else {
         this.calendarApi().gotoDate(selectedDate);
       }
@@ -416,7 +419,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     // update query params
     this.router.navigate(['/agenda'], {
       queryParams: {
-        s: format(this.selectedDate(), 'DD/MM/YYYY'),
+        s: this.date.format(this.selectedDate(), 'DD/MM/YYYY'),
       },
       queryParamsHandling: 'merge',
     });
@@ -427,28 +430,36 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     switch (viewMode) {
       case 'timeGridDay':
         if (!this.showWeekend() && this.selectedDate().getDay() === 1) {
-          this.selectedDate.set(decrementDate(this.selectedDate(), 3, 'day'));
+          this.selectedDate.set(
+            this.date.decrementDate(this.selectedDate(), 3, 'day')
+          );
         } else {
-          this.selectedDate.set(decrementDate(this.selectedDate(), 1, 'day'));
+          this.selectedDate.set(
+            this.date.decrementDate(this.selectedDate(), 1, 'day')
+          );
         }
         this.selectedRange.update((range) => ({
-          start: decrementDate(range.start, 1, 'day'),
-          end: decrementDate(range.end, 1, 'day'),
+          start: this.date.decrementDate(range.start, 1, 'day'),
+          end: this.date.decrementDate(range.end, 1, 'day'),
         }));
         break;
       case 'timeGridWeek':
         this.selectedRange.update((range) => ({
-          start: decrementDate(range.start, 1, 'week'),
-          end: decrementDate(range.end, 1, 'week'),
+          start: this.date.decrementDate(range.start, 1, 'week'),
+          end: this.date.decrementDate(range.end, 1, 'week'),
         }));
-        this.selectedDate.set(decrementDate(this.selectedDate(), 1, 'week'));
+        this.selectedDate.set(
+          this.date.decrementDate(this.selectedDate(), 1, 'week')
+        );
         break;
       case 'dayGridMonth':
         this.selectedRange.update((range) => ({
-          start: decrementDate(range.start, 1, 'month'),
-          end: decrementDate(range.end, 1, 'month'),
+          start: this.date.decrementDate(range.start, 1, 'month'),
+          end: this.date.decrementDate(range.end, 1, 'month'),
         }));
-        this.selectedDate.set(decrementDate(this.selectedDate(), 1, 'month'));
+        this.selectedDate.set(
+          this.date.decrementDate(this.selectedDate(), 1, 'month')
+        );
         break;
     }
     this.calendarApi().prev();
@@ -459,28 +470,36 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     switch (viewMode) {
       case 'timeGridDay':
         if (!this.showWeekend() && this.selectedDate().getDay() === 5) {
-          this.selectedDate.set(incrementDate(this.selectedDate(), 3, 'day'));
+          this.selectedDate.set(
+            this.date.incrementDate(this.selectedDate(), 3, 'day')
+          );
         } else {
-          this.selectedDate.set(incrementDate(this.selectedDate(), 1, 'day'));
+          this.selectedDate.set(
+            this.date.incrementDate(this.selectedDate(), 1, 'day')
+          );
         }
         this.selectedRange.update((range) => ({
-          start: incrementDate(range.start, 1, 'day'),
-          end: incrementDate(range.end, 1, 'day'),
+          start: this.date.incrementDate(range.start, 1, 'day'),
+          end: this.date.incrementDate(range.end, 1, 'day'),
         }));
         break;
       case 'timeGridWeek':
         this.selectedRange.update((range) => ({
-          start: incrementDate(range.start, 1, 'week'),
-          end: incrementDate(range.end, 1, 'week'),
+          start: this.date.incrementDate(range.start, 1, 'week'),
+          end: this.date.incrementDate(range.end, 1, 'week'),
         }));
-        this.selectedDate.set(incrementDate(this.selectedDate(), 1, 'week'));
+        this.selectedDate.set(
+          this.date.incrementDate(this.selectedDate(), 1, 'week')
+        );
         break;
       case 'dayGridMonth':
         this.selectedRange.update((range) => ({
-          start: incrementDate(range.start, 1, 'month'),
-          end: incrementDate(range.end, 1, 'month'),
+          start: this.date.incrementDate(range.start, 1, 'month'),
+          end: this.date.incrementDate(range.end, 1, 'month'),
         }));
-        this.selectedDate.set(incrementDate(this.selectedDate(), 1, 'month'));
+        this.selectedDate.set(
+          this.date.incrementDate(this.selectedDate(), 1, 'month')
+        );
         break;
     }
     this.calendarApi().next();
@@ -518,6 +537,9 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   }
 
   public openDialog(eventId?: string, start?: Date, end?: Date) {
+    console.log(start, end);
+    if (start) start.setHours(start.getHours() - 2, start.getMinutes(), 0, 0);
+    if (end) end.setHours(end.getHours() - 2, end.getMinutes(), 0, 0);
     this.matDialog
       .open(FullCalendarEventDialogComponent, {
         data: {
@@ -525,14 +547,14 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
           start: start,
           end: end,
         },
-        // width: '100%',
         maxWidth: 'none',
         maxHeight: '100%',
       })
       .afterClosed()
       // TODO le transformer en input et tout
       .subscribe((event) => {
-        if (event) this.calendarApi().addEvent(event);
+        console.log(event);
+        if (event) this.calendarApi().refetchEvents();
       });
   }
 

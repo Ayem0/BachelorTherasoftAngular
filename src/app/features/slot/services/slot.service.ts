@@ -3,10 +3,10 @@ import { computed, inject, Injectable } from '@angular/core';
 import { catchError, debounceTime, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { Id } from '../../../shared/models/entity';
+import { DateService } from '../../../shared/services/date/date.service';
 import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store';
-import { format } from '../../../shared/utils/date.utils';
 import { Slot, SlotRequest, UNKNOWN_SLOT } from '../models/slot';
 
 @Injectable({
@@ -17,6 +17,7 @@ export class SlotService {
   private readonly store = inject(Store);
   private readonly sonner = inject(SonnerService);
   private readonly locale = inject(LocaleService);
+  private readonly date = inject(DateService);
 
   public slotsByWorkspaceId(id: Id) {
     return computed(() =>
@@ -62,10 +63,12 @@ export class SlotService {
   }
 
   public createSlot(workspaceId: Id, req: SlotRequest) {
-    const formatedStartTime = format(req.startTime, 'HH:mm:ss.SSS') + '000';
-    const formatedEndTime = format(req.endTime, 'HH:mm:ss.SSS') + '000';
-    const formatedStartDate = format(req.startDate, 'YYYY-MM-DD');
-    const formatedEndDate = format(req.endDate, 'YYYY-MM-DD');
+    const formatedStartTime =
+      this.date.format(req.startTime, 'HH:mm:ss.SSS') + '000';
+    const formatedEndTime =
+      this.date.format(req.endTime, 'HH:mm:ss.SSS') + '000';
+    const formatedStartDate = this.date.format(req.startDate, 'YYYY-MM-DD');
+    const formatedEndDate = this.date.format(req.endDate, 'YYYY-MM-DD');
     return this.http
       .post<Slot>(`${environment.apiUrl}/slot`, {
         ...req,
