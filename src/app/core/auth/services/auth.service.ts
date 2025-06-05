@@ -3,6 +3,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../shared/services/socket/socket.service';
+import { Store } from '../../../shared/services/store/store';
 import { User } from '../models/auth';
 
 @Injectable({
@@ -11,6 +12,7 @@ import { User } from '../models/auth';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly socket = inject(SocketService);
+  private readonly store = inject(Store);
   private currentUser = signal<User | null>(null);
   public currentUserInfo = computed(() => this.currentUser());
   public isLoggedIn = computed(() => !!this.currentUser());
@@ -72,6 +74,7 @@ export class AuthService {
     return this.http.get<User>(`${environment.apiUrl}/user`).pipe(
       tap((user) => {
         this.currentUser.set(user);
+        this.store.setEntity('users', user);
         this.socket.startConnection();
       }),
       catchError(() => {

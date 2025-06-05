@@ -158,9 +158,29 @@ export class EventService {
   // }
 
   public getById(id: string) {
-    return this.http.get<Event>(`${environment.apiUrl}/event`, {
-      params: { id },
-    });
+    if (this.hasEventDetails(id)) return of(this.detailedEvent(id)());
+    return this.http
+      .get<
+        Event<{
+          eventCategory: EventCategory;
+          participants: Participant[];
+          room: Room;
+          tags: Tag[];
+          users: User[];
+          workspace: Workspace;
+        }>
+      >(`${environment.apiUrl}/event/${id}`)
+      .pipe(
+        debounceTime(150),
+        tap((event) => {
+          this.setEventToStore(event);
+        }),
+        catchError((err) => {
+          console.error(err);
+          this.sonner.error(this.locale.translate('event.get.error'));
+          return of(null);
+        })
+      );
   }
 
   public createEvent(req: EventRequest): Observable<Event<{
@@ -273,25 +293,71 @@ export class EventService {
 
   private setEventToStore(
     event: Event<{
-      eventCategory: EventCategory;
-      tags: Tag[];
-      workspace: Workspace;
-      room: Room;
+      eventCategory?: EventCategory;
+      tags?: Tag[];
+      workspace?: Workspace;
+      room?: Room;
+      users?: User[];
+      participants?: Participant[];
     }>
   ) {
-    const tagIds = event.tags.map((tag) => tag.id);
+    let roomId: string | undefined = undefined;
+    let tagIds: string[] | undefined = undefined;
+    let userIds: string[] | undefined = undefined;
+    let participantIds: string[] | undefined = undefined;
+    let workspaceId: string | undefined = undefined;
+    let eventCategoryId: string | undefined = undefined;
+    if (event.tags !== undefined) {
+      tagIds = event.tags.map((tag) => tag.id);
+      this.store.setEntities('tags', event.tags);
+      this.store.setRelation('eventsTags', event.id, tagIds);
+    }
+    if (event.room !== undefined) {
+      roomId = event.room.id;
+      this.store.setEntity('rooms', event.room);
+    }
+    if (event.users !== undefined) {
+      userIds = event.users.map((user) => user.id);
+      this.store.setEntities('users', event.users);
+      this.store.setRelation('eventsUsers', event.id, userIds);
+    }
+    if (event.participants !== undefined) {
+      participantIds = event.participants.map((participant) => participant.id);
+      this.store.setEntities('participants', event.participants);
+      this.store.setRelation('eventsParticipants', event.id, participantIds);
+    }
+    if (event.workspace !== undefined) {
+      workspaceId = event.workspace.id;
+      this.store.setEntity('workspaces', event.workspace);
+    }
+    if (event.eventCategory !== undefined) {
+      eventCategoryId = event.eventCategory.id;
+      this.store.setEntity('eventCategories', event.eventCategory);
+    }
+
     this.store.setEntity('events', {
       ...event,
-      workspaceId: event.workspace.id,
-      eventCategoryId: event.eventCategory.id,
-      roomId: event.room.id,
+      workspaceId: workspaceId,
+      eventCategoryId: eventCategoryId,
+      roomId: roomId,
       tagIds: tagIds,
+      userIds: userIds,
+      participantIds: participantIds,
     });
-    this.store.setEntities('tags', event.tags);
-    this.store.setRelation('eventsTags', event.id, tagIds);
-    this.store.setEntity('eventCategories', event.eventCategory);
-    this.store.setEntity('workspaces', event.workspace);
-    this.store.setEntity('rooms', event.room);
+  }
+
+  private hasEventDetails(id: string) {
+    if (!this.store.events().has(id)) return false;
+    const event = this.store.events().get(id)!;
+    console.log(event);
+    return (
+      event.eventCategoryId !== undefined &&
+      event.roomId !== undefined &&
+      event.tagIds !== undefined &&
+      event.workspaceId !== undefined &&
+      event.userIds !== undefined &&
+      event.participantIds !== undefined
+    );
   }
 
   private setEventsToStore(

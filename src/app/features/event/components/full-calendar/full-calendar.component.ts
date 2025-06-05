@@ -60,6 +60,7 @@ import { WorkspaceService } from '../../../workspace/services/workspace.service'
 import { Event } from '../../models/event';
 import { AgendaService } from '../../services/agenda.service';
 import { EventService } from '../../services/event.service';
+import { EventDetailsComponent } from '../event-details/event-details.component';
 import { FullCalendarEventDialogComponent } from '../full-calendar-event-dialog/full-calendar-event-dialog.component';
 import { SmallCalendarHeaderComponent } from '../small-calendar-header/small-calendar-header.component';
 @Component({
@@ -559,13 +560,14 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   }
 
   private handleEventClick(clickInfo: EventClickArg) {
-    if (
-      confirm(
-        `Are you sure you want to delete the event '${clickInfo.event.title}'`
-      )
-    ) {
-      clickInfo.event.remove();
-    }
+    this.matDialog
+      .open(EventDetailsComponent, {
+        data: clickInfo.event.id,
+        maxWidth: 'none',
+        width: '',
+      })
+      .afterClosed()
+      .subscribe(() => this.calendarApi().refetchEvents());
   }
 
   handleEvents(events: EventApi[]) {

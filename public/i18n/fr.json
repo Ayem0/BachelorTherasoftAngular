@@ -6,9 +6,12 @@
         "delete": "Supprimer",
         "cancel": "Annuler",
         "refuse": "Refuser",
+        "save": "Sauvegarder",
+        "edit": "Éditer",
         "accept": "Accepter",
         "invite": "Inviter",
-        "search": "Rechercher"
+        "search": "Rechercher",
+        "close": "Fermer"
     },
     "area": {
         "title": "Zones",
