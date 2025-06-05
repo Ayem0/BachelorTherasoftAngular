@@ -183,5 +183,11 @@
         "title": "Contacts",
         "invite": "Inviter dans l'espace de travail",
         "add": "Ajouter un contact"
+    },
+    "form": {
+        "startDate": "Date de début",
+        "endDate": "Date de fin",
+        "startTime": "Heure de début",
+        "endTime": "Heure de fin"
     }
 }
