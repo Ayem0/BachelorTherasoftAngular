@@ -57,7 +57,6 @@ export class EventCategoryListComponent {
   public displayedColumns: string[] = [
     'name',
     'color',
-    'icon',
     'description',
     'action',
   ];

@@ -1,33 +1,25 @@
 <div
-  class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black"
->
+  class="flex size-full flex-col p-2 md:p-4 xl:p-8 border dark:border-[--mdc-outlined-card-outline-color] rounded-[32px] shadow-2xl shadow-black">
   <h2 class="p-4 dark:text-white text-2xl">
     {{
-      isUpdate()
-        ? "Update Workspace " + this.workspace()?.name
-        : "Create Workspace"
+    isUpdate()
+    ? "Update Workspace " + this.workspace()?.name
+    : "Create Workspace"
     }}
   </h2>
   <form [formGroup]="form" class="flex flex-col px-4 pb-4">
-    <mat-form-field appearance="outline" [hideRequiredMarker]="true">
+    <mat-form-field appearance="outline">
       <mat-label>Name</mat-label>
       <input matInput type="text" placeholder="Name" formControlName="name" />
     </mat-form-field>
+    <mat-form-field appearance="outline" floatLabel="always">
+      <input matInput type="color" placeholder="Color" formControlName="color" />
+    </mat-form-field>
     <mat-form-field appearance="outline">
       <mat-label>Description</mat-label>
-      <textarea
-        matInput
-        placeholder="Description"
-        formControlName="description"
-      ></textarea>
+      <textarea matInput placeholder="Description" formControlName="description"></textarea>
     </mat-form-field>
-    <button
-      mat-flat-button
-      type="submit"
-      (click)="submit()"
-      [disabled]="isLoading() || !form.valid"
-      class="my-4"
-    >
+    <button mat-flat-button type="submit" (click)="submit()" [disabled]="isLoading() || !form.valid" class="my-4">
       @if(isLoading()) {
       <mat-spinner diameter="24"></mat-spinner>
       } @else {

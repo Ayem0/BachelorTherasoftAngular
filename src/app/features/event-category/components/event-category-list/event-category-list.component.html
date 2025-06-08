@@ -26,16 +26,12 @@
 
             <ng-container matColumnDef="color">
                 <mat-header-cell *matHeaderCellDef mat-sort-header> Color </mat-header-cell>
-                <mat-cell *matCellDef="let eventCategory" [routerLink]="['/eventCategory', eventCategory.id]"> {{
-                    eventCategory.color }} </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="icon">
-                <mat-header-cell *matHeaderCellDef mat-sort-header> Icon </mat-header-cell>
                 <mat-cell *matCellDef="let eventCategory" [routerLink]="['/eventCategory', eventCategory.id]">
-                    <mat-icon>{{ eventCategory.icon }}</mat-icon>
+                    <div class="flex w-full p-3 rounded-md" [style.backgroundColor]="eventCategory.color">
+                    </div>
                 </mat-cell>
             </ng-container>
+
 
             <ng-container matColumnDef="description">
                 <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>

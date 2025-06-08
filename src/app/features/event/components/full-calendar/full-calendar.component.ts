@@ -240,15 +240,24 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       workspace: Workspace;
     }>[]
   ): EventInput[] {
-    return events.map((event) => ({
+    const mapped = events.map((event) => ({
       id: event.id,
-      title: event.description,
+      title: event.eventCategory.name,
       start: this.date.toLocaleString(event.startDate),
       end: this.date.toLocaleString(event.endDate),
+      color: event.workspace.color,
+      classNames: [
+        '!shadow-none',
+        'border-0',
+        'border-l-8',
+        `!border-[${event.eventCategory.color}]`,
+      ],
       extendedProps: {
         event: event,
       },
     }));
+    console.log(mapped);
+    return mapped;
   }
 
   private handleLoading(isLoading: boolean) {

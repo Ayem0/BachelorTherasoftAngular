@@ -40,6 +40,10 @@ export class WorkspaceDialogComponent {
       { value: this.workspace()?.name ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
+    color: new FormControl<string>(
+      { value: this.workspace()?.color ?? '', disabled: this.isLoading() },
+      { nonNullable: true, validators: [Validators.required] }
+    ),
     description: new FormControl<string | undefined>(
       {
         value: this.workspace()?.description ?? undefined,

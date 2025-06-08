@@ -1,96 +1,85 @@
 <div class="flex size-full flex-col">
   @if (isLoading()) {
-    <div class="flex flex-1 items-center justify-center">
-      <mat-spinner diameter="50"></mat-spinner>
-    </div>
+  <div class="flex flex-1 items-center justify-center">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
   } @else {
-    <div class="flex w-full justify-between items-center pt-4">
-      <mat-form-field appearance="outline">
-        <input matInput type="text" [formControl]="search">
-        <mat-label>Search</mat-label>
-        <mat-icon matPrefix>search</mat-icon>
-      </mat-form-field>
-      <button mat-flat-button (click)="openDialog()">
-        <mat-icon>add</mat-icon>
-        <span>Add</span>
-      </button>
-    </div>
-    <div class="flex flex-1 flex-col relative">
-  
-      <mat-table [dataSource]="dataSource" matSort class="overflow-auto absolute left-0 top-0 right-0 bottom-0">
-  
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Name
-          </mat-header-cell>
-          <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
-            {{ tag.name }}
-          </mat-cell>
-        </ng-container>
-  
-        <ng-container matColumnDef="color">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Color
-          </mat-header-cell>
-          <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
-            {{ tag.color }}
-          </mat-cell>
-        </ng-container>
-  
-        <ng-container matColumnDef="icon">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Icon
-          </mat-header-cell>
-          <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
-            <mat-icon>{{ tag.icon }}</mat-icon>
-          </mat-cell>
-        </ng-container>
-  
-        <ng-container matColumnDef="description">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Description
-          </mat-header-cell>
-          <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
-            {{ tag.description }}
-          </mat-cell>
-        </ng-container>
-  
-        <ng-container matColumnDef="action">
-          <mat-header-cell *matHeaderCellDef></mat-header-cell>
-          <mat-cell *matCellDef="let tag">
-            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="tag actions"
-              (click)="$event.stopPropagation()">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="openDialog(tag.id)">
-                <mat-icon>edit</mat-icon>
-                <span>Edit</span>
-              </button>
-              <button mat-menu-item>
-                <mat-icon>delete</mat-icon>
-                <span>Delete</span>
-              </button>
-            </mat-menu>
-          </mat-cell>
-        </ng-container>
-        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-        <tr *matNoDataRow>
-          <td colspan="3">
-              <div class="flex justify-center p-4">
-                No tags found
-                @if (search.value) {
-                matching "{{search.value}}"
-                }
-              </div>
-          </td>
-        </tr>
-      </mat-table>
-    </div>
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of tags">
-    </mat-paginator>
-  }
-  
-</div>
+  <div class="flex w-full justify-between items-center pt-4">
+    <mat-form-field appearance="outline">
+      <input matInput type="text" [formControl]="search">
+      <mat-label>Search</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    <button mat-flat-button (click)="openDialog()">
+      <mat-icon>add</mat-icon>
+      <span>Add</span>
+    </button>
+  </div>
+  <div class="flex flex-1 flex-col relative">
 
+    <mat-table [dataSource]="dataSource" matSort class="overflow-auto absolute left-0 top-0 right-0 bottom-0">
+
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Name
+        </mat-header-cell>
+        <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
+          {{ tag.name }}
+        </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="color">
+        <mat-header-cell *matHeaderCellDef mat-sort-header> Color </mat-header-cell>
+        <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
+          <div class="flex w-full p-3 rounded-md" [style.backgroundColor]="tag.color">
+          </div>
+        </mat-cell>
+      </ng-container>
+
+
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Description
+        </mat-header-cell>
+        <mat-cell *matCellDef="let tag" [routerLink]="['/tag', tag.id]">
+          {{ tag.description }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="action">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let tag">
+          <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="tag actions"
+            (click)="$event.stopPropagation()">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="openDialog(tag.id)">
+              <mat-icon>edit</mat-icon>
+              <span>Edit</span>
+            </button>
+            <button mat-menu-item>
+              <mat-icon>delete</mat-icon>
+              <span>Delete</span>
+            </button>
+          </mat-menu>
+        </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      <tr *matNoDataRow>
+        <td colspan="3">
+          <div class="flex justify-center p-4">
+            No tags found
+            @if (search.value) {
+            matching "{{search.value}}"
+            }
+          </div>
+        </td>
+      </tr>
+    </mat-table>
+  </div>
+  <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of tags">
+  </mat-paginator>
+  }
+
+</div>

@@ -48,10 +48,6 @@ export class TagDialogComponent {
       { value: this.tag()?.color ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
-    icon: new FormControl(
-      { value: this.tag()?.icon ?? '', disabled: this.isLoading() },
-      { nonNullable: true, validators: [Validators.required] }
-    ),
     description: new FormControl(
       {
         value: this.tag()?.description ?? undefined,

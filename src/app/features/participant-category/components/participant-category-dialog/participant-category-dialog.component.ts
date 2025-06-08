@@ -63,13 +63,6 @@ export class ParticipantCategoryDialogComponent {
       },
       { nonNullable: true, validators: [Validators.required] }
     ),
-    icon: new FormControl(
-      {
-        value: this.participantCategory()?.icon || '',
-        disabled: this.isLoading(),
-      },
-      { nonNullable: true, validators: [Validators.required] }
-    ),
     description: new FormControl(
       {
         value: this.participantCategory()?.description,

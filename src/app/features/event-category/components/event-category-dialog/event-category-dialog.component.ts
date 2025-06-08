@@ -53,10 +53,7 @@ export class EventCategoryDialogComponent {
       { value: this.eventCategory()?.color ?? '', disabled: this.isLoading() },
       { nonNullable: true, validators: [Validators.required] }
     ),
-    icon: new FormControl(
-      { value: this.eventCategory()?.icon ?? '', disabled: this.isLoading() },
-      { nonNullable: true, validators: [Validators.required] }
-    ),
+
     description: new FormControl(
       {
         value: this.eventCategory()?.description,

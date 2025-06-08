@@ -1,322 +1,348 @@
 <mat-card>
     @if (isLoading()) {
+    <mat-card-header>
+        <div class="flex flex-row justify-end w-full">
+            <button mat-icon-button (click)="closeDialog()">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+
+    </mat-card-header>
+    <mat-card-content>
+        <mat-spinner diameter="150"></mat-spinner>
+    </mat-card-content>
+    } @else {
+    @if (isEditMode()) {
+    <form [formGroup]="form">
+
         <mat-card-header>
-            <div class="flex flex-row justify-end w-full">
-                <button mat-icon-button (click)="closeDialog()">
-                    <mat-icon>close</mat-icon>
-                </button>
+            <div class="flex flex-row justify-between w-full pb-2 pl-8">
+                <div class="flex flex-row">
+                    <mat-chip>
+                        <span class="dark:text-white">{{ event()?.eventCategory?.name }}</span>
+                    </mat-chip>
+                    <mat-form-field>
+                        <mat-label>{{ 'tag.title' | translate }}</mat-label>
+                        <mat-chip-grid #chipGrid aria-label="tag selection" formControlName="tagIds">
+                            @for (tag of selectedTags(); track tag.id) {
+                            <mat-chip-row (removed)="remove(tag)">
+                                {{tag.name}}
+                                <button matChipRemove>
+                                    <mat-icon>cancel</mat-icon>
+                                </button>
+                            </mat-chip-row>
+                            }
+                        </mat-chip-grid>
+                        <input type="text" name="currentTag" placeholder="{{ 'tag.title' | translate }}"
+                            [matChipInputFor]="chipGrid" [matAutocomplete]="auto" />
+                        <mat-autocomplete #auto (optionSelected)="selected($event)">
+                            @for (tag of filteredTags(); track tag.id) {
+                            <mat-option [value]="tag">{{tag.name}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+                <div class="flex flex-row">
+                    <button mat-icon-button (click)="cancel()" matTooltip="{{ 'action.cancel' | translate }}">
+                        <mat-icon>undo</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="delete()" matTooltip="{{ 'action.delete' | translate }}">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                    <button mat-icon-button matTooltip="{{ 'action.save' | translate }}" (click)="save()">
+                        <mat-icon>
+                            @if (isSubmitting()) {
+                            <mat-spinner diameter="20"></mat-spinner>
+                            } @else {
+                            save
+                            }
+                        </mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="closeDialog()" matTooltip="{{ 'action.close' | translate }}">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
             </div>
 
         </mat-card-header>
         <mat-card-content>
-            <mat-spinner diameter="150"></mat-spinner>
-        </mat-card-content>
-    } @else {
-        @if (isEditMode()) {
             <form [formGroup]="form">
 
-                <mat-card-header>
-                    <div class="flex flex-row justify-between w-full pb-2 pl-8">
-                        <div class="flex flex-row">
-                            <mat-chip> 
-                                <span class="dark:text-white">{{ event()?.eventCategory?.name }}</span>
-                            </mat-chip>
-                            <mat-form-field>
-                                <mat-label>{{ 'tag.title' | translate }}</mat-label>
-                                <mat-chip-grid #chipGrid aria-label="tag selection">
-                                    @for (tag of event()?.tags; track tag.id) {
-                                        <mat-chip-row (removed)="remove(tag)">
-                                            {{tag}}
-                                            <button matChipRemove [attr.aria-label]="'remove ' + tag">
-                                                <mat-icon>cancel</mat-icon>
-                                            </button>
-                                        </mat-chip-row>
-                                    }
-                                </mat-chip-grid>
-                                <input
-                                name="currentTag"
-                                placeholder="{{ 'tag.title' | translate }}"
-                                #tagInput
-                                [(ngModel)]="tagInput"
-                                [matChipInputFor]="chipGrid"
-                                [matAutocomplete]="auto"
-                                formControlName="tagIds"
-                                />
-                                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); tagInput.value = ''">
-                                    @for (tag of filteredTags(); track tag.id) {
-                                        <mat-option [value]="tag.id">{{tag.name}}</mat-option>
-                                    }
-                                </mat-autocomplete>
+                <div class="flex flex-col md:flex-row">
+                    <div class="flex flex-col">
+                        <div class="flex flex-row gap-2">
+                            <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                                <mat-icon>work</mat-icon>
+                            </div>
+                            <mat-form-field class="w-full">
+                                <mat-label>Workspace</mat-label>
+                                <input matInput placeholder="Workspace" formControlName="workspaceId" />
                             </mat-form-field>
-                            
-                            <mat-chip-set aria-label="Tags">
-                                @for (tag of event()?.tags; track tag.id) {
-                                    <mat-chip color="{{ tag.color }}">{{ tag.name }}</mat-chip>
+                        </div>
+                        <div class="flex flex-row gap-2">
+                            <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                                <mat-icon>location_on</mat-icon>
+                            </div>
+                            <mat-form-field class="w-full">
+                                <mat-label>Room</mat-label>
+                                <input matInput placeholder="Room" formControlName="roomId" />
+                            </mat-form-field>
+                        </div>
+
+                        <div class="flex flex-row gap-2">
+                            <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                                <mat-icon>schedule</mat-icon>
+                            </div>
+                            <mat-form-field [hideRequiredMarker]="true" class="w-40">
+                                <mat-label>Start date</mat-label>
+                                <input matInput [matDatepicker]="startDate" formControlName="startDate">
+                                <mat-datepicker-toggle matIconSuffix [for]="startDate"></mat-datepicker-toggle>
+                                <mat-datepicker #startDate></mat-datepicker>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-32">
+                                <mat-label>Start time</mat-label>
+                                <input matInput [matTimepicker]="startTime" formControlName="startDate">
+                                <mat-timepicker #startTime interval="5m" />
+                                <mat-timepicker-toggle [for]="startTime" matSuffix />
+                            </mat-form-field>
+
+                            <span class="dark:text-white text-4xl pt-2">-</span>
+
+                            <mat-form-field [hideRequiredMarker]="true" class="w-40">
+                                <mat-label>End date</mat-label>
+                                <input matInput [matDatepicker]="endDate" formControlName="endDate">
+                                <mat-datepicker-toggle matIconSuffix [for]="endDate"></mat-datepicker-toggle>
+                                <mat-datepicker #endDate></mat-datepicker>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-32">
+                                <mat-label>End time</mat-label>
+                                <input matInput [matTimepicker]="endTime" formControlName="endDate">
+                                <mat-timepicker #endTime interval="5m" />
+                                <mat-timepicker-toggle [for]="endTime" matSuffix />
+                            </mat-form-field>
+                        </div>
+                        <div class="flex flex-row gap-2">
+                            <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                                <mat-icon>notes</mat-icon>
+                            </div>
+                            <mat-form-field class="w-full">
+                                <mat-label>Description</mat-label>
+                                <textarea class="!resize-none h-full min-h-24" matInput placeholder="Description"
+                                    formControlName="description"></textarea>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 md:pl-2">
+                        <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title class="gap-2">
+                                    <mat-icon>
+                                        group
+                                    </mat-icon>
+                                    <span>
+                                        {{ "member.title" | translate }}
+                                    </span>
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <div class="flex flex-col overflow-scroll max-h-32">
+                                @for (p of event()?.users; track p.id) {
+                                <span>{{ p.firstName }} {{ p.lastName }}</span>
+                                } @empty {
+                                <span>{{ "member.empty" | translate }}</span>
                                 }
-                            </mat-chip-set>    
-                        </div>
-                        <div class="flex flex-row">
-                            <button mat-icon-button (click)="cancel()" matTooltip="{{ 'action.cancel' | translate }}">
-                                <mat-icon>undo</mat-icon>
-                            </button> 
-                            <button mat-icon-button (click)="delete()" matTooltip="{{ 'action.delete' | translate }}">
-                                <mat-icon>delete</mat-icon>
-                            </button>
-                            <button mat-icon-button matTooltip="{{ 'action.save' | translate }}" (click)="save()">
-                                <mat-icon>
-                                    @if (isSubmitting()) {
-                                        <mat-spinner diameter="20"></mat-spinner>
-                                    } @else {
-                                        save
-                                    }
-                                </mat-icon>
-                            </button>
-                            <button mat-icon-button (click)="closeDialog()"  matTooltip="{{ 'action.close' | translate }}">
-                                <mat-icon>close</mat-icon>
-                            </button>
-                        </div>
-                    </div>
-                    
-                </mat-card-header>
-                <mat-card-content>
-                    <form [formGroup]="form">
-                        
-                        <div class="flex flex-col md:flex-row">
-                            <div class="flex flex-col">
-                                <div class="flex flex-row gap-2">
-                                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
-                                        <mat-icon>work</mat-icon>
-                                    </div>
-                                    <mat-form-field class="w-full">
-                                        <mat-label>Workspace</mat-label>
-                                        <input matInput placeholder="Workspace" formControlName="workspaceId"/>
-                                    </mat-form-field>
-                                </div>
-                                <div class="flex flex-row gap-2">
-                                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
-                                        <mat-icon>location_on</mat-icon>
-                                    </div>
-                                    <mat-form-field class="w-full">
-                                        <mat-label>Room</mat-label>
-                                        <input matInput placeholder="Room" formControlName="roomId"/>
-                                    </mat-form-field>
-                                </div>
-                                
-                                <div class="flex flex-row gap-2">
-                                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
-                                        <mat-icon>schedule</mat-icon>
-                                    </div>
-                                    <mat-form-field  [hideRequiredMarker]="true" class="w-40">
-                                        <mat-label>Start date</mat-label>
-                                        <input matInput [matDatepicker]="startDate" formControlName="startDate">
-                                        <mat-datepicker-toggle matIconSuffix [for]="startDate"></mat-datepicker-toggle>
-                                        <mat-datepicker #startDate></mat-datepicker>
-                                    </mat-form-field>
-                                    
-                                    <mat-form-field class="w-32">
-                                        <mat-label>Start time</mat-label>
-                                        <input matInput [matTimepicker]="startTime" formControlName="startDate">
-                                        <mat-timepicker #startTime interval="5m" />
-                                        <mat-timepicker-toggle [for]="startTime" matSuffix />
-                                    </mat-form-field>
-                                    
-                                    <span class="dark:text-white text-4xl pt-2">-</span>
-                                    
-                                    <mat-form-field  [hideRequiredMarker]="true" class="w-40">
-                                        <mat-label>End date</mat-label>
-                                        <input matInput [matDatepicker]="endDate" formControlName="endDate">
-                                        <mat-datepicker-toggle matIconSuffix [for]="endDate"></mat-datepicker-toggle>
-                                        <mat-datepicker #endDate></mat-datepicker>
-                                    </mat-form-field>
-                                    
-                                    <mat-form-field class="w-32">
-                                        <mat-label>End time</mat-label>
-                                        <input matInput [matTimepicker]="endTime" formControlName="endDate">
-                                        <mat-timepicker #endTime interval="5m" />
-                                        <mat-timepicker-toggle [for]="endTime" matSuffix />
-                                    </mat-form-field>
-                                </div>
-                                <div class="flex flex-row gap-2">
-                                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
-                                        <mat-icon>notes</mat-icon>
-                                    </div>                            
-                                    <mat-form-field class="w-full">
-                                        <mat-label>Description</mat-label>
-                                        <textarea class="!resize-none h-full min-h-24" matInput placeholder="Description" formControlName="description"></textarea>
-                                    </mat-form-field>
-                                </div>
                             </div>
-                            <div class="flex flex-col gap-2 md:pl-2">
-                                <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true"    >
-                                    <mat-expansion-panel-header>
-                                        <mat-panel-title class="gap-2"> 
-                                            <mat-icon>
-                                                group
-                                            </mat-icon>
-                                            <span>
-                                                {{ "member.title" | translate }} 
-                                            </span>
-                                        </mat-panel-title>
-                                    </mat-expansion-panel-header>
-                                    <div class="flex flex-col overflow-scroll max-h-32">
-                                        @for (p of event()?.users; track p.id) {
-                                            <span>{{ p.firstName }} {{ p.lastName }}</span>
-                                        } @empty {
-                                            <span>{{ "member.empty" | translate }}</span>
-                                        }
-                                    </div>
-                                </mat-expansion-panel>
-                                
-                                <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
-                                    <mat-expansion-panel-header>
-                                        <mat-panel-title class="gap-2"> 
-                                            <mat-icon>
-                                                group
-                                            </mat-icon>
-                                            <span>
-                                                {{ "participant.title" | translate }} 
-                                            </span>
-                                        </mat-panel-title>
-                                    </mat-expansion-panel-header>
-                                    <div class="flex flex-col overflow-scroll max-h-32">
-                                        @for (p of event()?.participants; track p.id) {
-                                            <span>{{ p.firstName }} {{ p.lastName }}</span>
-                                        } @empty {
-                                            <span>{{ "participant.empty" | translate }}</span>
-                                        }
-                                    </div>
-                                </mat-expansion-panel>
+                        </mat-expansion-panel>
+
+                        <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title class="gap-2">
+                                    <mat-icon>
+                                        group
+                                    </mat-icon>
+                                    <span>
+                                        {{ "participant.title" | translate }}
+                                    </span>
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <div class="flex flex-col overflow-scroll max-h-32">
+                                @for (p of event()?.participants; track p.id) {
+                                <span>{{ p.firstName }} {{ p.lastName }}</span>
+                                } @empty {
+                                <span>{{ "participant.empty" | translate }}</span>
+                                }
                             </div>
-                        </div>
-                    </form>
-                </mat-card-content>
-            </form>
-            } @else {
-                <mat-card-header>
-                    <div class="flex flex-row justify-between w-full pb-2 pl-8">
-                        <div class="flex flex-row">
-                            <mat-chip> 
-                                <span class="dark:text-white">{{ event()?.eventCategory?.name }}</span>
-                        </mat-chip>
-                        <mat-chip-set aria-label="Tags">
-                        @for (tag of event()?.tags; track tag.id) {
-                            <mat-chip color="{{ tag.color }}">{{ tag.name }}</mat-chip>
-                        }
-                        </mat-chip-set>    
-                    </div>
-                    <div class="flex flex-row">
-                        <button mat-icon-button (click)="toggleEditMode()"  matTooltip="{{ 'action.edit' | translate }}">
-                            <mat-icon>edit</mat-icon>
-                        </button>
-                        <button mat-icon-button (click)="closeDialog()"  matTooltip="{{ 'action.close' | translate }}">
-                            <mat-icon>close</mat-icon>
-                        </button>
+                        </mat-expansion-panel>
                     </div>
                 </div>
-                  
-            </mat-card-header>
-            <mat-card-content>
-    
-                    <div class="flex flex-col md:flex-row w-full">
-                        <div class="flex flex-col gap-5 w-full">
-                            <div class="flex flex-row gap-2">
-                                <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
-                                    <mat-icon>work</mat-icon>
-                                </div>
-                                <div class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-full border-b border-white pl-4 rounded-t-[4px]">
-                                    <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">
-                                        {{ "workspace.title" | translate }}
-                                    </span>
-                                    <span class="dark:text-white" >{{ event()?.workspace?.name }}</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-row gap-2">
-                                <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
-                                    <mat-icon>location_on</mat-icon>
-                                </div>
-                                <div class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-full border-b border-white pl-4 rounded-t-[4px]">
-                                    <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{ "room.title" | translate }}</span>
-                                    <span class="dark:text-white">{{ event()?.room?.name }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="flex flex-row gap-2 w-full">   
-                                <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
-                                    <mat-icon>schedule</mat-icon>
-                                </div>
-                                <div class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-40 border-b border-white pl-4 rounded-t-[4px]">
-                                    <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{ "form.startDate" | translate }}</span>
-                                    <span class="dark:text-white">{{ event()?.startDate | date: 'longDate':"":currentLocal() }}</span>
-                                </div>
-                                <div class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-32 border-b border-white pl-4 rounded-t-[4px]">
-                                    <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{ "form.startTime" | translate }}</span>
-                                    <span class="dark:text-white">{{ event()?.startDate | date: 'shortTime':"":currentLocal() }}</span>
-                                </div>
-                                <span class="dark:text-white text-4xl pt-2">-</span>
-                                <div class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-40 border-b border-white pl-4 rounded-t-[4px]">
-                                    <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{ "form.endDate" | translate }}</span>
-                                    <span class="dark:text-white">{{ event()?.endDate | date: 'longDate':"":currentLocal() }}</span>
-                                </div>
-                                <div class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-32 border-b border-white pl-4 rounded-t-[4px]">
-                                    <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{ "form.endTime" | translate }}</span>
-                                    <span class="dark:text-white">{{ event()?.endDate | date: 'shortTime':"":currentLocal() }}</span>
-                                </div>
-                            </div>
-                        
-                            
-                            <div class="flex flex-row gap-2 pb-5">
-                                <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
-                                    <mat-icon>notes</mat-icon>
-                                </div>
-                                <p class="bg-[--mdc-filled-text-field-container-color] w-full min-h-32 h-full border-b border-white pl-4 rounded-t-[4px]">
-                                    {{ event()?.description}}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-2 md:pl-2">
-                            <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true"    >
-                                <mat-expansion-panel-header>
-                                    <mat-panel-title class="gap-2"> 
-                                        <mat-icon>
-                                            group
-                                        </mat-icon>
-                                        <span>
-                                            {{ "member.title" | translate }} 
-                                        </span>
-                                        </mat-panel-title>
-                                </mat-expansion-panel-header>
-                                <div class="flex flex-col overflow-scroll max-h-32">
-                                    @for (p of event()?.users; track p.id) {
-                                    <span>{{ p.firstName }} {{ p.lastName }}</span>
-                                    } @empty {
-                                    <span>{{ "member.empty" | translate }}</span>
-                                    }
-                                </div>
-                            </mat-expansion-panel>
-    
-                            <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
-                                <mat-expansion-panel-header>
-                                    <mat-panel-title class="gap-2"> 
-                                        <mat-icon>
-                                            group
-                                        </mat-icon>
-                                        <span>
-                                            {{ "participant.title" | translate }} 
-                                        </span>
-                                        </mat-panel-title>
-                                </mat-expansion-panel-header>
-                                <div class="flex flex-col overflow-scroll max-h-32">
-                                    @for (p of event()?.participants; track p.id) {
-                                    <span>{{ p.firstName }} {{ p.lastName }}</span>
-                                    } @empty {
-                                    <span>{{ "participant.empty" | translate }}</span>
-                                    }
-                                </div>
-                            </mat-expansion-panel>
+            </form>
+        </mat-card-content>
+    </form>
+    } @else {
+    <mat-card-header>
+        <div class="flex flex-row justify-end w-full pb-2 pl-8">
+
+            <div class="flex flex-row">
+                <button mat-icon-button (click)="toggleEditMode()" matTooltip="{{ 'action.edit' | translate }}">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="closeDialog()" matTooltip="{{ 'action.close' | translate }}">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+        </div>
+
+    </mat-card-header>
+    <mat-card-content>
+
+        <div class="flex flex-col md:flex-row w-full">
+            <div class="flex flex-col gap-5 w-full">
+                <div class="flex flex-row gap-2">
+                    <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
+                        <mat-icon>work</mat-icon>
+                    </div>
+                    <div
+                        class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-full border-b border-white pl-4 rounded-t-[4px]">
+                        <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">
+                            {{ "workspace.title" | translate }}
+                        </span>
+                        <span class="dark:text-white">{{ event()?.workspace?.name }}</span>
+                    </div>
+                </div>
+                <div class="flex flex-row gap-2">
+                    <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
+                        <mat-icon>category</mat-icon>
+                    </div>
+                    <div
+                        class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-full border-b border-white pl-4 rounded-t-[4px]">
+                        <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">
+                            {{ "event-category.title" | translate }}
+                        </span>
+                        <span class="dark:text-white">{{ event()?.eventCategory?.name }}</span>
+                    </div>
+                </div>
+                <div class="flex flex-row gap-2">
+                    <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
+                        <mat-icon>sell</mat-icon>
+                    </div>
+                    <div
+                        class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-full border-b border-white pl-4 rounded-t-[4px]">
+                        <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">
+                            {{ "tag.title" | translate }}
+                        </span>
+                        <div class="flex flex-row">
+                            @for (tag of event()?.tags; track tag.id) {
+                            <span class="dark:text-white">{{ tag.name}}</span>
+                            }
                         </div>
                     </div>
-            </mat-card-content>
-        }
+                </div>
+
+
+
+                <div class="flex flex-row gap-2 w-full">
+                    <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
+                        <mat-icon>schedule</mat-icon>
+                    </div>
+                    <div
+                        class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-40 border-b border-white pl-4 rounded-t-[4px]">
+                        <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
+                            "form.startDate" | translate }}</span>
+                        <span class="dark:text-white">{{ event()?.startDate | date: 'longDate':"":currentLocal()
+                            }}</span>
+                    </div>
+                    <div
+                        class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-32 border-b border-white pl-4 rounded-t-[4px]">
+                        <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
+                            "form.startTime" | translate }}</span>
+                        <span class="dark:text-white">{{ event()?.startDate | date: 'shortTime':"":currentLocal()
+                            }}</span>
+                    </div>
+                    <span class="dark:text-white text-4xl pt-2">-</span>
+                    <div
+                        class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-40 border-b border-white pl-4 rounded-t-[4px]">
+                        <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
+                            "form.endDate" | translate }}</span>
+                        <span class="dark:text-white">{{ event()?.endDate | date: 'longDate':"":currentLocal() }}</span>
+                    </div>
+                    <div
+                        class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-32 border-b border-white pl-4 rounded-t-[4px]">
+                        <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
+                            "form.endTime" | translate }}</span>
+                        <span class="dark:text-white">{{ event()?.endDate | date: 'shortTime':"":currentLocal()
+                            }}</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-row gap-2">
+                    <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
+                        <mat-icon>location_on</mat-icon>
+                    </div>
+                    <div
+                        class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-full border-b border-white pl-4 rounded-t-[4px]">
+                        <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
+                            "room.title" | translate }}</span>
+                        <span class="dark:text-white">{{ event()?.room?.name }}</span>
+                    </div>
+                </div>
+
+
+
+                <div class="flex flex-row gap-2 pb-5">
+                    <div class="pt-4 dark:text-[--mdc-icon-button-icon-color]">
+                        <mat-icon>notes</mat-icon>
+                    </div>
+                    <p
+                        class="bg-[--mdc-filled-text-field-container-color] w-full min-h-32 h-full border-b border-white pl-4 rounded-t-[4px]">
+                        {{ event()?.description}}
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 md:pl-2">
+                <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title class="gap-2">
+                            <mat-icon>
+                                group
+                            </mat-icon>
+                            <span>
+                                {{ "member.title" | translate }}
+                            </span>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <div class="flex flex-col overflow-scroll max-h-32">
+                        @for (p of event()?.users; track p.id) {
+                        <span>{{ p.firstName }} {{ p.lastName }}</span>
+                        } @empty {
+                        <span>{{ "member.empty" | translate }}</span>
+                        }
+                    </div>
+                </mat-expansion-panel>
+
+                <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title class="gap-2">
+                            <mat-icon>
+                                group
+                            </mat-icon>
+                            <span>
+                                {{ "participant.title" | translate }}
+                            </span>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <div class="flex flex-col overflow-scroll max-h-32">
+                        @for (p of event()?.participants; track p.id) {
+                        <span>{{ p.firstName }} {{ p.lastName }}</span>
+                        } @empty {
+                        <span>{{ "participant.empty" | translate }}</span>
+                        }
+                    </div>
+                </mat-expansion-panel>
+            </div>
+        </div>
+    </mat-card-content>
+    }
 
     }
 </mat-card>

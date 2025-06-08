@@ -1,5 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -81,11 +87,16 @@ export class EventDetailsComponent {
   public tags = this.tagService.tagsByWorkspaceId(this.workspaceId);
 
   public tagInput = signal<string>('');
-  public filteredTags = computed(() =>
-    this.tags().filter((tag) =>
-      tag.name.toLowerCase().includes(this.tagInput().trim().toLowerCase())
-    )
-  );
+  public filteredTags = computed(() => {
+    return this.tags().filter(
+      (tag) =>
+        tag.name.toLowerCase().includes(this.tagInput().trim().toLowerCase()) &&
+        !this.selectedTags()
+          .map((st) => st.id)
+          .includes(tag.id)
+    );
+  });
+  public selectedTags = linkedSignal<Tag[]>(() => this.event()?.tags ?? []);
 
   public rooms = this.roomService.roomsByWorkspaceId(this.workspaceId);
   public workspaces = this.workspaceService.workspaces();
@@ -184,10 +195,13 @@ export class EventDetailsComponent {
     { validators: [isFutureDate] }
   );
 
-  public remove(tag: Tag): void {}
+  public remove(tag: Tag): void {
+    this.selectedTags.update((tags) => tags.filter((t) => t.id !== tag.id));
+  }
 
   public selected(event: MatAutocompleteSelectedEvent): void {
-    event.option.deselect();
+    this.selectedTags.update((tags) => [...tags, event.option.value]);
+    // event.option.();
   }
 
   public closeDialog(): void {
@@ -200,7 +214,7 @@ export class EventDetailsComponent {
       .getById(this.eventId)
       .subscribe(() => this.isLoading.set(false));
 
-    this.form.controls.tagIds.valueChanges.subscribe(() => {
+    this.form.valueChanges.subscribe(() => {
       const ctrl = this.form.controls.tagIds;
       if (ctrl.touched) {
         this.isLoadingTags.set(true);
@@ -227,6 +241,8 @@ export class EventDetailsComponent {
       this.toggleEditMode();
     }, 200);
   }
+
+  public submit() {}
 
   public delete() {}
 

@@ -5,14 +5,12 @@ import { Entity, Id } from '../../../shared/models/entity';
 export interface ParticipantCategoryRequest {
   name: string;
   color: string;
-  icon: string;
   description?: string;
 }
 
 export interface ParticipantCategoryForm {
   name: FormControl<string>;
   color: FormControl<string>;
-  icon: FormControl<string>;
   description: FormControl<string | undefined>;
 }
 
@@ -23,7 +21,6 @@ interface ParticipantCategoryRelations {
 type BaseParticipantCategory = {
   name: string;
   color: string;
-  icon: string;
   description?: string;
   workspaceId: Id;
 } & Entity;
@@ -35,6 +32,5 @@ export const UNKNOWN_PARTICIPANTCATEGORY: ParticipantCategory = {
   id: '',
   name: 'Unknown Category',
   color: '',
-  icon: '',
   workspaceId: '',
 };

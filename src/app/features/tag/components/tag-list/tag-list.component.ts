@@ -57,7 +57,6 @@ export class TagListComponent {
   public displayedColumns: string[] = [
     'name',
     'color',
-    'icon',
     'description',
     'action',
   ];

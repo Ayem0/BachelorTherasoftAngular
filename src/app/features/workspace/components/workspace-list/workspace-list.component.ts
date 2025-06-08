@@ -67,7 +67,12 @@ export class WorkspaceListComponent implements OnInit, AfterViewInit {
   public search = new FormControl('');
   public isLoading = signal(false);
   public dataSource = new MatTableDataSource<Workspace>([]);
-  public displayedColumns: string[] = ['name', 'description', 'action'];
+  public displayedColumns: string[] = [
+    'name',
+    'color',
+    'description',
+    'action',
+  ];
   public workspaces = this.workspaceService.workspaces();
 
   constructor() {

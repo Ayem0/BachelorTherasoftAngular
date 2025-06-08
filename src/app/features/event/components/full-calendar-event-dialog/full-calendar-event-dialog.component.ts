@@ -340,7 +340,7 @@ export class FullCalendarEventDialogComponent implements OnInit {
     if (this.form.valid) {
       const req = this.form.getRawValue();
       console.log(req);
-      this.eventService.createEvent(req).subscribe((res) => {
+      this.eventService.createEvent({ ...req, tagIds: [] }).subscribe((res) => {
         // TODO a changer par is assign to me si oui return true pour dire de refetch
         if (res) {
           this.matDialogRef.close(res);

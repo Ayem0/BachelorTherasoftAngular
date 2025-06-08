@@ -16,6 +16,7 @@ interface workspaceRelationsOptions {
 
 type BaseWorkspace = {
   name: string;
+  color: string;
   description?: string;
 } & Entity;
 
@@ -26,15 +27,18 @@ export type StoreWorkspace = BaseWorkspace;
 
 export interface WorkspaceRequest {
   name: string;
+  color: string;
   description?: string;
 }
 
 export interface WorkspaceForm {
   name: FormControl<string>;
+  color: FormControl<string>;
   description: FormControl<string | undefined>;
 }
 
 export const UNKNOW_WORKSPACE: Workspace = {
   id: '',
   name: 'Unknow Workspace',
+  color: '#000000',
 };

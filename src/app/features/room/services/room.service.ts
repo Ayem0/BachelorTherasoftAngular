@@ -110,6 +110,11 @@ export class RoomService {
         map((room) => {
           this.store.setEntity('rooms', room);
           this.store.addToRelation('areasRooms', areaId, room.id);
+          this.store.addToRelation(
+            'workspacesRooms',
+            room.workspaceId,
+            room.id
+          );
           this.sonner.success(this.locale.translate('room.create.success'));
           return true;
         }),

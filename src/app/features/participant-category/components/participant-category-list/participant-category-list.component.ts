@@ -60,7 +60,6 @@ export class ParticipantCategoryListComponent {
   public displayedColumns: string[] = [
     'name',
     'color',
-    'icon',
     'description',
     'action',
   ];
