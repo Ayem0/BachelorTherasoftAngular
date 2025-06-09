@@ -3,13 +3,13 @@
     <mat-spinner diameter="24"></mat-spinner>
 </div>
 } @else {
-<div class="h-96 overflow-y-scroll overflow-x-hidden flex-col">
+<div class="h-96 overflow-y-auto overflow-x-hidden flex-col">
     @for (item of invitationsReceived(); track item.id) {
-        <app-invitation [invitation]="item"></app-invitation>
+    <app-invitation [invitation]="item"></app-invitation>
     } @empty {
-        <div class="flex h-full items-center justify-center">
-            <p>No invitations</p>
-        </div>
+    <div class="flex h-full items-center justify-center">
+        <p>No invitations</p>
+    </div>
     }
 </div>
 }

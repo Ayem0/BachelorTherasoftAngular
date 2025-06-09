@@ -55,7 +55,7 @@ export class ParticipantListComponent {
   public isLoading = signal(false);
   public search = new FormControl('');
   public participants = this.participantService.participantsByWorkspaceId(
-    this.workspaceId()
+    this.workspaceId
   );
   public dataSource = new MatTableDataSource<Participant>([]);
   public displayedColumns: string[] = [

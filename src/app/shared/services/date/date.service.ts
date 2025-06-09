@@ -28,8 +28,13 @@ export class DateService {
     return dayjs(date).subtract(amount, unit).toDate();
   }
 
-  public toUtc(date: Date) {
-    return dayjs(date).tz(this.tz()).toDate();
+  public toFakeUtc(date: Date): Date {
+    const offsetMs = date.getTimezoneOffset() * 60_000;
+    return new Date(date.getTime() - offsetMs);
+  }
+
+  public localeToUtc(date: Date | string) {
+    return dayjs.tz(date, this.tz()).utc().toDate();
   }
 
   public toLocale(date: Date) {
@@ -45,5 +50,14 @@ export class DateService {
 
   public format(date: Date, format: string) {
     return dayjs(date).format(format);
+  }
+
+  public diffInDays(date1: Date, date2: Date) {
+    const diff = dayjs(date2).diff(date1, 'day');
+    if (diff < 1) return 1;
+    console.log(date1, date2, diff);
+    const date1time = date1.getHours() * 60 + date1.getMinutes();
+    const date2time = date2.getHours() * 60 + date2.getMinutes();
+    return date1time < date2time ? diff + 1 : diff;
   }
 }

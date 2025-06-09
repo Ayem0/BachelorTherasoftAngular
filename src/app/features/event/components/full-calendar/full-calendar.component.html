@@ -14,7 +14,8 @@
                     <mat-expansion-panel-header>
                         <mat-panel-title> {{ "workspace.title" | translate }} </mat-panel-title>
                     </mat-expansion-panel-header>
-                    <mat-selection-list [(ngModel)]="selectedWorkspaceIds" #list>
+                    <mat-selection-list [(ngModel)]="selectedWorkspaceIds" #list
+                        (selectionChange)="selectionChange($event)">
                         @if (isLoadingWorkspaces()) {
                         <mat-spinner diameter="24"></mat-spinner>
                         }
@@ -62,7 +63,8 @@
                     </button>
                     <mat-menu #calendarSettings>
                         <button mat-menu-item aria-label="French" aria-label="French">
-                            <mat-slide-toggle [(ngModel)]="showWeekend" (click)="$event.stopPropagation()">{{
+                            <mat-slide-toggle [(ngModel)]="showWeekend" (change)="showWeekendChange($event)"
+                                (click)="$event.stopPropagation()">{{
                                 "calendar.weekends" | translate }}</mat-slide-toggle>
                         </button>
                     </mat-menu>

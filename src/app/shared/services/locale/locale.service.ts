@@ -34,8 +34,8 @@ export class LocaleService {
   );
   public readonly currentTz = signal('');
 
-  public localeOffsetName = computed(() =>
-    dayjs(new Date()).tz(this.currentTz()).offsetName()
+  public localeOffsetName = computed(
+    () => dayjs(new Date()).tz(this.currentTz()).offsetName() ?? ''
   );
 
   public currentTz$ = toObservable(this.currentTz);

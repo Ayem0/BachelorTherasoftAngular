@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +9,14 @@ export class AgendaService {
   private showWeekendsKey = 'calendarShowWeekends';
 
   public isSideBarOpen = signal<boolean>(this.getSideBarOpenFromLocalstorage());
-  public showWeekends = signal<boolean>(this.getShowWeekendsFromLocalstorage());
+  public showWeekend = signal<boolean>(this.getShowWeekendsFromLocalstorage());
+  public showWeekendObs = toObservable(this.showWeekend);
+
+  public weekEndFilter = (d: Date | null): boolean => {
+    if (this.showWeekend()) return true;
+    const day = (d || new Date()).getDay();
+    return day !== 0 && day !== 6;
+  };
 
   public setSideBarOpen(isOpen: boolean) {
     this.isSideBarOpen.set(isOpen);
@@ -25,7 +33,7 @@ export class AgendaService {
   }
 
   public setShowWeekends(showWeekends: boolean) {
-    this.showWeekends.set(showWeekends);
+    this.showWeekend.set(showWeekends);
     localStorage.setItem(this.showWeekendsKey, showWeekends.toString());
   }
 

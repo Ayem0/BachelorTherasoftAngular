@@ -1,7 +1,13 @@
 import { FormControl } from '@angular/forms';
+import { User } from '../../../core/auth/models/auth';
 import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
 import { Entity, Id } from '../../../shared/models/entity';
 import { Interval } from '../../../shared/models/interval';
+import { EventCategory } from '../../event-category/models/event-category';
+import { Participant } from '../../participant/models/participant';
+import { Room } from '../../room/models/room';
+import { Tag } from '../../tag/models/tag';
+import { Workspace } from '../../workspace/models/workspace';
 
 interface EventRelations {
   users?: unknown;
@@ -49,12 +55,12 @@ export interface EventRequestForm {
   description: FormControl<string | undefined>;
   startDate: FormControl<Date>;
   endDate: FormControl<Date>;
-  eventCategoryId: FormControl<string>;
-  workspaceId: FormControl<string>;
-  roomId: FormControl<string>;
-  tagIds: FormControl<string[]>;
-  participantIds: FormControl<string[]>;
-  userIds: FormControl<string[]>;
+  eventCategory: FormControl<EventCategory | string>;
+  workspace: FormControl<Workspace | string>;
+  room: FormControl<Room | string>;
+  tags: FormControl<Tag[]>;
+  participants: FormControl<Participant[]>;
+  users: FormControl<User[]>;
   repetitionInterval: FormControl<Interval | undefined>;
   repetitionNumber: FormControl<number | undefined>;
   repetitionEndDate: FormControl<Date | undefined>;

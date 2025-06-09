@@ -18,13 +18,18 @@ import {
   MatFormFieldModule,
 } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
-import { MatListModule, MatSelectionList } from '@angular/material/list';
+import {
+  MatListModule,
+  MatSelectionList,
+  MatSelectionListChange,
+} from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import {
   MatSlideToggle,
+  MatSlideToggleChange,
   MatSlideToggleModule,
 } from '@angular/material/slide-toggle';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -61,7 +66,7 @@ import { Event } from '../../models/event';
 import { AgendaService } from '../../services/agenda.service';
 import { EventService } from '../../services/event.service';
 import { EventDetailsComponent } from '../event-details/event-details.component';
-import { FullCalendarEventDialogComponent } from '../full-calendar-event-dialog/full-calendar-event-dialog.component';
+// import { FullCalendarEventDialogComponent } from '../full-calendar-event-dialog/full-calendar-event-dialog.component';
 import { SmallCalendarHeaderComponent } from '../small-calendar-header/small-calendar-header.component';
 @Component({
   selector: 'app-calendar',
@@ -110,6 +115,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   private readonly sidebar = viewChild.required(MatSidenav);
   private readonly viewModeSelect = viewChild.required(MatSelect);
   private readonly weekendToggle = viewChild.required(MatSlideToggle);
+
   private readonly matCalendar = viewChild.required(MatCalendar<Date>);
   private readonly matList = viewChild.required(MatSelectionList);
 
@@ -122,7 +128,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   public selectedWorkspaceIds = signal<string[]>([]);
 
   public isSideBarOpen = this.agendaService.isSideBarOpen;
-  public showWeekend = this.agendaService.showWeekends;
+  public showWeekend = this.agendaService.showWeekend;
   public viewMode = signal<ViewMode>(
     this.toViewMode(this.route.snapshot.queryParamMap.get('view'))
   );
@@ -138,10 +144,8 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
 
   private events = this.eventService.agendaEvents(this.selectedRange);
   private filteredEvents = computed(() =>
-    this.toEventInput(
-      this.events().filter((x) =>
-        this.selectedWorkspaceIds().includes(x.workspace.id)
-      )
+    this.events().filter((x) =>
+      this.selectedWorkspaceIds().includes(x.workspace.id)
     )
   );
 
@@ -188,7 +192,6 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     events: this.fetch.bind(this),
     windowResize: this.autoResize.bind(this),
     datesSet: this.onDatesSet.bind(this),
-    schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
   };
 
   // for debouctime time
@@ -245,13 +248,9 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       title: event.eventCategory.name,
       start: this.date.toLocaleString(event.startDate),
       end: this.date.toLocaleString(event.endDate),
-      color: event.workspace.color,
-      classNames: [
-        '!shadow-none',
-        'border-0',
-        'border-l-8',
-        `!border-[${event.eventCategory.color}]`,
-      ],
+      color: event.eventCategory.color,
+      backgroundColor: event.workspace.color,
+      classNames: ['!shadow-none', 'border-0', 'border-l-8'],
       extendedProps: {
         event: event,
       },
@@ -269,7 +268,6 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     successCallback: (eventInputs: EventInput[]) => void,
     failureCallback: (error: Error) => void
   ) {
-    console.log('FETCHING');
     this.subject.next(successCallback);
   }
 
@@ -304,7 +302,12 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
               start: this.selectedRange().start,
               end: this.selectedRange().end,
             })
-            .pipe(tap(() => fn(this.filteredEvents())))
+            .pipe(
+              tap(() => {
+                // console.log(this.filteredEvents());
+                fn(this.toEventInput(this.filteredEvents()));
+              })
+            )
         )
       )
       .subscribe();
@@ -320,24 +323,14 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
 
       this.setViewModeToParams();
     });
+  }
 
-    this.weekendToggle().change.subscribe((x) => {
-      this.agendaService.setShowWeekends(x.checked);
-      this.calendarApi().setOption('weekends', x.checked);
-      this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
-      this.matCalendar().activeDate = this.selectedDate();
-      this.matCalendar().updateTodaysDate();
-    });
-
-    this.matList().selectionChange.subscribe(() => {
-      this.calendarApi().refetchEvents();
-    });
+  selectionChange(event: MatSelectionListChange) {
+    this.calendarApi().refetchEvents();
   }
 
   private toClosestWeekDay(date: Date): Date {
-    if (this.showWeekend()) {
-      return date;
-    }
+    if (this.showWeekend()) return date;
     if (this.viewMode() === 'timeGridDay') {
       if (date.getDay() === 0 || date.getDay() === 6) {
         return this.date.incrementDate(
@@ -360,9 +353,19 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
 
   public ngAfterViewInit(): void {
     this.locale.currentLang$.subscribe(() => this.setLocale());
-    this.locale.currentTz$.subscribe(() =>
-      this.calendarApi().setOption('timeZone', this.locale.currentTz())
-    );
+    this.locale.currentTz$.subscribe(() => {
+      console.log('LOCALE TZ SUBSCRIBE: ', this.locale.currentTz());
+      this.calendarApi().setOption('timeZone', this.locale.currentTz());
+    });
+    this.agendaService.showWeekendObs.subscribe((x) => {
+      this.calendarApi().setOption('weekends', x);
+      this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
+      this.matCalendar().activeDate = this.selectedDate();
+      this.matCalendar().updateTodaysDate();
+    });
+  }
+  public showWeekendChange(event: MatSlideToggleChange) {
+    this.agendaService.setShowWeekends(event.checked);
   }
 
   private paramToDate(param?: string | null): Date | null {
@@ -374,8 +377,6 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       // build a Date at 00:00 UTC
       const utcMidnight = new Date(Date.UTC(year, month - 1, day));
       console.log(utcMidnight);
-
-      // if you really need a local‐Date object, just return it:
       return utcMidnight;
     } catch (error) {
       return null;
@@ -524,14 +525,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     this.calendarApi().today();
   }
 
-  weekEndFilter = (d: Date | null): boolean => {
-    if (this.showWeekend()) {
-      return true;
-    }
-    const day = (d || new Date()).getDay();
-    // Prevent Saturday and Sunday from being selected.
-    return day !== 0 && day !== 6;
-  };
+  public weekEndFilter = this.agendaService.weekEndFilter;
 
   getCurrentDateInput() {
     const date = new Date();
@@ -542,51 +536,47 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   }
 
   private handleDateSelect(selectInfo: DateSelectArg) {
-    this.calendarApi().unselect(); // clear date selection
-    this.openDialog(undefined, selectInfo.start, selectInfo.end);
+    this.calendarApi().unselect();
+    this.openDialog(
+      undefined,
+      this.date.localeToUtc(selectInfo.start),
+      this.date.localeToUtc(selectInfo.end)
+    );
   }
 
   public openDialog(eventId?: string, start?: Date, end?: Date) {
-    console.log(start, end);
-    if (start) start.setHours(start.getHours() - 2, start.getMinutes(), 0, 0);
-    if (end) end.setHours(end.getHours() - 2, end.getMinutes(), 0, 0);
+    console.log(
+      'OPENING DIALOG',
+      eventId,
+      start,
+      typeof start,
+      end,
+      typeof end
+    );
     this.matDialog
-      .open(FullCalendarEventDialogComponent, {
+      .open(EventDetailsComponent, {
         data: {
           eventId: eventId,
           start: start,
           end: end,
         },
-        maxWidth: 'none',
+        maxWidth: '100%',
         maxHeight: '100%',
-      })
-      .afterClosed()
-      // TODO le transformer en input et tout
-      .subscribe((event) => {
-        console.log(event);
-        if (event) this.calendarApi().refetchEvents();
-      });
-  }
-
-  private handleEventClick(clickInfo: EventClickArg) {
-    this.matDialog
-      .open(EventDetailsComponent, {
-        data: clickInfo.event.id,
-        maxWidth: 'none',
-        width: '',
       })
       .afterClosed()
       .subscribe(() => this.calendarApi().refetchEvents());
   }
 
-  handleEvents(events: EventApi[]) {
-    console.log('EVENTS', events);
+  private handleEventClick(clickInfo: EventClickArg) {
+    this.openDialog(
+      clickInfo.event.id,
+      clickInfo.event.start ?? undefined,
+      clickInfo.event.end ?? undefined
+    );
+  }
 
-    // events.map((event) => ({
-    //   ...event,
-    //   start: event.start?.toUTCString(),
-    //   end:  event.start?.toUTCString(),
-    // }));
+  private handleEvents(events: EventApi[]) {
+    console.log('EVENTS', events);
   }
 
   autoResize(arg: { view: ViewApi }) {

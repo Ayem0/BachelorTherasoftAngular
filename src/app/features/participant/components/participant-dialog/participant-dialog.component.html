@@ -4,7 +4,7 @@
     {{ isUpdate ? "Update Participant " : "Create Participant" }}
   </h2>
   <form [formGroup]="form" class="flex flex-col px-4 pb-4">
-    <div class="h-96 overflow-y-scroll flex flex-col pt-1">
+    <div class="h-96 overflow-y-auto flex flex-col pt-1">
       <mat-form-field appearance="outline" [hideRequiredMarker]="true">
         <mat-label>First name</mat-label>
         <input matInput type="text" placeholder="First name" formControlName="firstName" />

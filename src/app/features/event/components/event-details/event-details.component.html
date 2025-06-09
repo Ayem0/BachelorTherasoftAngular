@@ -1,31 +1,81 @@
-<mat-card>
-    @if (isLoading()) {
-    <mat-card-header>
-        <div class="flex flex-row justify-end w-full">
-            <button mat-icon-button (click)="closeDialog()">
-                <mat-icon>close</mat-icon>
-            </button>
-        </div>
+<div class="flex size-full flex-col p-3">
+    <div class="flex flex-row w-full justify-end">
+        @if (!isFormMode()) {
+        <button mat-icon-button type="button" (click)="toggleEditMode()" matTooltip="{{ 'action.edit' | translate }}">
+            <mat-icon>edit</mat-icon>
+        </button>
+        } @else {
+        @if (isPlannerOpen()) {
+        <button mat-icon-button type="button" (click)="togglePlanner()">
+            <mat-icon>close_fullscreen</mat-icon>
+        </button>
+        }
+        }
+        <button mat-icon-button (click)="closeDialog()" matTooltip="{{ 'action.close' | translate }}">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
 
-    </mat-card-header>
-    <mat-card-content>
-        <mat-spinner diameter="150"></mat-spinner>
-    </mat-card-content>
-    } @else {
-    @if (isEditMode()) {
-    <form [formGroup]="form">
+    @if (isFormMode()) {
+    <form [formGroup]="form" class="flex flex-col flex-grow">
+        <div class="flex size-full flex-col md:flex-row p-2">
+            <div class="flex size-full flex-col gap-5 xl:max-w-2xl">
+                <div class="flex flex-row gap-2">
+                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                        <mat-icon>work</mat-icon>
+                    </div>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>{{ "workspace.name" | translate }}</mat-label>
+                        <input type="text" matInput [formControl]="workspacCtrl" [matAutocomplete]="autoWorkpace">
+                        <mat-autocomplete autoActiveFirstOption #autoWorkpace="matAutocomplete"
+                            [displayWith]="displayFn">
+                            @for (workspace of workspaces(); track workspace.id) {
+                            <mat-option [value]="workspace">{{workspace.name}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
 
-        <mat-card-header>
-            <div class="flex flex-row justify-between w-full pb-2 pl-8">
-                <div class="flex flex-row">
-                    <mat-chip>
-                        <span class="dark:text-white">{{ event()?.eventCategory?.name }}</span>
-                    </mat-chip>
-                    <mat-form-field>
+                <div class="flex flex-row gap-2">
+                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                        <mat-icon>category</mat-icon>
+                    </div>
+
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>{{ "event-category.name" | translate }}</mat-label>
+                        <input type="text" matInput formControlName="eventCategory" [matAutocomplete]="autoEC">
+                        <mat-autocomplete autoActiveFirstOption #autoEC="matAutocomplete" [displayWith]="displayFn">
+                            @for (eventCategory of eventCategories(); track eventCategory.id) {
+                            <mat-option [value]="eventCategory">{{eventCategory.name}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+
+                <div class="flex flex-row gap-2">
+                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                        <mat-icon>location_on</mat-icon>
+                    </div>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>{{ "room.name" | translate }}</mat-label>
+                        <input type="text" matInput [formControl]="form.controls.room" [matAutocomplete]="autoRoom">
+                        <mat-autocomplete autoActiveFirstOption #autoRoom="matAutocomplete" [displayWith]="displayFn">
+                            @for (room of rooms(); track room.id) {
+                            <mat-option [value]="room">{{room.name}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+
+                <div class="flex flex-row gap-2">
+                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                        <mat-icon>sell</mat-icon>
+                    </div>
+                    <mat-form-field appearance="outline" class="w-full">
                         <mat-label>{{ 'tag.title' | translate }}</mat-label>
-                        <mat-chip-grid #chipGrid aria-label="tag selection" formControlName="tagIds">
+                        <mat-chip-grid #tagGrid formControlName="tags">
                             @for (tag of selectedTags(); track tag.id) {
-                            <mat-chip-row (removed)="remove(tag)">
+                            <mat-chip-row (removed)="remove(tag, selectedTags)">
                                 {{tag.name}}
                                 <button matChipRemove>
                                     <mat-icon>cancel</mat-icon>
@@ -33,169 +83,193 @@
                             </mat-chip-row>
                             }
                         </mat-chip-grid>
-                        <input type="text" name="currentTag" placeholder="{{ 'tag.title' | translate }}"
-                            [matChipInputFor]="chipGrid" [matAutocomplete]="auto" />
-                        <mat-autocomplete #auto (optionSelected)="selected($event)">
+                        <input type="text" name="currentTag" placeholder="{{ 'action.add' | translate }}"
+                            [matChipInputFor]="tagGrid" [matAutocomplete]="autoTags" />
+                        <mat-autocomplete #autoTags (optionSelected)="selected($event, selectedTags)">
                             @for (tag of filteredTags(); track tag.id) {
                             <mat-option [value]="tag">{{tag.name}}</mat-option>
                             }
                         </mat-autocomplete>
                     </mat-form-field>
                 </div>
-                <div class="flex flex-row">
-                    <button mat-icon-button (click)="cancel()" matTooltip="{{ 'action.cancel' | translate }}">
-                        <mat-icon>undo</mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="delete()" matTooltip="{{ 'action.delete' | translate }}">
-                        <mat-icon>delete</mat-icon>
-                    </button>
-                    <button mat-icon-button matTooltip="{{ 'action.save' | translate }}" (click)="save()">
-                        <mat-icon>
-                            @if (isSubmitting()) {
-                            <mat-spinner diameter="20"></mat-spinner>
-                            } @else {
-                            save
-                            }
-                        </mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="closeDialog()" matTooltip="{{ 'action.close' | translate }}">
-                        <mat-icon>close</mat-icon>
-                    </button>
+
+                <div class="flex flex-row gap-2">
+                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                        <mat-icon>schedule</mat-icon>
+                    </div>
+
+                    <mat-form-field appearance="outline" [hideRequiredMarker]="true" class="w-40">
+                        <mat-label>Start date</mat-label>
+                        <input matInput [matDatepicker]="startDate" formControlName="startDate"
+                            [matDatepickerFilter]="weekendFilter" (dateChange)="dateChanged($event, 'start')">
+                        <mat-datepicker-toggle matIconSuffix [for]="startDate"></mat-datepicker-toggle>
+                        <mat-datepicker #startDate></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-32">
+                        <mat-label>Start time</mat-label>
+                        <input matInput [matTimepicker]="startTime" formControlName="startDate">
+                        <mat-timepicker #startTime interval="5m" />
+                        <mat-timepicker-toggle [for]="startTime" matSuffix />
+                    </mat-form-field>
+
+                    <span class="dark:text-white text-4xl pt-2">-</span>
+
+                    <mat-form-field appearance="outline" [hideRequiredMarker]="true" class="w-40">
+                        <mat-label>End date</mat-label>
+                        <input matInput [matDatepicker]="endDate" formControlName="endDate"
+                            [matDatepickerFilter]="weekendFilter" (dateChange)="dateChanged($event, 'end')">
+                        <mat-datepicker-toggle matIconSuffix [for]="endDate"></mat-datepicker-toggle>
+                        <mat-datepicker #endDate></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-32">
+                        <mat-label>End time</mat-label>
+                        <input matInput [matTimepicker]="endTime" formControlName="endDate">
+                        <mat-timepicker #endTime interval="5m" />
+                        <mat-timepicker-toggle [for]="endTime" matSuffix />
+                    </mat-form-field>
+                </div>
+
+                <div class="flex flex-row gap-2">
+                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                        <mat-icon>event_repeat</mat-icon>
+                    </div>
+                    <div>TODO</div>
+                </div>
+                <div class="flex h-full flex-row gap-2">
+                    <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
+                        <mat-icon>notes</mat-icon>
+                    </div>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Description</mat-label>
+                        <textarea class="!resize-none h-full min-h-24" matInput placeholder="Description"
+                            formControlName="description"></textarea>
+                    </mat-form-field>
                 </div>
             </div>
+            <div class="flex size-full flex-col gap-2 md:pl-2 xl:w-64">
+                <button mat-flat-button type="button" class="mx-3">Assign to me</button>
+                <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title class="gap-2">
+                            <mat-icon>
+                                group
+                            </mat-icon>
+                            <span>
+                                {{ "member.title" | translate }}
+                            </span>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
 
-        </mat-card-header>
-        <mat-card-content>
-            <form [formGroup]="form">
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>{{ "member.title" | translate }}</mat-label>
+                        <mat-chip-grid #userGrid formControlName="users">
+                            @for (user of selectedUsers(); track user.id) {
+                            <mat-chip-row class="!w-full" (removed)="remove(user, selectedUsers)">
+                                {{user.firstName}} {{user.lastName}}
+                                <button matChipRemove>
+                                    <mat-icon>cancel</mat-icon>
+                                </button>
+                            </mat-chip-row>
+                            }
+                        </mat-chip-grid>
+                        <input type="text" placeholder="{{ 'action.add' | translate }}" [matChipInputFor]="userGrid"
+                            [matAutocomplete]="autoUsers" />
+                        <mat-autocomplete #autoUsers (optionSelected)="selected($event, selectedUsers)">
+                            @for (user of filteredUsers(); track user.id) {
+                            <mat-option [value]="user">{{user.firstName}}
+                                {{user.lastName}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </mat-expansion-panel>
 
-                <div class="flex flex-col md:flex-row">
-                    <div class="flex flex-col">
-                        <div class="flex flex-row gap-2">
-                            <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
-                                <mat-icon>work</mat-icon>
-                            </div>
-                            <mat-form-field class="w-full">
-                                <mat-label>Workspace</mat-label>
-                                <input matInput placeholder="Workspace" formControlName="workspaceId" />
-                            </mat-form-field>
-                        </div>
-                        <div class="flex flex-row gap-2">
-                            <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
-                                <mat-icon>location_on</mat-icon>
-                            </div>
-                            <mat-form-field class="w-full">
-                                <mat-label>Room</mat-label>
-                                <input matInput placeholder="Room" formControlName="roomId" />
-                            </mat-form-field>
-                        </div>
-
-                        <div class="flex flex-row gap-2">
-                            <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
-                                <mat-icon>schedule</mat-icon>
-                            </div>
-                            <mat-form-field [hideRequiredMarker]="true" class="w-40">
-                                <mat-label>Start date</mat-label>
-                                <input matInput [matDatepicker]="startDate" formControlName="startDate">
-                                <mat-datepicker-toggle matIconSuffix [for]="startDate"></mat-datepicker-toggle>
-                                <mat-datepicker #startDate></mat-datepicker>
-                            </mat-form-field>
-
-                            <mat-form-field class="w-32">
-                                <mat-label>Start time</mat-label>
-                                <input matInput [matTimepicker]="startTime" formControlName="startDate">
-                                <mat-timepicker #startTime interval="5m" />
-                                <mat-timepicker-toggle [for]="startTime" matSuffix />
-                            </mat-form-field>
-
-                            <span class="dark:text-white text-4xl pt-2">-</span>
-
-                            <mat-form-field [hideRequiredMarker]="true" class="w-40">
-                                <mat-label>End date</mat-label>
-                                <input matInput [matDatepicker]="endDate" formControlName="endDate">
-                                <mat-datepicker-toggle matIconSuffix [for]="endDate"></mat-datepicker-toggle>
-                                <mat-datepicker #endDate></mat-datepicker>
-                            </mat-form-field>
-
-                            <mat-form-field class="w-32">
-                                <mat-label>End time</mat-label>
-                                <input matInput [matTimepicker]="endTime" formControlName="endDate">
-                                <mat-timepicker #endTime interval="5m" />
-                                <mat-timepicker-toggle [for]="endTime" matSuffix />
-                            </mat-form-field>
-                        </div>
-                        <div class="flex flex-row gap-2">
-                            <div class=" dark:text-[--mdc-icon-button-icon-color] pt-4">
-                                <mat-icon>notes</mat-icon>
-                            </div>
-                            <mat-form-field class="w-full">
-                                <mat-label>Description</mat-label>
-                                <textarea class="!resize-none h-full min-h-24" matInput placeholder="Description"
-                                    formControlName="description"></textarea>
-                            </mat-form-field>
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-2 md:pl-2">
-                        <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
-                            <mat-expansion-panel-header>
-                                <mat-panel-title class="gap-2">
-                                    <mat-icon>
-                                        group
-                                    </mat-icon>
-                                    <span>
-                                        {{ "member.title" | translate }}
-                                    </span>
-                                </mat-panel-title>
-                            </mat-expansion-panel-header>
-                            <div class="flex flex-col overflow-scroll max-h-32">
-                                @for (p of event()?.users; track p.id) {
-                                <span>{{ p.firstName }} {{ p.lastName }}</span>
-                                } @empty {
-                                <span>{{ "member.empty" | translate }}</span>
-                                }
-                            </div>
-                        </mat-expansion-panel>
-
-                        <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
-                            <mat-expansion-panel-header>
-                                <mat-panel-title class="gap-2">
-                                    <mat-icon>
-                                        group
-                                    </mat-icon>
-                                    <span>
-                                        {{ "participant.title" | translate }}
-                                    </span>
-                                </mat-panel-title>
-                            </mat-expansion-panel-header>
-                            <div class="flex flex-col overflow-scroll max-h-32">
-                                @for (p of event()?.participants; track p.id) {
-                                <span>{{ p.firstName }} {{ p.lastName }}</span>
-                                } @empty {
-                                <span>{{ "participant.empty" | translate }}</span>
-                                }
-                            </div>
-                        </mat-expansion-panel>
+                <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title class="gap-2">
+                            <mat-icon>
+                                group
+                            </mat-icon>
+                            <span>
+                                {{ "participant.title" | translate }}
+                            </span>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>{{ "participant.title" | translate }}</mat-label>
+                        <mat-chip-grid #participantGrid formControlName="users">
+                            @for (p of selectedParticipants(); track p.id) {
+                            <mat-chip-row (removed)="remove(p, selectedParticipants)">
+                                {{p.firstName}} {{p.lastName}}
+                                <button matChipRemove>
+                                    <mat-icon>cancel</mat-icon>
+                                </button>
+                            </mat-chip-row>
+                            }
+                        </mat-chip-grid>
+                        <input type="text" placeholder="{{ 'action.add' | translate }}"
+                            [matChipInputFor]="participantGrid" [matAutocomplete]="autoParticipants" />
+                        <mat-autocomplete #autoParticipants (optionSelected)="selected($event, selectedParticipants)">
+                            @for (p of filteredParticipants(); track p.id) {
+                            <mat-option [value]="p">{{p.firstName}} {{p.lastName}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </mat-expansion-panel>
+            </div>
+            @if (isPlannerOpen()) {
+            <div class="flex size-full flex-col flex-grow relative">
+                <div class="flex w-full justify-between overflow-hidden flex-col py-1 md:flex-row">
+                    <span class="text-2xl">{{ dateTitle() }} {{ localeOffsetName() }}</span>
+                    <div class="flex items-center gap-2">
+                        <button mat-icon-button aria-label="TODO" (click)="previous()">
+                            <mat-icon>arrow_back_ios_new</mat-icon>
+                        </button>
+                        <button mat-icon-button aria-label="TODO" (click)="next()">
+                            <mat-icon>arrow_forward_ios</mat-icon>
+                        </button>
+                        <mat-form-field appearance="outline" class="w-28 form-field-h40">
+                            <mat-select [value]="viewMode()" (valueChange)="viewModeChange($event)">
+                                <mat-option value="resourceTimeGridDay">{{ "calendar.day" | translate }}</mat-option>
+                                <mat-option value="resourceTimeGridWeek">{{ "calendar.week" | translate }}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <button mat-icon-button [matMenuTriggerFor]="calendarSettings" aria-label="Calendar settings">
+                            <mat-icon>settings</mat-icon>
+                        </button>
+                        <mat-menu #calendarSettings>
+                            <button mat-menu-item aria-label="French" aria-label="French">
+                                <mat-slide-toggle [checked]="showWeekend()" (change)="showWeekendChange($event)"
+                                    (click)="$event.stopPropagation()">{{
+                                    "calendar.weekends" | translate }}</mat-slide-toggle>
+                            </button>
+                        </mat-menu>
                     </div>
                 </div>
-            </form>
-        </mat-card-content>
+                <full-calendar [options]="calendarOptions"
+                    class="w-full dark:bg-[--mdc-elevated-card-container-color]"></full-calendar>
+            </div>
+            }
+        </div>
+        <div class="flex flex-row w-full justify-end gap-2 p-2">
+            <button mat-button type="button" (click)="cancel()">{{ "action.cancel" | translate }}</button>
+            @if (canShowPlanner() && !isPlannerOpen()) {
+            <button mat-button type="button" (click)="togglePlanner()">{{ "action.show-planner" | translate }}
+            </button>
+            }
+            <button mat-flat-button type="submit" class="w-32" (click)="submit()"
+                [disabled]="isSubmitting() || !form.valid">
+                @if (isSubmitting()) {
+                <mat-spinner diameter="24"></mat-spinner>
+                } @else {
+                {{ isUpdate() ? "action.update" : "action.create" |translate }}
+                }
+            </button>
+        </div>
     </form>
     } @else {
-    <mat-card-header>
-        <div class="flex flex-row justify-end w-full pb-2 pl-8">
-
-            <div class="flex flex-row">
-                <button mat-icon-button (click)="toggleEditMode()" matTooltip="{{ 'action.edit' | translate }}">
-                    <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button (click)="closeDialog()" matTooltip="{{ 'action.close' | translate }}">
-                    <mat-icon>close</mat-icon>
-                </button>
-            </div>
-        </div>
-
-    </mat-card-header>
     <mat-card-content>
-
         <div class="flex flex-col md:flex-row w-full">
             <div class="flex flex-col gap-5 w-full">
                 <div class="flex flex-row gap-2">
@@ -311,7 +385,7 @@
                             </span>
                         </mat-panel-title>
                     </mat-expansion-panel-header>
-                    <div class="flex flex-col overflow-scroll max-h-32">
+                    <div class="flex flex-col overflow-auto max-h-32">
                         @for (p of event()?.users; track p.id) {
                         <span>{{ p.firstName }} {{ p.lastName }}</span>
                         } @empty {
@@ -331,7 +405,7 @@
                             </span>
                         </mat-panel-title>
                     </mat-expansion-panel-header>
-                    <div class="flex flex-col overflow-scroll max-h-32">
+                    <div class="flex flex-col overflow-auto max-h-32">
                         @for (p of event()?.participants; track p.id) {
                         <span>{{ p.firstName }} {{ p.lastName }}</span>
                         } @empty {
@@ -344,5 +418,4 @@
     </mat-card-content>
     }
 
-    }
-</mat-card>
+</div>

@@ -185,6 +185,7 @@ $dark: mat.define-theme((
   @include mat.tooltip-theme($light);
   @include mat.badge-theme($light);
   @include mat.chips-theme($light);
+  @include mat.autocomplete-theme($light);
   @include mat.dialog-overrides((
     container-max-width: 100%,
   ));
@@ -243,6 +244,7 @@ $dark: mat.define-theme((
   @include mat.tooltip-color($dark);
   @include mat.badge-color($dark);
   @include mat.chips-color($dark);
+  @include mat.autocomplete-color($dark);
   @include mat.paginator-overrides((
     container-background-color: var(--mdc-elevated-card-container-color),
   ))

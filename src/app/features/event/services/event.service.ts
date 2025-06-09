@@ -188,8 +188,9 @@ export class EventService {
     tags: Tag[];
     workspace: Workspace;
     room: Room;
+    users: User[];
+    participants: Participant[];
   }> | null> {
-    const id = this.auth.currentUserInfo()?.id ?? '';
     const startDate = this.date.toUtcString(req.startDate);
     const endDate = this.date.toUtcString(req.endDate);
     console.log(startDate, endDate);
@@ -200,6 +201,8 @@ export class EventService {
           tags: Tag[];
           workspace: Workspace;
           room: Room;
+          users: User[];
+          participants: Participant[];
         }>
       >(`${environment.apiUrl}/event`, {
         ...req,
@@ -211,13 +214,15 @@ export class EventService {
         debounceTime(150),
         tap((event) => {
           this.setEventToStore(event);
-          const keys = this.createKeys(id, {
-            start: req.startDate,
-            end: req.endDate,
+          event.users.forEach((user) => {
+            const keys = this.createKeys(user.id, {
+              start: req.startDate,
+              end: req.endDate,
+            });
+            keys.forEach((key) =>
+              this.store.addToRelation('usersEvents', key, event.id)
+            );
           });
-          keys.forEach((key) =>
-            this.store.addToRelation('usersEvents', key, event.id)
-          );
           this.sonner.success(
             this.locale.translate('event.create.success'),
             this.date.format(event.startDate, 'dddd, MMMM DD, YYYY [at] HH:mm')
@@ -226,6 +231,59 @@ export class EventService {
         catchError((err) => {
           console.error('Error creating event:', err);
           this.sonner.error(this.locale.translate('event.create.error'));
+          return of(null);
+        })
+      );
+  }
+
+  public updateEvent(
+    id: Id,
+    req: EventRequest
+  ): Observable<Event<{
+    eventCategory: EventCategory;
+    tags: Tag[];
+    workspace: Workspace;
+    room: Room;
+    users: User[];
+    participants: Participant[];
+  }> | null> {
+    const startDate = this.date.toUtcString(req.startDate);
+    const endDate = this.date.toUtcString(req.endDate);
+    console.log(startDate, endDate);
+    return this.http
+      .put<
+        Event<{
+          eventCategory: EventCategory;
+          tags: Tag[];
+          workspace: Workspace;
+          room: Room;
+          users: User[];
+          participants: Participant[];
+        }>
+      >(`${environment.apiUrl}/event/${id}`, {
+        ...req,
+        startDate: startDate,
+        endDate: endDate,
+      })
+
+      .pipe(
+        debounceTime(150),
+        tap((event) => {
+          this.setEventToStore(event);
+          event.users.forEach((user) => {
+            const keys = this.createKeys(user.id, {
+              start: req.startDate,
+              end: req.endDate,
+            });
+            keys.forEach((key) =>
+              this.store.addToRelation('usersEvents', key, event.id)
+            );
+          });
+          this.sonner.success(this.locale.translate('event.update.success'));
+        }),
+        catchError((err) => {
+          console.error('Error creating event:', err);
+          this.sonner.error(this.locale.translate('event.update.error'));
           return of(null);
         })
       );
@@ -349,7 +407,6 @@ export class EventService {
   private hasEventDetails(id: string) {
     if (!this.store.events().has(id)) return false;
     const event = this.store.events().get(id)!;
-    console.log(event);
     return (
       event.eventCategoryId !== undefined &&
       event.roomId !== undefined &&

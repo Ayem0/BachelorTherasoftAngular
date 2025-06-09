@@ -25,11 +25,11 @@ export class ParticipantService {
 
   constructor() {}
 
-  public participantsByWorkspaceId(id: Id): Signal<Participant[]> {
+  public participantsByWorkspaceId(id: Signal<Id>): Signal<Participant[]> {
     return computed(() =>
-      this.store.workspacesParticipants().has(id)
+      this.store.workspacesParticipants().has(id())
         ? Array.from(
-            this.store.workspacesParticipants().get(id)!,
+            this.store.workspacesParticipants().get(id())!,
             (i) => this.store.participants().get(i) ?? UNKNOWN_PARTICIPANT
           )
         : []
