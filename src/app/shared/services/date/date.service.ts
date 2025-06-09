@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import dayjs from 'dayjs';
+import moment from 'moment-timezone';
 import { LocaleService } from '../locale/locale.service';
 
 type ManipulateDate =
@@ -21,39 +21,31 @@ export class DateService {
   constructor() {}
 
   public incrementDate(date: Date, amount: number, unit: ManipulateDate) {
-    return dayjs(date).add(amount, unit).toDate();
+    return moment(date).add(amount, unit).toDate();
   }
 
   public decrementDate(date: Date, amount: number, unit: ManipulateDate) {
-    return dayjs(date).subtract(amount, unit).toDate();
+    return moment(date).subtract(amount, unit).toDate();
   }
 
-  public toFakeUtc(date: Date): Date {
-    const offsetMs = date.getTimezoneOffset() * 60_000;
-    return new Date(date.getTime() - offsetMs);
-  }
-
-  public localeToUtc(date: Date | string) {
-    return dayjs.tz(date, this.tz()).utc().toDate();
-  }
-
-  public toLocale(date: Date) {
-    return dayjs(date).tz(this.tz()).toDate();
-  }
   public toLocaleString(date: Date) {
-    return dayjs(date).tz(this.tz()).format('YYYY-MM-DD HH:mm:ssZ');
+    return moment(date).tz(this.tz()).format('YYYY-MM-DD HH:mm:ssZ');
   }
 
   public toUtcString(date: Date): string {
-    return dayjs(date).utc().toISOString();
+    return moment(date).utc().toISOString();
+  }
+
+  public toUtc(date: Date) {
+    return moment(date).tz(this.tz()).utc(false).toDate();
   }
 
   public format(date: Date, format: string) {
-    return dayjs(date).format(format);
+    return moment(date).format(format);
   }
 
   public diffInDays(date1: Date, date2: Date) {
-    const diff = dayjs(date2).diff(date1, 'day');
+    const diff = moment(date2).diff(date1, 'day');
     if (diff < 1) return 1;
     console.log(date1, date2, diff);
     const date1time = date1.getHours() * 60 + date1.getMinutes();

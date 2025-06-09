@@ -12,9 +12,11 @@ export class AgendaService {
   public showWeekend = signal<boolean>(this.getShowWeekendsFromLocalstorage());
   public showWeekendObs = toObservable(this.showWeekend);
 
-  public weekEndFilter = (d: Date | null): boolean => {
+  public weekEndFilter = (d: any): boolean => {
     if (this.showWeekend()) return true;
-    const day = (d || new Date()).getDay();
+    console.log(d);
+    // const day = (d || moment()).();
+    const day = 0;
     return day !== 0 && day !== 6;
   };
 

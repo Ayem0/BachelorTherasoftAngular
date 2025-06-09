@@ -18,17 +18,12 @@ import {
   MatFormFieldModule,
 } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
-import {
-  MatListModule,
-  MatSelectionList,
-  MatSelectionListChange,
-} from '@angular/material/list';
+import { MatListModule, MatSelectionListChange } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import {
-  MatSlideToggle,
   MatSlideToggleChange,
   MatSlideToggleModule,
 } from '@angular/material/slide-toggle';
@@ -67,6 +62,12 @@ import { AgendaService } from '../../services/agenda.service';
 import { EventService } from '../../services/event.service';
 import { EventDetailsComponent } from '../event-details/event-details.component';
 // import { FullCalendarEventDialogComponent } from '../full-calendar-event-dialog/full-calendar-event-dialog.component';
+import {
+  default as momentPlugin,
+  default as momentTimezonePlugin,
+  toMoment,
+} from '@fullcalendar/moment';
+import moment, { Moment } from 'moment';
 import { SmallCalendarHeaderComponent } from '../small-calendar-header/small-calendar-header.component';
 @Component({
   selector: 'app-calendar',
@@ -114,10 +115,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   private readonly fullCalendar = viewChild.required(FullCalendar);
   private readonly sidebar = viewChild.required(MatSidenav);
   private readonly viewModeSelect = viewChild.required(MatSelect);
-  private readonly weekendToggle = viewChild.required(MatSlideToggle);
-
-  private readonly matCalendar = viewChild.required(MatCalendar<Date>);
-  private readonly matList = viewChild.required(MatSelectionList);
+  private readonly matCalendar = viewChild.required(MatCalendar<Moment>);
 
   public isLoading = signal(false);
 
@@ -157,7 +155,13 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   public sidenavMode = computed(() => (this.showOver() ? 'over' : 'push'));
 
   public calendarOptions: CalendarOptions = {
-    plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin],
+    plugins: [
+      interactionPlugin,
+      dayGridPlugin,
+      timeGridPlugin,
+      momentPlugin,
+      momentTimezonePlugin,
+    ],
     headerToolbar: false,
     initialView: this.viewMode(), // initial view mode
     weekends: this.showWeekend(), // show hide weekends
@@ -360,7 +364,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     this.agendaService.showWeekendObs.subscribe((x) => {
       this.calendarApi().setOption('weekends', x);
       this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
-      this.matCalendar().activeDate = this.selectedDate();
+      this.matCalendar().activeDate = moment(this.selectedDate());
       this.matCalendar().updateTodaysDate();
     });
   }
@@ -383,23 +387,15 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     }
   }
 
-  selectedChange(selectedDate: Date | null) {
+  selectedChange(selectedDate: Moment | null) {
     if (selectedDate) {
-      this.selectedDate.set(
-        new Date(
-          Date.UTC(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate()
-          )
-        )
-      );
+      this.selectedDate.set(selectedDate.toDate());
       if (this.viewMode() === 'timeGridDay') {
         this.calendarApi().gotoDate(
-          this.date.incrementDate(selectedDate, 1, 'day')
+          this.date.incrementDate(selectedDate.toDate(), 1, 'day')
         );
       } else {
-        this.calendarApi().gotoDate(selectedDate);
+        this.calendarApi().gotoDate(selectedDate.toDate());
       }
     }
   }
@@ -425,7 +421,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       end: args.view.currentEnd,
     });
     // update the current month view if we change month for small calendar
-    this.matCalendar().activeDate = this.selectedDate();
+    this.matCalendar().activeDate = moment(this.selectedDate());
     this.matCalendar().updateTodaysDate();
     // update query params
     this.router.navigate(['/agenda'], {
@@ -537,14 +533,21 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
 
   private handleDateSelect(selectInfo: DateSelectArg) {
     this.calendarApi().unselect();
+    const start = toMoment(selectInfo.start, selectInfo.view.calendar);
+    console.log(start);
+    console.log(selectInfo);
     this.openDialog(
       undefined,
-      this.date.localeToUtc(selectInfo.start),
-      this.date.localeToUtc(selectInfo.end)
+      this.date.toUtc(selectInfo.start),
+      this.date.toUtc(selectInfo.end)
     );
   }
 
-  public openDialog(eventId?: string, start?: Date, end?: Date) {
+  public openDialog(
+    eventId?: string,
+    start?: Date | string,
+    end?: Date | string
+  ) {
     console.log(
       'OPENING DIALOG',
       eventId,

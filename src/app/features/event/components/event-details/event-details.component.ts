@@ -59,6 +59,10 @@ import {
   EventSourceFuncArg,
 } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import {
+  default as momentPlugin,
+  default as momentTimezonePlugin,
+} from '@fullcalendar/moment';
 import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid';
 import {
   ResourceFuncArg,
@@ -265,7 +269,12 @@ export class EventDetailsComponent {
       left: undefined,
       right: undefined,
     },
-    plugins: [resourceTimeGridPlugin, dayGridPlugin],
+    plugins: [
+      resourceTimeGridPlugin,
+      dayGridPlugin,
+      momentPlugin,
+      momentTimezonePlugin,
+    ],
     // resources: this.resources(),
     views: {
       resourceTimeGridWeek: {

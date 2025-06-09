@@ -5,16 +5,12 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { DateAdapter, MAT_DATE_LOCALE } from '@angular/material/core';
 import { TranslateService } from '@ngx-translate/core';
-import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
+import moment from 'moment-timezone';
+import 'moment/locale/fr';
 import { Lang } from '../../models/lang';
 
 registerLocaleData(localeFr);
 registerLocaleData(localeEn);
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 @Injectable({
   providedIn: 'root',
@@ -34,9 +30,11 @@ export class LocaleService {
   );
   public readonly currentTz = signal('');
 
-  public localeOffsetName = computed(
-    () => dayjs(new Date()).tz(this.currentTz()).offsetName() ?? ''
-  );
+  public localeOffsetName = computed(() => {
+    const tz = this.currentTz();
+    const now = moment();
+    return tz ? now.tz(tz).zoneAbbr() : now.format('Z');
+  });
 
   public currentTz$ = toObservable(this.currentTz);
   public currentLang$ = toObservable(this.currentLang);
@@ -57,6 +55,7 @@ export class LocaleService {
     if (currentLang !== lang) {
       this.translateService.use(lang);
       this.locale.set(lang);
+      moment.locale(lang);
       this.adapter.setLocale(this.locale());
       this.currentLang.set(lang);
       localStorage.setItem(this.langKey, lang);
@@ -78,7 +77,7 @@ export class LocaleService {
 
   public loadTz() {
     const storedTz = this.getTzFromLocalStorage();
-    const browserTz = dayjs.tz.guess();
+    const browserTz = moment.tz.guess(true);
     const tzToUse = storedTz || browserTz;
     this.setTz(tzToUse);
   }
@@ -87,7 +86,7 @@ export class LocaleService {
     const currentTz = this.currentTz();
     if (currentTz !== tz) {
       this.currentTz.set(tz);
-      dayjs.tz.setDefault(tz);
+      moment.tz.setDefault(tz);
       localStorage.setItem(this.tzKey, tz);
     }
   }
