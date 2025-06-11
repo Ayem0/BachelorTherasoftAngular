@@ -621,7 +621,7 @@ export class EventDetailsComponent {
     if (this.eventId) {
       // TODO : PATCH FORM VALUES
       this.toggleEditMode();
-      this.togglePlanner();
+      if (this.isPlannerOpen()) this.togglePlanner();
     } else {
       this.closeDialog();
     }

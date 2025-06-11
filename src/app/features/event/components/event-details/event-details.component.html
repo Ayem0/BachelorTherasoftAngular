@@ -149,8 +149,10 @@
                 </div>
             </div>
             <div class="flex size-full flex-col gap-2 md:pl-2 xl:w-64">
+                @if (!isUpdate()) {
                 <button mat-flat-button type="button" class="mx-3" (click)="assignToMe()"
                     [disabled]="!canAssignTome()">Assign to me</button>
+                }
                 <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
                     <mat-expansion-panel-header>
                         <mat-panel-title class="gap-2">

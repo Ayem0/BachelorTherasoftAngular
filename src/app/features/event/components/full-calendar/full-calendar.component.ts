@@ -252,9 +252,15 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       title: event.eventCategory.name,
       start: this.date.toLocaleString(event.startDate),
       end: this.date.toLocaleString(event.endDate),
-      color: event.eventCategory.color,
+      color:
+        this.viewMode() === 'dayGridMonth'
+          ? event.workspace.color
+          : event.eventCategory.color,
       backgroundColor: event.workspace.color,
-      classNames: ['!shadow-none', 'border-0', 'border-l-8'],
+      classNames:
+        this.viewMode() === 'dayGridMonth'
+          ? ['!shadow-none', 'border-0']
+          : ['!shadow-none', 'border-0', 'border-l-8'],
       extendedProps: {
         event: event,
       },
@@ -324,6 +330,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
 
       this.calendarApi().gotoDate(this.selectedDate());
+      this.calendarApi().refetchEvents();
 
       this.setViewModeToParams();
     });
