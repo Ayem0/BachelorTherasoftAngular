@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { InvitationService } from '../../services/invitation.service';
 import { InvitationComponent } from '../invitation/invitation.component';
@@ -8,6 +14,7 @@ import { InvitationComponent } from '../invitation/invitation.component';
   imports: [InvitationComponent, MatProgressSpinner],
   templateUrl: './invitation-list.component.html',
   styleUrl: './invitation-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvitationListComponent implements OnInit {
   private readonly invitationService = inject(InvitationService);

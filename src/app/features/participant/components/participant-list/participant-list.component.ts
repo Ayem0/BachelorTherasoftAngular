@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -44,6 +45,7 @@ import { ParticipantDialogComponent } from '../participant-dialog/participant-di
   ],
   templateUrl: './participant-list.component.html',
   styleUrl: './participant-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParticipantListComponent {
   private readonly matDialog = inject(MatDialog);

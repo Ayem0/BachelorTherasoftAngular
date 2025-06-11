@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -26,6 +31,7 @@ import { ParticipantCategoryService } from '../../services/participant-category.
   ],
   templateUrl: './participant-category-dialog.component.html',
   styleUrl: './participant-category-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParticipantCategoryDialogComponent {
   private readonly participantCategoryService = inject(

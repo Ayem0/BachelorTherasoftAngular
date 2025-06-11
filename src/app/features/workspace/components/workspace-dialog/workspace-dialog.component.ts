@@ -1,4 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -26,6 +32,7 @@ import { WorkspaceService } from '../../services/workspace.service';
   ],
   templateUrl: './workspace-dialog.component.html',
   styleUrl: './workspace-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspaceDialogComponent {
   private readonly workspaceService = inject(WorkspaceService);

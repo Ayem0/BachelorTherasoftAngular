@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -47,6 +53,7 @@ import { SlotService } from '../../services/slot.service';
   providers: [provideNativeDateAdapter()],
   templateUrl: './slot-dialog.component.html',
   styleUrl: './slot-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SlotDialogComponent implements OnInit {
   private readonly slotService = inject(SlotService);

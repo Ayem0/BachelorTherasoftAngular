@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -44,6 +45,7 @@ import { RoomDialogComponent } from '../room-dialog/room-dialog.component';
   ],
   templateUrl: './room-list.component.html',
   styleUrl: './room-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomListComponent {
   private readonly matDialog = inject(MatDialog);

@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { User } from '../../../../core/auth/models/auth';
 import {
   ContactInvitation,
@@ -11,6 +11,7 @@ import { PendingInvitationComponent } from '../pending-invitation/pending-invita
   imports: [PendingInvitationComponent],
   templateUrl: './pending-invitation-list.component.html',
   styleUrl: './pending-invitation-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PendingInvitationListComponent {
   public invitations = input.required<

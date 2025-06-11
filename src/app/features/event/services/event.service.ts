@@ -8,7 +8,7 @@ import { Id } from '../../../shared/models/entity';
 import { DateService } from '../../../shared/services/date/date.service';
 import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
-import { Store } from '../../../shared/services/store/store';
+import { Store } from '../../../shared/services/store/store.service';
 import { isIsRange } from '../../../shared/utils/event.utils';
 import {
   EventCategory,

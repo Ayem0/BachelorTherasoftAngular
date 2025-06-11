@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -27,6 +33,7 @@ import { InvitationService } from '../../../invitation/services/invitation.servi
   ],
   templateUrl: './add-member-dialog.component.html',
   styleUrl: './add-member-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddMemberDialogComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<AddMemberDialogComponent>);

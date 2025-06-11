@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ThemeService } from '../theme.service';
+import { DEFAULT_PROVIDERS } from '../../../app.config';
+import { ThemeService } from './theme.service';
 
 describe('ThemeService', () => {
   let service: ThemeService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: DEFAULT_PROVIDERS,
+    });
     service = TestBed.inject(ThemeService);
   });
 

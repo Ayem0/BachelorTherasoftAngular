@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -43,6 +44,7 @@ import { TagDialogComponent } from '../tag-dialog/tag-dialog.component';
   ],
   templateUrl: './tag-list.component.html',
   styleUrl: './tag-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TagListComponent {
   private readonly matDialog = inject(MatDialog);

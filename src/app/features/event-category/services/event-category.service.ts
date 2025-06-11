@@ -4,7 +4,7 @@ import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
-import { Store } from '../../../shared/services/store/store';
+import { Store } from '../../../shared/services/store/store.service';
 import {
   EventCategory,
   EventCategoryRequest,

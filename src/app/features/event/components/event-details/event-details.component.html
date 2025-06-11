@@ -149,7 +149,8 @@
                 </div>
             </div>
             <div class="flex size-full flex-col gap-2 md:pl-2 xl:w-64">
-                <button mat-flat-button type="button" class="mx-3">Assign to me</button>
+                <button mat-flat-button type="button" class="mx-3" (click)="assignToMe()"
+                    [disabled]="isAssignedToMe()">Assign to me</button>
                 <mat-expansion-panel class="!shadow-none px-2 !bg-transparent" [expanded]="true">
                     <mat-expansion-panel-header>
                         <mat-panel-title class="gap-2">
@@ -221,7 +222,7 @@
             @if (isPlannerOpen()) {
             <div class="flex size-full flex-col flex-grow relative">
                 <div class="flex w-full justify-between overflow-hidden flex-col py-1 md:flex-row">
-                    <span class="text-2xl">{{ dateTitle() }} {{ localeOffsetName() }}</span>
+                    <span class="text-2xl text-center">{{ dateTitle() }} {{ localeOffsetName() }}</span>
                     <div class="flex items-center gap-2">
                         <button mat-icon-button aria-label="TODO" (click)="previous()">
                             <mat-icon>arrow_back_ios_new</mat-icon>

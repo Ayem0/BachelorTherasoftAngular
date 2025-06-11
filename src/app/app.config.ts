@@ -3,6 +3,7 @@ import {
   provideHttpClient,
   withInterceptors,
 } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import {
   ApplicationConfig,
   importProvidersFrom,
@@ -22,9 +23,27 @@ import { AuthService } from './core/auth/services/auth.service';
 import { ThemeService } from './features/theme/services/theme.service';
 import { LocaleService } from './shared/services/locale/locale.service';
 
-const httpLoaderFactory: (http: HttpClient) => TranslateHttpLoader = (
+export const httpLoaderFactory: (http: HttpClient) => TranslateHttpLoader = (
   http: HttpClient
 ) => new TranslateHttpLoader(http, './i18n/', '.json');
+
+export const DEFAULT_PROVIDERS = [
+  provideExperimentalZonelessChangeDetection(),
+  provideRouter(routes),
+  provideAnimationsAsync(),
+  provideHttpClient(),
+  provideHttpClientTesting(),
+  provideMomentDateAdapter(),
+  importProvidersFrom([
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: httpLoaderFactory,
+        deps: [HttpClient],
+      },
+    }),
+  ]),
+];
 
 export const appConfig: ApplicationConfig = {
   providers: [

@@ -71,6 +71,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { debounceTime, distinctUntilChanged, forkJoin, tap } from 'rxjs';
 import { User } from '../../../../core/auth/models/auth';
+import { AuthService } from '../../../../core/auth/services/auth.service';
 import { Entity } from '../../../../shared/models/entity';
 import { DateService } from '../../../../shared/services/date/date.service';
 import { LocaleService } from '../../../../shared/services/locale/locale.service';
@@ -150,6 +151,7 @@ export class EventDetailsComponent {
   private readonly locale = inject(LocaleService);
   private readonly date = inject(DateService);
   private readonly agendaService = inject(AgendaService);
+  private readonly authService = inject(AuthService);
 
   private readonly fullCalendar = viewChild(FullCalendarComponent);
 
@@ -222,6 +224,11 @@ export class EventDetailsComponent {
           .includes(participant.id)
     )
   );
+  public isAssignedToMe = computed(() =>
+    this.selectedUsers()
+      .map((u) => u.id)
+      .includes(this.authService.currentUserInfo()?.id ?? '')
+  );
   public resources: Signal<ResourceInput[]> = computed(() => {
     const users = this.selectedUsers().map((u) => ({
       id: u.id,
@@ -234,6 +241,13 @@ export class EventDetailsComponent {
         ]
       : [...users];
   });
+
+  public assignToMe() {
+    this.selectedUsers.update((users) => [
+      ...users,
+      this.authService.currentUserInfo()!,
+    ]);
+  }
 
   public start = signal(
     this.matDialogData.start

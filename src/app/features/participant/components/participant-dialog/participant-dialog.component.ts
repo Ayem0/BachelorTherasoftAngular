@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -35,6 +41,7 @@ import { ParticipantService } from '../../services/participant.service';
   providers: [provideNativeDateAdapter()],
   templateUrl: './participant-dialog.component.html',
   styleUrl: './participant-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParticipantDialogComponent implements OnInit {
   private readonly participantService = inject(ParticipantService);

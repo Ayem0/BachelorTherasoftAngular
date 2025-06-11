@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
@@ -17,6 +23,7 @@ import { WorkspaceService } from '../../services/workspace.service';
   ],
   templateUrl: './workspace-details.component.html',
   styleUrl: './workspace-details.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspaceDetailsComponent implements OnInit {
   private readonly workspaceService = inject(WorkspaceService);

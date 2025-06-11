@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { DEFAULT_PROVIDERS } from '../../../../app.config';
 import { NotificationMenuComponent } from './notification-menu.component';
 
 describe('NotificationMenuComponent', () => {
@@ -8,9 +9,9 @@ describe('NotificationMenuComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NotificationMenuComponent]
-    })
-    .compileComponents();
+      providers: DEFAULT_PROVIDERS,
+      imports: [NotificationMenuComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NotificationMenuComponent);
     component = fixture.componentInstance;

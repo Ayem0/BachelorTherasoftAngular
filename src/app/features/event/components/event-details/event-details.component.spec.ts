@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { DEFAULT_PROVIDERS } from '../../../../app.config';
 import { EventDetailsComponent } from './event-details.component';
 
 describe('EventDetailsComponent', () => {
@@ -7,10 +9,21 @@ describe('EventDetailsComponent', () => {
   let fixture: ComponentFixture<EventDetailsComponent>;
 
   beforeEach(async () => {
+    const providers = DEFAULT_PROVIDERS;
     await TestBed.configureTestingModule({
-      imports: [EventDetailsComponent]
-    })
-    .compileComponents();
+      providers: [
+        ...providers,
+        {
+          provide: MatDialogRef<EventDetailsComponent>,
+          useValue: {},
+        },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {},
+        },
+      ],
+      imports: [EventDetailsComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(EventDetailsComponent);
     component = fixture.componentInstance;

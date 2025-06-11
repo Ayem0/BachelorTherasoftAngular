@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,5 +21,6 @@ import { InvitationListComponent } from '../../../invitation/components/invitati
   ],
   templateUrl: './notification-menu.component.html',
   styleUrl: './notification-menu.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationMenuComponent {}

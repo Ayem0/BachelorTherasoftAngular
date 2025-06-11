@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -44,6 +45,7 @@ import { LocationDialogComponent } from '../location-dialog/location-dialog.comp
   ],
   templateUrl: './location-list.component.html',
   styleUrl: './location-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationListComponent {
   private readonly matDialog = inject(MatDialog);

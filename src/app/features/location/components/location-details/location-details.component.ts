@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AreaListComponent } from '../../../area/components/area-list/area-list.component';
 import { LocationService } from '../../services/location.service';
@@ -8,6 +14,7 @@ import { LocationService } from '../../services/location.service';
   imports: [AreaListComponent],
   templateUrl: './location-details.component.html',
   styleUrl: './location-details.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationDetailsComponent implements OnInit {
   private readonly locationService = inject(LocationService);

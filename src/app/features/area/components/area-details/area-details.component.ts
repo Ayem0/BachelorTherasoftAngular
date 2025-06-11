@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RoomListComponent } from '../../../room/components/room-list/room-list.component';
 import { AreaService } from '../../services/area.service';
@@ -8,6 +13,7 @@ import { AreaService } from '../../services/area.service';
   imports: [RoomListComponent],
   templateUrl: './area-details.component.html',
   styleUrl: './area-details.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AreaDetailsComponent {
   private readonly areaService = inject(AreaService);

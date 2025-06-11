@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { DEFAULT_PROVIDERS } from '../../../app.config';
 import { RepetitionComponent } from './repetition.component';
 
 describe('RepetitionComponent', () => {
@@ -7,10 +9,21 @@ describe('RepetitionComponent', () => {
   let fixture: ComponentFixture<RepetitionComponent>;
 
   beforeEach(async () => {
+    const providers = DEFAULT_PROVIDERS;
     await TestBed.configureTestingModule({
-      imports: [RepetitionComponent]
-    })
-    .compileComponents();
+      providers: [
+        ...providers,
+        {
+          provide: MatDialogRef<RepetitionComponent>,
+          useValue: {},
+        },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {},
+        },
+      ],
+      imports: [RepetitionComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(RepetitionComponent);
     component = fixture.componentInstance;

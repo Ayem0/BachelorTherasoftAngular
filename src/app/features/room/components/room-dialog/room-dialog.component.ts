@@ -1,4 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -26,6 +32,7 @@ import { RoomService } from '../../services/room.service';
   ],
   templateUrl: './room-dialog.component.html',
   styleUrl: './room-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomDialogComponent {
   private readonly roomService = inject(RoomService);

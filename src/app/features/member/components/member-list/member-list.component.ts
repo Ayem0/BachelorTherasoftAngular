@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -46,6 +47,7 @@ import { AddMemberDialogComponent } from '../add-member-dialog/add-member-dialog
   ],
   templateUrl: './member-list.component.html',
   styleUrl: './member-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MemberListComponent implements OnInit, AfterViewInit {
   private readonly memberService = inject(MemberService);
