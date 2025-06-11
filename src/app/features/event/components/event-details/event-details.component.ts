@@ -224,10 +224,12 @@ export class EventDetailsComponent {
           .includes(participant.id)
     )
   );
-  public isAssignedToMe = computed(() =>
-    this.selectedUsers()
-      .map((u) => u.id)
-      .includes(this.authService.currentUserInfo()?.id ?? '')
+  public canAssignTome = computed(() =>
+    this.workspaceId() !== ''
+      ? !this.selectedUsers()
+          .map((u) => u.id)
+          .includes(this.authService.currentUserInfo()?.id ?? '')
+      : false
   );
   public resources: Signal<ResourceInput[]> = computed(() => {
     const users = this.selectedUsers().map((u) => ({
