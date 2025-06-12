@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import moment from 'moment-timezone';
+import moment, { Moment } from 'moment-timezone';
 import { LocaleService } from '../locale/locale.service';
 
 type ManipulateDate =
@@ -20,36 +20,32 @@ export class DateService {
   private readonly tz = this.locale.currentTz;
   constructor() {}
 
-  public incrementDate(date: Date, amount: number, unit: ManipulateDate) {
-    return moment(date).add(amount, unit).toDate();
+  public incrementDate(
+    date: Moment,
+    amount: number,
+    unit: ManipulateDate
+  ): Moment {
+    return moment(date).add(amount, unit);
   }
 
-  public decrementDate(date: Date, amount: number, unit: ManipulateDate) {
-    return moment(date).subtract(amount, unit).toDate();
-  }
-
-  public toLocaleString(date: Date) {
-    return moment(date).tz(this.tz()).format('YYYY-MM-DD HH:mm:ssZ');
-  }
-
-  public toUtcString(date: Date): string {
-    return moment(date).utc().toISOString();
-  }
-
-  public toUtc(date: Date) {
-    return moment(date).tz(this.tz()).utc(false).toDate();
+  public decrementDate(
+    date: Moment,
+    amount: number,
+    unit: ManipulateDate
+  ): Moment {
+    return moment(date).subtract(amount, unit);
   }
 
   public format(date: Date, format: string) {
     return moment(date).format(format);
   }
 
-  public diffInDays(date1: Date, date2: Date) {
+  public diffInDays(date1: Moment, date2: Moment) {
     const diff = moment(date2).diff(date1, 'day');
     if (diff < 1) return 1;
     console.log(date1, date2, diff);
-    const date1time = date1.getHours() * 60 + date1.getMinutes();
-    const date2time = date2.getHours() * 60 + date2.getMinutes();
+    const date1time = date1.hours() * 60 + date1.minutes();
+    const date2time = date2.hours() * 60 + date2.minutes();
     return date1time < date2time ? diff + 1 : diff;
   }
 }

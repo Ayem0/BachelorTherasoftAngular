@@ -5,7 +5,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { DateAdapter, MAT_DATE_LOCALE } from '@angular/material/core';
 import { TranslateService } from '@ngx-translate/core';
-import moment from 'moment-timezone';
+import moment, { Moment } from 'moment-timezone';
 import 'moment/locale/fr';
 import { Lang } from '../../models/lang';
 
@@ -16,7 +16,7 @@ registerLocaleData(localeEn);
   providedIn: 'root',
 })
 export class LocaleService {
-  private readonly adapter = inject(DateAdapter<Date>);
+  private readonly adapter = inject(DateAdapter<Moment>);
   private readonly locale = signal(inject<unknown>(MAT_DATE_LOCALE));
   private readonly translateService = inject(TranslateService);
 
@@ -86,7 +86,7 @@ export class LocaleService {
     const currentTz = this.currentTz();
     if (currentTz !== tz) {
       this.currentTz.set(tz);
-      moment.tz.setDefault(tz);
+      // moment.tz.setDefault(tz);
       localStorage.setItem(this.tzKey, tz);
     }
   }

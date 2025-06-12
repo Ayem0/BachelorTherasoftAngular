@@ -18,9 +18,9 @@ import { startWith, Subject, takeUntil } from 'rxjs';
   styleUrl: './small-calendar-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SmallCalendarHeaderComponent<D> implements OnDestroy {
-  private _calendar = inject<MatCalendar<D>>(MatCalendar);
-  private _dateAdapter = inject<DateAdapter<D>>(DateAdapter);
+export class SmallCalendarHeaderComponent<Moment> implements OnDestroy {
+  private _calendar = inject<MatCalendar<Moment>>(MatCalendar);
+  private _dateAdapter = inject<DateAdapter<Moment>>(DateAdapter);
   private _dateFormats = inject(MAT_DATE_FORMATS);
 
   private _destroyed = new Subject<void>();

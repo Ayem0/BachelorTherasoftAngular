@@ -69,6 +69,7 @@ import {
   ResourceInput,
 } from '@fullcalendar/resource/index.js';
 import { TranslateModule } from '@ngx-translate/core';
+import moment, { Moment } from 'moment';
 import { debounceTime, distinctUntilChanged, forkJoin, tap } from 'rxjs';
 import { User } from '../../../../core/auth/models/auth';
 import { AuthService } from '../../../../core/auth/services/auth.service';
@@ -137,8 +138,8 @@ export class EventDetailsComponent {
   private readonly matdialogRef = inject(MatDialogRef<EventDetailsComponent>);
   private readonly matDialogData: {
     eventId?: string;
-    start?: Date;
-    end?: Date;
+    start?: Moment;
+    end?: Moment;
   } = inject(MAT_DIALOG_DATA);
   private readonly eventId = this.matDialogData.eventId;
   private readonly eventService = inject(EventService);
@@ -253,21 +254,21 @@ export class EventDetailsComponent {
 
   public start = signal(
     this.matDialogData.start
-      ? new Date(this.matDialogData.start)
+      ? this.matDialogData.start
       : this.event()?.startDate
-      ? new Date(this.event()!.startDate)
-      : new Date()
+      ? this.event()!.startDate
+      : moment()
   );
   public end = signal(
     this.matDialogData.end
-      ? new Date(this.matDialogData.end)
+      ? this.matDialogData.end
       : this.event()?.endDate
-      ? new Date(this.event()!.endDate)
-      : new Date()
+      ? this.event()!.endDate
+      : moment()
   );
   public selectedRange = signal<DateRange>({
     start: this.start(),
-    end: this.date.incrementDate(new Date(), 1, 'day'),
+    end: this.date.incrementDate(moment(), 1, 'day'),
   });
 
   public calendarApi = computed(() => this.fullCalendar()?.getApi());
@@ -304,7 +305,7 @@ export class EventDetailsComponent {
     firstDay: this.locale.currentLang() === 'fr' ? 1 : 0,
     handleWindowResize: true,
     expandRows: true,
-    initialDate: this.start(),
+    initialDate: this.start().toISOString(),
     weekends: this.showWeekend(),
     locale: this.locale.currentLang(),
     timeZone: this.locale.currentTz(),
@@ -314,8 +315,8 @@ export class EventDetailsComponent {
     resources: this.handleResources.bind(this),
     datesSet: this.handleDatesSet.bind(this),
     scrollTime: {
-      hour: this.start().getUTCHours(),
-      minute: this.start().getUTCMinutes(),
+      hour: this.start().hours(),
+      minute: this.start().minutes(),
     },
   };
 
@@ -369,8 +370,8 @@ export class EventDetailsComponent {
 
   public temporaryEvents: Signal<EventInput[]> = computed(() =>
     this.resources().map((r) => ({
-      start: this.date.toLocaleString(this.start()),
-      end: this.date.toLocaleString(this.end()),
+      start: this.start().format(''),
+      end: this.end().format(''),
       title: 'test',
       resourceId: r.id,
       color:
@@ -443,10 +444,10 @@ export class EventDetailsComponent {
         distinctUntilChanged(),
         tap((formValue) => {
           if (formValue.startDate) {
-            this.start.set(new Date(formValue.startDate));
+            this.start.set(formValue.startDate);
           }
           if (formValue.endDate) {
-            this.end.set(new Date(formValue.endDate));
+            this.end.set(formValue.endDate);
           }
           if (formValue.room) {
             this.selectedRoom.set(
@@ -481,8 +482,8 @@ export class EventDetailsComponent {
       this.eventService.getById(this.eventId).subscribe(() => {
         this.form.patchValue({
           description: this.event()?.description ?? '',
-          startDate: this.event()?.startDate ?? new Date(),
-          endDate: this.event()?.endDate ?? new Date(),
+          startDate: this.event()?.startDate ?? moment(),
+          endDate: this.event()?.endDate ?? moment(),
           eventCategory: this.event()?.eventCategory ?? '',
           workspace: this.event()?.workspace ?? '',
           room: this.event()?.room ?? '',
@@ -520,25 +521,15 @@ export class EventDetailsComponent {
   }
 
   public dateChanged(
-    event: MatDatepickerInputEvent<Date>,
+    event: MatDatepickerInputEvent<Moment>,
     position: 'start' | 'end'
   ) {
     if (event.value) {
+      event.value.hours(this.start().hours());
+      event.value.minutes(this.start().minutes());
       if (position === 'start') {
-        event.value.setHours(
-          this.start().getHours(),
-          this.start().getMinutes(),
-          0,
-          0
-        );
         this.start.set(event.value);
       } else {
-        event.value.setHours(
-          this.end().getHours(),
-          this.end().getMinutes(),
-          0,
-          0
-        );
         this.end.set(event.value);
       }
     }
@@ -642,8 +633,8 @@ export class EventDetailsComponent {
   handleDatesSet(args: DatesSetArg) {
     this.dateTitle.set(args.view.title);
     this.selectedRange.set({
-      start: args.view.currentStart,
-      end: args.view.currentEnd,
+      start: moment(args.view.currentStart),
+      end: moment(args.view.currentEnd),
     });
   }
 }

@@ -326,14 +326,16 @@
                         class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-40 border-b border-white pl-4 rounded-t-[4px]">
                         <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
                             "form.startDate" | translate }}</span>
-                        <span class="dark:text-white">{{ event()?.startDate | date: 'longDate':"":currentLocal()
+                        <span class="dark:text-white">{{ event()?.startDate?.toISOString()| date:
+                            'longDate':"":currentLocal()
                             }}</span>
                     </div>
                     <div
                         class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-32 border-b border-white pl-4 rounded-t-[4px]">
                         <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
                             "form.startTime" | translate }}</span>
-                        <span class="dark:text-white">{{ event()?.startDate | date: 'shortTime':"":currentLocal()
+                        <span class="dark:text-white">{{ event()?.startDate?.toISOString() | date:
+                            'shortTime':"":currentLocal()
                             }}</span>
                     </div>
                     <span class="dark:text-white text-4xl pt-2">-</span>
@@ -341,13 +343,15 @@
                         class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-40 border-b border-white pl-4 rounded-t-[4px]">
                         <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
                             "form.endDate" | translate }}</span>
-                        <span class="dark:text-white">{{ event()?.endDate | date: 'longDate':"":currentLocal() }}</span>
+                        <span class="dark:text-white">{{ event()?.endDate?.toISOString() | date:
+                            'longDate':"":currentLocal() }}</span>
                     </div>
                     <div
                         class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-32 border-b border-white pl-4 rounded-t-[4px]">
                         <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
                             "form.endTime" | translate }}</span>
-                        <span class="dark:text-white">{{ event()?.endDate | date: 'shortTime':"":currentLocal()
+                        <span class="dark:text-white">{{ event()?.endDate?.toISOString() | date:
+                            'shortTime':"":currentLocal()
                             }}</span>
                     </div>
                 </div>

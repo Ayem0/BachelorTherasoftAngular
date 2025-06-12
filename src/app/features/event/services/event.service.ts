@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import { catchError, debounceTime, Observable, of, tap } from 'rxjs';
+import moment from 'moment';
+import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { UNKNOW_USER, User } from '../../../core/auth/models/auth';
 import { AuthService } from '../../../core/auth/services/auth.service';
@@ -191,8 +192,8 @@ export class EventService {
     users: User[];
     participants: Participant[];
   }> | null> {
-    const startDate = this.date.toUtcString(req.startDate);
-    const endDate = this.date.toUtcString(req.endDate);
+    const startDate = req.startDate.toISOString();
+    const endDate = req.endDate.toISOString();
     console.log(startDate, endDate);
     return this.http
       .post<
@@ -209,15 +210,14 @@ export class EventService {
         startDate: startDate,
         endDate: endDate,
       })
-
       .pipe(
         debounceTime(150),
         tap((event) => {
           this.setEventToStore(event);
           event.users.forEach((user) => {
             const keys = this.createKeys(user.id, {
-              start: req.startDate,
-              end: req.endDate,
+              start: moment(event.startDate),
+              end: moment(event.endDate),
             });
             keys.forEach((key) =>
               this.store.addToRelation('usersEvents', key, event.id)
@@ -225,9 +225,14 @@ export class EventService {
           });
           this.sonner.success(
             this.locale.translate('event.create.success'),
-            this.date.format(event.startDate, 'dddd, MMMM DD, YYYY [at] HH:mm')
+            event.startDate.format()
           );
         }),
+        map((event) => ({
+          ...event,
+          startDate: moment(event.startDate),
+          endDate: moment(event.endDate),
+        })),
         catchError((err) => {
           console.error('Error creating event:', err);
           this.sonner.error(this.locale.translate('event.create.error'));
@@ -247,8 +252,8 @@ export class EventService {
     users: User[];
     participants: Participant[];
   }> | null> {
-    const startDate = this.date.toUtcString(req.startDate);
-    const endDate = this.date.toUtcString(req.endDate);
+    const startDate = req.startDate.toISOString();
+    const endDate = req.endDate.toISOString();
     console.log(startDate, endDate);
     return this.http
       .put<
@@ -272,8 +277,8 @@ export class EventService {
           this.setEventToStore(event);
           event.users.forEach((user) => {
             const keys = this.createKeys(user.id, {
-              start: req.startDate,
-              end: req.endDate,
+              start: moment(event.startDate),
+              end: moment(event.endDate),
             });
             keys.forEach((key) =>
               this.store.addToRelation('usersEvents', key, event.id)
@@ -281,6 +286,11 @@ export class EventService {
           });
           this.sonner.success(this.locale.translate('event.update.success'));
         }),
+        map((event) => ({
+          ...event,
+          startDate: moment(event.startDate),
+          endDate: moment(event.endDate),
+        })),
         catchError((err) => {
           console.error('Error creating event:', err);
           this.sonner.error(this.locale.translate('event.update.error'));
@@ -324,12 +334,12 @@ export class EventService {
   // }
 
   private createKeys(id: string, range: DateRange): EventKey[] {
-    let date = new Date(range.start);
+    let date = moment(range.start);
     const keys: EventKey[] = [];
     while (date < range.end) {
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
+      const year = date.year();
+      const month = date.month() + 1;
+      const day = date.date();
       keys.push(`${id}/${year}/${month}/${day}`);
       date = this.date.incrementDate(date, 1, 'day');
     }
@@ -337,11 +347,11 @@ export class EventService {
   }
 
   private isAlreadyLoaded(id: string, range: DateRange) {
-    let date = new Date(range.start);
+    let date = moment(range.start);
     while (date < range.end) {
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
+      const year = date.year();
+      const month = date.month() + 1;
+      const day = date.date();
       const key: EventKey = `${id}/${year}/${month}/${day}`;
       if (!this.store.usersEvents().has(key)) return false;
       date = this.date.incrementDate(date, 1, 'day');
@@ -401,6 +411,8 @@ export class EventService {
       tagIds: tagIds,
       userIds: userIds,
       participantIds: participantIds,
+      startDate: moment.utc(event.startDate),
+      endDate: moment.utc(event.endDate),
     });
   }
 
@@ -428,11 +440,11 @@ export class EventService {
     }>[]
   ) {
     events.forEach((event) => this.setEventToStore(event));
-    let date = new Date(range.start);
+    let date = moment.utc(range.start);
     while (date < range.end) {
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
+      const year = date.year();
+      const month = date.month() + 1;
+      const day = date.date();
       const key: EventKey = `${id}/${year}/${month}/${day}`;
       this.store.setRelation(
         'usersEvents',
@@ -480,6 +492,13 @@ export class EventService {
       .pipe(
         debounceTime(800),
         tap((events) => this.setEventsToStore(id, range, events)),
+        map((events) =>
+          events.map((event) => ({
+            ...event,
+            startDate: moment.utc(event.startDate),
+            endDate: moment.utc(event.endDate),
+          }))
+        ),
         catchError((err) => {
           console.error(err);
           this.sonner.error(this.locale.translate('event.get.error'));

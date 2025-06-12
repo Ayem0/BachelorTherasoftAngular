@@ -42,11 +42,15 @@ import {
   EventSourceFuncArg,
   ViewApi,
 } from '@fullcalendar/core';
-import { DateRange } from '@fullcalendar/core/internal';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import {
+  default as momentPlugin,
+  default as momentTimezonePlugin,
+} from '@fullcalendar/moment';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { TranslateModule } from '@ngx-translate/core';
+import moment, { Moment } from 'moment';
 import { debounceTime, forkJoin, Subject, switchMap, tap } from 'rxjs';
 import { LayoutService } from '../../../../core/layout/layout/layout.service';
 import { DateService } from '../../../../shared/services/date/date.service';
@@ -57,17 +61,10 @@ import { Room } from '../../../room/models/room';
 import { Tag } from '../../../tag/models/tag';
 import { Workspace } from '../../../workspace/models/workspace';
 import { WorkspaceService } from '../../../workspace/services/workspace.service';
-import { Event } from '../../models/event';
+import { DateRange, Event } from '../../models/event';
 import { AgendaService } from '../../services/agenda.service';
 import { EventService } from '../../services/event.service';
 import { EventDetailsComponent } from '../event-details/event-details.component';
-// import { FullCalendarEventDialogComponent } from '../full-calendar-event-dialog/full-calendar-event-dialog.component';
-import {
-  default as momentPlugin,
-  default as momentTimezonePlugin,
-  toMoment,
-} from '@fullcalendar/moment';
-import moment, { Moment } from 'moment';
 import { SmallCalendarHeaderComponent } from '../small-calendar-header/small-calendar-header.component';
 @Component({
   selector: 'app-calendar',
@@ -132,12 +129,12 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   );
   public selectedDate = signal(
     this.toClosestWeekDay(
-      this.paramToDate(this.route.snapshot.queryParamMap.get('s')) || new Date()
+      this.paramToDate(this.route.snapshot.queryParamMap.get('s')) || moment()
     )
   );
   public selectedRange = signal<DateRange>({
-    start: new Date(),
-    end: this.date.incrementDate(new Date(), 1, 'day'),
+    start: moment(),
+    end: this.date.incrementDate(moment(), 1, 'day'),
   });
 
   private events = this.eventService.agendaEvents(this.selectedRange);
@@ -170,7 +167,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     selectMirror: true, // show event getting created
     dayMaxEvents: true,
     allDaySlot: false, // top space for all day slot
-    initialDate: this.selectedDate(),
+    initialDate: this.selectedDate().toISOString(),
     timeZone: this.locale.currentTz(),
     locale: this.locale.currentLang(),
     slotDuration: '00:05:00',
@@ -250,8 +247,12 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     const mapped = events.map((event) => ({
       id: event.id,
       title: event.eventCategory.name,
-      start: this.date.toLocaleString(event.startDate),
-      end: this.date.toLocaleString(event.endDate),
+      start: event.startDate
+        .tz(this.locale.currentTz())
+        .format('YYYY-MM-DDTHH:mm:ssZ'),
+      end: event.endDate
+        .tz(this.locale.currentTz())
+        .format('YYYY-MM-DDTHH:mm:ssZ'),
       color:
         this.viewMode() === 'dayGridMonth'
           ? event.workspace.color
@@ -312,12 +313,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
               start: this.selectedRange().start,
               end: this.selectedRange().end,
             })
-            .pipe(
-              tap(() => {
-                // console.log(this.filteredEvents());
-                fn(this.toEventInput(this.filteredEvents()));
-              })
-            )
+            .pipe(tap(() => fn(this.toEventInput(this.filteredEvents()))))
         )
       )
       .subscribe();
@@ -329,7 +325,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       this.calendarApi().changeView(x.value);
       this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
 
-      this.calendarApi().gotoDate(this.selectedDate());
+      this.calendarApi().gotoDate(this.selectedDate().toISOString());
       this.calendarApi().refetchEvents();
 
       this.setViewModeToParams();
@@ -340,23 +336,15 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     this.calendarApi().refetchEvents();
   }
 
-  private toClosestWeekDay(date: Date): Date {
+  private toClosestWeekDay(date: Moment): Moment {
     if (this.showWeekend()) return date;
     if (this.viewMode() === 'timeGridDay') {
-      if (date.getDay() === 0 || date.getDay() === 6) {
-        return this.date.incrementDate(
-          date,
-          date.getDay() === 0 ? 1 : 2,
-          'day'
-        );
+      if (date.day() === 0 || date.day() === 6) {
+        return this.date.incrementDate(date, date.day() === 0 ? 1 : 2, 'day');
       }
     } else if (this.viewMode() === 'timeGridWeek') {
-      if (date.getDay() === 0 || date.getDay() === 6) {
-        return this.date.incrementDate(
-          date,
-          date.getDay() === 0 ? 2 : 1,
-          'day'
-        );
+      if (date.day() === 0 || date.day() === 6) {
+        return this.date.incrementDate(date, date.day() === 0 ? 2 : 1, 'day');
       }
     }
     return date;
@@ -364,10 +352,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
 
   public ngAfterViewInit(): void {
     this.locale.currentLang$.subscribe(() => this.setLocale());
-    this.locale.currentTz$.subscribe(() => {
-      console.log('LOCALE TZ SUBSCRIBE: ', this.locale.currentTz());
-      this.calendarApi().setOption('timeZone', this.locale.currentTz());
-    });
+    this.locale.currentTz$.subscribe(() => this.setTimezone());
     this.agendaService.showWeekendObs.subscribe((x) => {
       this.calendarApi().setOption('weekends', x);
       this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
@@ -379,14 +364,14 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     this.agendaService.setShowWeekends(event.checked);
   }
 
-  private paramToDate(param?: string | null): Date | null {
+  private paramToDate(param?: string | null): Moment | null {
     if (!param) {
       return null;
     }
     try {
       const [day, month, year] = param.split('/').map(Number);
       // build a Date at 00:00 UTC
-      const utcMidnight = new Date(Date.UTC(year, month - 1, day));
+      const utcMidnight = moment(new Date(Date.UTC(year, month - 1, day)));
       console.log(utcMidnight);
       return utcMidnight;
     } catch (error) {
@@ -396,10 +381,10 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
 
   selectedChange(selectedDate: Moment | null) {
     if (selectedDate) {
-      this.selectedDate.set(selectedDate.toDate());
+      this.selectedDate.set(selectedDate);
       if (this.viewMode() === 'timeGridDay') {
         this.calendarApi().gotoDate(
-          this.date.incrementDate(selectedDate.toDate(), 1, 'day')
+          this.date.incrementDate(selectedDate, 1, 'day').toISOString()
         );
       } else {
         this.calendarApi().gotoDate(selectedDate.toDate());
@@ -424,8 +409,8 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       );
     }
     this.selectedRange.set({
-      start: args.view.currentStart,
-      end: args.view.currentEnd,
+      start: moment(args.view.currentStart),
+      end: moment(args.view.currentEnd),
     });
     // update the current month view if we change month for small calendar
     this.matCalendar().activeDate = moment(this.selectedDate());
@@ -433,7 +418,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     // update query params
     this.router.navigate(['/agenda'], {
       queryParams: {
-        s: this.date.format(this.selectedDate(), 'DD/MM/YYYY'),
+        s: this.selectedDate().format('DD/MM/YYYY'),
       },
       queryParamsHandling: 'merge',
     });
@@ -443,7 +428,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     const viewMode = this.calendarApi().view.type as ViewMode;
     switch (viewMode) {
       case 'timeGridDay':
-        if (!this.showWeekend() && this.selectedDate().getDay() === 1) {
+        if (!this.showWeekend() && this.selectedDate().day() === 1) {
           this.selectedDate.set(
             this.date.decrementDate(this.selectedDate(), 3, 'day')
           );
@@ -483,7 +468,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     const viewMode = this.calendarApi().view.type as ViewMode;
     switch (viewMode) {
       case 'timeGridDay':
-        if (!this.showWeekend() && this.selectedDate().getDay() === 5) {
+        if (!this.showWeekend() && this.selectedDate().day() === 5) {
           this.selectedDate.set(
             this.date.incrementDate(this.selectedDate(), 3, 'day')
           );
@@ -520,12 +505,25 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   }
 
   setToday() {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    this.selectedDate.set(
-      new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-    );
-    this.calendarApi().today();
+    this.selectedDate.set(moment());
+    this.calendarApi().gotoDate(this.selectedDate().toISOString());
+  }
+
+  private setTimezone() {
+    const newTimezone = this.locale.currentTz();
+    console.log('Setting timezone to:', newTimezone);
+
+    this.calendarApi().setOption('timeZone', newTimezone);
+
+    const currentRange = this.selectedRange();
+    const newRange = {
+      start: currentRange.start.clone().tz(newTimezone),
+      end: currentRange.end.clone().tz(newTimezone),
+    };
+
+    this.selectedRange.set(newRange);
+
+    this.calendarApi().refetchEvents();
   }
 
   public weekEndFilter = this.agendaService.weekEndFilter;
@@ -540,20 +538,16 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
 
   private handleDateSelect(selectInfo: DateSelectArg) {
     this.calendarApi().unselect();
-    const start = toMoment(selectInfo.start, selectInfo.view.calendar);
-    console.log(start);
+    const start = moment.utc(selectInfo.start);
+    const end = moment.utc(selectInfo.end);
     console.log(selectInfo);
-    this.openDialog(
-      undefined,
-      this.date.toUtc(selectInfo.start),
-      this.date.toUtc(selectInfo.end)
-    );
+    this.openDialog(undefined, start, end);
   }
 
   public openDialog(
     eventId?: string,
-    start?: Date | string,
-    end?: Date | string
+    start?: Moment | string,
+    end?: Moment | string
   ) {
     console.log(
       'OPENING DIALOG',
@@ -580,8 +574,8 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   private handleEventClick(clickInfo: EventClickArg) {
     this.openDialog(
       clickInfo.event.id,
-      clickInfo.event.start ?? undefined,
-      clickInfo.event.end ?? undefined
+      clickInfo.event.start ? moment.utc(clickInfo.event.start) : undefined,
+      clickInfo.event.end ? moment.utc(clickInfo.event.end) : undefined
     );
   }
 
@@ -590,7 +584,7 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   }
 
   autoResize(arg: { view: ViewApi }) {
-    setTimeout(() => this.calendarApi().updateSize(), 300);
+    this.calendarApi().updateSize();
   }
 
   toggleSidebar() {
