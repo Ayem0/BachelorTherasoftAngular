@@ -327,7 +327,7 @@
                         <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
                             "form.startDate" | translate }}</span>
                         <span class="dark:text-white">{{ event()?.startDate?.toISOString()| date:
-                            'longDate':"":currentLocal()
+                            'longDate':timezoneOffset():currentLocal()
                             }}</span>
                     </div>
                     <div
@@ -335,7 +335,7 @@
                         <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
                             "form.startTime" | translate }}</span>
                         <span class="dark:text-white">{{ event()?.startDate?.toISOString() | date:
-                            'shortTime':"":currentLocal()
+                            'shortTime':timezoneOffset():currentLocal()
                             }}</span>
                     </div>
                     <span class="dark:text-white text-4xl pt-2">-</span>
@@ -344,14 +344,14 @@
                         <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
                             "form.endDate" | translate }}</span>
                         <span class="dark:text-white">{{ event()?.endDate?.toISOString() | date:
-                            'longDate':"":currentLocal() }}</span>
+                            'longDate':timezoneOffset():currentLocal() }}</span>
                     </div>
                     <div
                         class="bg-[--mdc-filled-text-field-container-color] h-14 flex flex-col w-32 border-b border-white pl-4 rounded-t-[4px]">
                         <span class="text-sm pt-1 font-light dark:text-[--mdc-filled-text-field-label-text-color]">{{
                             "form.endTime" | translate }}</span>
                         <span class="dark:text-white">{{ event()?.endDate?.toISOString() | date:
-                            'shortTime':"":currentLocal()
+                            'shortTime':timezoneOffset():currentLocal()
                             }}</span>
                     </div>
                 </div>

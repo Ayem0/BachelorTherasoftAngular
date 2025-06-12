@@ -36,6 +36,10 @@ export class LocaleService {
     return tz ? now.tz(tz).zoneAbbr() : now.format('Z');
   });
 
+  public localeOffsetValue = computed(() =>
+    moment().tz(this.currentTz()).format('ZZ')
+  );
+
   public currentTz$ = toObservable(this.currentTz);
   public currentLang$ = toObservable(this.currentLang);
 

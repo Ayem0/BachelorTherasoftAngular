@@ -159,6 +159,7 @@ export class EventDetailsComponent {
   public currentLocal = computed(() =>
     this.locale.currentLang() === 'en' ? 'en-US' : 'fr-FR'
   );
+  public timezoneOffset = this.locale.localeOffsetValue;
   public isLoadingEvent = signal(false);
   public isSubmitting = signal(false);
 
