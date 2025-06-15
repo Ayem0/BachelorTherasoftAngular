@@ -68,6 +68,7 @@ export class RegisterComponent {
     const { email, password, confirmPassword } = this.registerForm.value;
 
     if (this.registerForm.valid && email && password && confirmPassword) {
+      this.registerForm.disable();
       this.authService
         .register(email, password, confirmPassword)
         .subscribe((res) => {
@@ -77,6 +78,7 @@ export class RegisterComponent {
             this.sonnerService.error('Invalid credentials');
           }
           this.isLoading.set(false);
+          this.registerForm.enable();
         });
     }
   }

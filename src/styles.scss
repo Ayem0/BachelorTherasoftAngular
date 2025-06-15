@@ -216,9 +216,15 @@ $dark: mat.define-theme((
       }
     }
   }
+  .fc-theme-standard .fc-popover {
+    background-color: white !important;
+  }
 }
 
 .dark {
+  .fc-theme-standard .fc-popover {
+    background-color: #4b4c4e !important;
+  }
   --fc-border-color: #4b4c4e !important;
   --mat-app-background-hover-color: #252629;
   @include mat.button-color($dark);

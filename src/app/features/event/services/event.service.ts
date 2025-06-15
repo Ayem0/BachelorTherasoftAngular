@@ -40,6 +40,11 @@ export class EventService {
   private readonly store = inject(Store);
   private readonly locale = inject(LocaleService);
   private readonly date = inject(DateService);
+  private format = computed(() =>
+    this.locale.currentLang() === 'en'
+      ? 'MM/DD/YYYY hh:mm A'
+      : 'DD/MM/YYYY HH:mm'
+  );
 
   public detailedEvent(id: Id | null | undefined): Signal<Event<{
     eventCategory: EventCategory;
@@ -225,7 +230,7 @@ export class EventService {
           });
           this.sonner.success(
             this.locale.translate('event.create.success'),
-            event.startDate.format()
+            req.startDate.format(this.format())
           );
         }),
         map((event) => ({

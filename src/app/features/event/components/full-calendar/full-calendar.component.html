@@ -1,14 +1,13 @@
 <div class="flex size-full">
     <mat-sidenav-container [hasBackdrop]="showOver()" [style.flex]="'1 0 auto'" class="z-50 !flex">
-        <mat-sidenav #sidebar [(opened)]="isSideBarOpen" (openedChange)="isOpenChanged($event)" autoFocus="false"
-            [mode]="sidenavMode()" [fixedInViewport]="true" [fixedTopGap]="56" class="!w-64 !rounded-none">
+        <mat-sidenav #sidebar [(opened)]="isSideBarOpen" autoFocus="false" [mode]="sidenavMode()"
+            [fixedInViewport]="true" [fixedTopGap]="56" class="!w-64 !rounded-none">
             <div class="flex flex-col overflow-hidden pt-3 sh">
                 <button mat-flat-button class="mx-2" (click)="openDialog()">
-                    <mat-icon>add</mat-icon>
-                    {{ "action.create" | translate }}
+                    <mat-icon>add</mat-icon>{{ "action.create" | translate }}
                 </button>
                 <mat-calendar [dateFilter]="weekEndFilter" [headerComponent]="customHeader" #calendar
-                    [(selected)]="selectedDate" (selectedChange)="selectedChange($event)" class="h-80">
+                    [(selected)]="selectedDate" (selectedChange)="selectedDateChange($event)" class="h-80">
                 </mat-calendar>
                 <mat-expansion-panel class="!shadow-none px-2">
                     <mat-expansion-panel-header>
@@ -37,8 +36,8 @@
             <div class="flex w-full justify-between overflow-hidden pb-2 px-4 pt-3 flex-col md:flex-row">
                 <div class="flex items-center gap-2">
                     <button mat-icon-button aria-label="TODO" (click)="toggleSidebar()">
-                        <mat-icon>{{ isSideBarOpen() ? "keyboard_double_arrow_left" : "keyboard_double_arrow_right"
-                            }}</mat-icon>
+                        <mat-icon>{{ isSideBarOpen() ? "keyboard_double_arrow_left" :
+                            "keyboard_double_arrow_right"}}</mat-icon>
                     </button>
                     <span class="text-2xl">{{ dateTitle() }} {{ localeOffsetName() }}</span>
                 </div>
@@ -52,7 +51,7 @@
                         <mat-icon>arrow_forward_ios</mat-icon>
                     </button>
                     <mat-form-field appearance="outline" class="w-28 form-field-h40">
-                        <mat-select [value]="viewMode()">
+                        <mat-select [value]="viewMode()" (selectionChange)="viewModeChange($event)">
                             <mat-option value="timeGridDay">{{ "calendar.day" | translate }}</mat-option>
                             <mat-option value="timeGridWeek">{{ "calendar.week" | translate }}</mat-option>
                             <mat-option value="dayGridMonth">{{ "calendar.month" | translate }}</mat-option>
@@ -64,8 +63,8 @@
                     <mat-menu #calendarSettings>
                         <button mat-menu-item aria-label="French" aria-label="French">
                             <mat-slide-toggle [(ngModel)]="showWeekend" (change)="showWeekendChange($event)"
-                                (click)="$event.stopPropagation()">{{
-                                "calendar.weekends" | translate }}</mat-slide-toggle>
+                                (click)="$event.stopPropagation()">{{"calendar.weekends" | translate
+                                }}</mat-slide-toggle>
                         </button>
                     </mat-menu>
                 </div>
