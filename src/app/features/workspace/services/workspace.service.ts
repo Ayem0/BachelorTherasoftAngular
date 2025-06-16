@@ -128,6 +128,16 @@ export class WorkspaceService {
     this.socket.onEvent('WorkspaceAdded', (workspace: Workspace) => {
       console.log('WorkspaceAdded', workspace);
       this.addWorkspaceToStore(workspace);
+      this.socket
+        .invoke('AddToGroupAsync', workspace.id)
+        .catch((err) => console.error(err));
+    });
+    this.socket.onEvent('WorkspaceRemoved', (workspaceId: string) => {
+      console.log('WorkspaceRemoved', workspaceId);
+      this.removeWorkspaceFromStore(workspaceId);
+      this.socket
+        .invoke('RemoveFromGroupAsync', workspaceId)
+        .catch((err) => console.error(err));
     });
   }
 
@@ -138,6 +148,14 @@ export class WorkspaceService {
       userId,
       workspaces.map((w) => w.id)
     );
+  }
+
+  private removeWorkspaceFromStore(workspaceId: string) {
+    const userId = this.auth.currentUserInfo()?.id;
+    if (userId) {
+      this.store.deleteFromRelation('usersWorkspaces', userId, workspaceId);
+    }
+    this.store.deleteEntity('workspaces', workspaceId);
   }
 
   private addWorkspaceToStore(workspace: Workspace) {

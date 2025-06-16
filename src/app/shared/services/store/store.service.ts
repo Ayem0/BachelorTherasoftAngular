@@ -18,7 +18,6 @@ export type StoreState = {
   // Area
   areas: Map<Id, Area>;
   areasRooms: Map<Id, Set<Id>>;
-
   // Workspace
   workspaces: Map<Id, Workspace>;
   workspacesLocations: Map<Id, Set<Id>>;
@@ -32,35 +31,26 @@ export type StoreState = {
   workspacesAreas: Map<Id, Set<Id>>;
   workspacesRooms: Map<Id, Set<Id>>;
   workspacesInvitations: Map<Id, Set<Id>>;
-
   // Event
   events: Map<Id, Event>;
   eventsParticipants: Map<Id, Set<Id>>;
   eventsUsers: Map<Id, Set<Id>>;
   eventsTags: Map<Id, Set<Id>>;
-
   // Location
   locations: Map<Id, Location>;
   locationsAreas: Map<Id, Set<Id>>;
-
   // EventCategory
   eventCategories: Map<Id, EventCategory>;
-
   // Participant
   participants: Map<Id, Participant>;
-
   // ParticipantCategory
   participantCategories: Map<Id, ParticipantCategory>;
-
   // WorkspaceRole
   workspaceRoles: Map<Id, WorkspaceRole>;
-
   // Tag
   tags: Map<Id, Tag>;
-
   // Invitation
   invitations: Map<Id, Invitation>;
-
   // User
   users: Map<Id, User>;
   usersEvents: Map<EventKey, Set<Id>>;
@@ -69,12 +59,10 @@ export type StoreState = {
   usersWorkspaces: Map<Id, Set<Id>>;
   usersSentInvitations: Map<Id, Set<Id>>;
   usersReceivedInvitations: Map<Id, Set<Id>>;
-
   // Slot
   slots: Map<Id, Slot>;
   slotsEventCategories: Map<Id, Set<Id>>;
   slotsRooms: Map<Id, Set<Id>>;
-
   // Room
   rooms: Map<Id, Room>;
   roomsSlots: Map<Id, Set<Id>>;

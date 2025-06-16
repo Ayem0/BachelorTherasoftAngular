@@ -22,14 +22,12 @@ export class LocaleService {
 
   private readonly langKey = 'lang';
   private readonly tzKey = 'tz';
-
   private readonly validLangs: string[] = ['en', 'fr'];
 
   public readonly currentLang = signal(
     this.translateService.currentLang as Lang
   );
   public readonly currentTz = signal('');
-
   public localeOffsetName = computed(() => {
     const tz = this.currentTz();
     const now = moment();
@@ -90,7 +88,6 @@ export class LocaleService {
     const currentTz = this.currentTz();
     if (currentTz !== tz) {
       this.currentTz.set(tz);
-      // moment.tz.setDefault(tz);
       localStorage.setItem(this.tzKey, tz);
     }
   }
