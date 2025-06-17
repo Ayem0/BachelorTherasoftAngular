@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import { catchError, debounceTime, map, Observable, of, tap } from 'rxjs';
+import { catchError, debounceTime, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { Id } from '../../../shared/models/entity';
@@ -8,11 +8,7 @@ import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SocketService } from '../../../shared/services/socket/socket.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
 import { Store } from '../../../shared/services/store/store.service';
-import {
-  UNKNOW_WORKSPACE,
-  Workspace,
-  WorkspaceRequest,
-} from '../models/workspace';
+import { Workspace, WorkspaceRequest } from '../models/workspace';
 
 @Injectable({
   providedIn: 'root',
@@ -33,14 +29,15 @@ export class WorkspaceService {
     return computed(() => {
       const id = this.auth.currentUserInfo()?.id;
       if (!id || !this.store.usersWorkspaces().has(id)) return [];
-      return Array.from(
-        this.store.usersWorkspaces().get(id)!,
-        (id) => this.store.workspaces().get(id) ?? UNKNOW_WORKSPACE
-      );
+      return Array.from(this.store.usersWorkspaces().get(id)!, (id) =>
+        this.store.workspaces().get(id)
+      ).filter((w) => !!w);
     });
   }
 
-  public workspaceById(id: Id | null | undefined) {
+  public workspaceById(
+    id: Id | null | undefined
+  ): Signal<Workspace | undefined> {
     return computed(() => (id ? this.store.workspaces().get(id) : undefined));
   }
 
@@ -49,16 +46,16 @@ export class WorkspaceService {
     if (!id || this.store.usersWorkspaces().has(id)) return of([]);
     return this.http.get<Workspace[]>(`${environment.apiUrl}/workspace`).pipe(
       debounceTime(150),
-      tap((workspaces) => this.setWorkspacesToStore(id, workspaces)),
+      tap((workspaces) => this.setWorkspacesToStore(workspaces)),
       catchError((err) => {
-        console.error('Error fetching workspaces:', err);
+        console.error(err);
         this.sonner.error(this.locale.translate('workspace.get.error'));
         return of([]);
       })
     );
   }
 
-  public createWorkspace(req: WorkspaceRequest): Observable<boolean> {
+  public createWorkspace(req: WorkspaceRequest): Observable<Workspace | null> {
     return this.http
       .post<Workspace>(`${environment.apiUrl}/workspace`, req)
       .pipe(
@@ -69,11 +66,10 @@ export class WorkspaceService {
             this.locale.translate('workspace.create.success')
           );
         }),
-        map(() => true),
         catchError((err) => {
           console.error(err);
           this.sonner.error(this.locale.translate('workspace.create.error'));
-          return of(false);
+          return of(null);
         })
       );
   }
@@ -81,7 +77,7 @@ export class WorkspaceService {
   public updateWorkspace(
     id: string,
     req: WorkspaceRequest
-  ): Observable<boolean> {
+  ): Observable<Workspace | null> {
     return this.http
       .put<Workspace>(`${environment.apiUrl}/workspace/${id}`, req)
       .pipe(
@@ -92,11 +88,10 @@ export class WorkspaceService {
             this.locale.translate('workspace.update.success')
           );
         }),
-        map(() => true),
         catchError((err) => {
           console.error(err);
           this.sonner.error(this.locale.translate('workspace.update.error'));
-          return of(false);
+          return of(null);
         })
       );
   }
@@ -117,10 +112,6 @@ export class WorkspaceService {
   }
 
   private listenForSocketEvents() {
-    this.socket.onEvent('WorkspaceCreated', (workspace: Workspace) => {
-      console.log('WorkspaceCreated', workspace);
-      this.addWorkspaceToStore(workspace);
-    });
     this.socket.onEvent('WorkspaceUpdated', (workspace: Workspace) => {
       console.log('WorkspaceUpdated', workspace);
       this.addWorkspaceToStore(workspace);
@@ -141,7 +132,9 @@ export class WorkspaceService {
     });
   }
 
-  private setWorkspacesToStore(userId: Id, workspaces: Workspace[]) {
+  private setWorkspacesToStore(workspaces: Workspace[]) {
+    const userId = this.auth.currentUserInfo()?.id;
+    if (!userId) return;
     this.store.setEntities('workspaces', workspaces);
     this.store.setRelation(
       'usersWorkspaces',
@@ -152,17 +145,15 @@ export class WorkspaceService {
 
   private removeWorkspaceFromStore(workspaceId: string) {
     const userId = this.auth.currentUserInfo()?.id;
-    if (userId) {
-      this.store.deleteFromRelation('usersWorkspaces', userId, workspaceId);
-    }
+    if (!userId) return;
     this.store.deleteEntity('workspaces', workspaceId);
+    this.store.deleteFromRelation('usersWorkspaces', userId, workspaceId);
   }
 
   private addWorkspaceToStore(workspace: Workspace) {
     const userId = this.auth.currentUserInfo()?.id;
-    if (userId) {
-      this.store.addToRelation('usersWorkspaces', userId, workspace.id);
-    }
+    if (!userId) return;
     this.store.setEntity('workspaces', workspace);
+    this.store.addToRelation('usersWorkspaces', userId, workspace.id);
   }
 }

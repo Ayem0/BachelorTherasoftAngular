@@ -24,22 +24,16 @@ export class LocaleService {
   private readonly tzKey = 'tz';
   private readonly validLangs: string[] = ['en', 'fr'];
 
-  public readonly currentLang = signal(
-    this.translateService.currentLang as Lang
-  );
+  public readonly currentLang = signal('');
   public readonly currentTz = signal('');
-  public localeOffsetName = computed(() => {
-    const tz = this.currentTz();
-    const now = moment();
-    return tz ? now.tz(tz).zoneAbbr() : now.format('Z');
-  });
-
+  public currentTz$ = toObservable(this.currentTz);
+  public currentLang$ = toObservable(this.currentLang);
+  public localeOffsetName = computed(() =>
+    moment().tz(this.currentTz()).zoneAbbr()
+  );
   public localeOffsetValue = computed(() =>
     moment().tz(this.currentTz()).format('ZZ')
   );
-
-  public currentTz$ = toObservable(this.currentTz);
-  public currentLang$ = toObservable(this.currentLang);
 
   public loadLang() {
     this.translateService.setDefaultLang('en');

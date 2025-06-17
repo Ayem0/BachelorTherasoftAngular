@@ -14,6 +14,7 @@
         "close": "Fermer"
     },
     "area": {
+        "name": "Zone",
         "title": "Zones",
         "create": {
             "success": "Zone créée avec succès",
@@ -28,6 +29,7 @@
         }
     },
     "location": {
+        "name": "Site",
         "title": "Sites",
         "create": {
             "success": "Site créé avec succès",
@@ -42,6 +44,7 @@
         }
     },
     "room": {
+        "name": "Salle",
         "title": "Salles",
         "create": {
             "success": "Salle créée avec succès",
