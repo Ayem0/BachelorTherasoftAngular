@@ -43,7 +43,8 @@ export class WorkspaceService {
 
   public getWorkspaces(): Observable<Workspace[]> {
     const id = this.auth.currentUserInfo()?.id;
-    if (!id || this.store.usersWorkspaces().has(id)) return of([]);
+    if (!id || this.store.usersWorkspaces().has(id))
+      return of(this.workspaces()());
     return this.http.get<Workspace[]>(`${environment.apiUrl}/workspace`).pipe(
       debounceTime(150),
       tap((workspaces) => this.setWorkspacesToStore(workspaces)),
@@ -96,8 +97,9 @@ export class WorkspaceService {
       );
   }
 
-  public getWorkspaceById(id: string): Observable<Workspace | undefined> {
-    if (this.store.workspaces().has(id)) return of(undefined);
+  public getWorkspaceById(id: string): Observable<Workspace | null> {
+    if (this.store.workspaces().has(id))
+      return of(this.store.workspaces().get(id)!);
     return this.http
       .get<Workspace>(`${environment.apiUrl}/workspace/${id}`)
       .pipe(
@@ -106,7 +108,7 @@ export class WorkspaceService {
         catchError((err) => {
           console.error(err);
           this.sonner.error(this.locale.translate('workspace.get.error'));
-          return of(undefined);
+          return of(null);
         })
       );
   }

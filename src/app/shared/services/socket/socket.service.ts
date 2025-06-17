@@ -11,7 +11,8 @@ export class SocketService {
     .withAutomaticReconnect()
     .build();
 
-  public async startConnection() {
+  public async startConnection(retryCount = 0) {
+    const maxRetries = 5;
     try {
       await this.connection.start();
       console.log('Socket connection started');
@@ -25,9 +26,11 @@ export class SocketService {
         console.log('Socket connection lost, reconnecting...');
       });
     } catch (error) {
-      setTimeout(() => {
-        this.startConnection();
-      }, 1000);
+      if (retryCount >= maxRetries) {
+        setTimeout(() => {
+          this.startConnection(retryCount + 1);
+        }, 1000);
+      }
     }
   }
 
@@ -39,13 +42,16 @@ export class SocketService {
     return this.connection.invoke(methodName, ...args);
   }
 
-  public async endConnection() {
+  public async endConnection(retryCount = 0) {
+    const maxRetries = 5;
     try {
       await this.connection.stop();
     } catch (error) {
-      setTimeout(() => {
-        this.endConnection();
-      }, 1000);
+      if (retryCount >= maxRetries) {
+        setTimeout(() => {
+          this.endConnection(retryCount + 1);
+        }, 1000);
+      }
     }
   }
 }
