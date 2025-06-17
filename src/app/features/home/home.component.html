@@ -1,10 +1,11 @@
-<section class="pb-16 gradient-bg min-h-screen flex items-center">
+<section class="pb-16 sm: pt-16 sm:py-12 lg:py-0 lg:pt-0 gradient-bg min-h-screen flex items-center">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
-            <div class="animate-fade-in-up">
-                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+            <div class="animate-slide-up">
+                <h1 class="text-4xl md:text-6xl font-bold pb-5 leading-tight">
                     Plan Your Tasks
-                    <span class="block bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                    <span
+                        class="block bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent pb-1">
                         Effortlessly
                     </span>
                 </h1>
@@ -13,9 +14,11 @@
                     productivity, and achieve your goals with beautiful simplicity.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <button mat-flat-button (onclick)="navigateToRegister()">
-                        Get Started
-                    </button>
+                    <a routerLink="/register">
+                        <button mat-flat-button>
+                            Get Started
+                        </button>
+                    </a>
                 </div>
             </div>
 
