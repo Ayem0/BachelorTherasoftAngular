@@ -10,7 +10,5 @@ import { LocaleService } from './shared/services/locale/locale.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
-  title = 'Taskify';
-
   private readonly locale = inject(LocaleService);
 }
