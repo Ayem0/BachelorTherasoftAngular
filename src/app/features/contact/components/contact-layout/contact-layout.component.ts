@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
@@ -21,6 +27,7 @@ import { ContactListComponent } from '../contact-list/contact-list.component';
   ],
   templateUrl: './contact-layout.component.html',
   styleUrl: './contact-layout.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContactLayoutComponent implements OnInit {
   private readonly matDialog = inject(MatDialog);

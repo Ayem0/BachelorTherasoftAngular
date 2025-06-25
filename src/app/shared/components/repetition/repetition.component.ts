@@ -1,5 +1,5 @@
 import { KeyValuePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -8,7 +8,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -30,9 +29,9 @@ import { Repetition } from '../../models/repetition';
     FormsModule,
     MatButtonModule,
   ],
-  providers: [provideNativeDateAdapter()],
   templateUrl: './repetition.component.html',
   styleUrl: './repetition.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RepetitionComponent {
   private readonly repetition: Repetition = inject(MAT_DIALOG_DATA);

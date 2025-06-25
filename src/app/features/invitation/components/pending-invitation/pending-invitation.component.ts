@@ -1,4 +1,11 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
@@ -16,6 +23,7 @@ import { InvitationService } from '../../services/invitation.service';
   imports: [MatButtonModule, MatIcon, MatTooltip, MatProgressSpinner],
   templateUrl: './pending-invitation.component.html',
   styleUrl: './pending-invitation.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PendingInvitationComponent {
   private readonly invitationService = inject(InvitationService);

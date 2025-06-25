@@ -18,17 +18,12 @@ import {
   MatFormFieldModule,
 } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
-import {
-  MatListModule,
-  MatSelectionList,
-  MatSelectionListChange,
-} from '@angular/material/list';
+import { MatListModule, MatSelectionListChange } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { MatSelect, MatSelectModule } from '@angular/material/select';
-import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import {
-  MatSlideToggle,
   MatSlideToggleChange,
   MatSlideToggleModule,
 } from '@angular/material/slide-toggle';
@@ -41,18 +36,21 @@ import {
   CalendarOptions,
   DateSelectArg,
   DatesSetArg,
-  EventApi,
   EventClickArg,
   EventInput,
   EventSourceFuncArg,
   ViewApi,
 } from '@fullcalendar/core';
-import { DateRange } from '@fullcalendar/core/internal';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import {
+  default as momentPlugin,
+  default as momentTimezonePlugin,
+} from '@fullcalendar/moment';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { TranslateModule } from '@ngx-translate/core';
-import { debounceTime, forkJoin, Subject, switchMap, tap } from 'rxjs';
+import moment, { Moment } from 'moment';
+import { debounceTime, forkJoin, skip, Subject, switchMap, tap } from 'rxjs';
 import { LayoutService } from '../../../../core/layout/layout/layout.service';
 import { DateService } from '../../../../shared/services/date/date.service';
 import { LocaleService } from '../../../../shared/services/locale/locale.service';
@@ -62,11 +60,10 @@ import { Room } from '../../../room/models/room';
 import { Tag } from '../../../tag/models/tag';
 import { Workspace } from '../../../workspace/models/workspace';
 import { WorkspaceService } from '../../../workspace/services/workspace.service';
-import { Event } from '../../models/event';
+import { DateRange, Event } from '../../models/event';
 import { AgendaService } from '../../services/agenda.service';
 import { EventService } from '../../services/event.service';
 import { EventDetailsComponent } from '../event-details/event-details.component';
-// import { FullCalendarEventDialogComponent } from '../full-calendar-event-dialog/full-calendar-event-dialog.component';
 import { SmallCalendarHeaderComponent } from '../small-calendar-header/small-calendar-header.component';
 @Component({
   selector: 'app-calendar',
@@ -110,54 +107,41 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly agendaService = inject(AgendaService);
   private readonly date = inject(DateService);
-
   private readonly fullCalendar = viewChild.required(FullCalendar);
-  private readonly sidebar = viewChild.required(MatSidenav);
-  private readonly viewModeSelect = viewChild.required(MatSelect);
-  private readonly weekendToggle = viewChild.required(MatSlideToggle);
-
-  private readonly matCalendar = viewChild.required(MatCalendar<Date>);
-  private readonly matList = viewChild.required(MatSelectionList);
+  private readonly matCalendar = viewChild.required(MatCalendar<Moment>);
 
   public isLoading = signal(false);
-
-  public localeOffsetName = this.locale.localeOffsetName;
-
   public isLoadingWorkspaces = signal(false);
-  public workspaces = this.workspaceService.workspaces();
-  public selectedWorkspaceIds = signal<string[]>([]);
-
   public isSideBarOpen = this.agendaService.isSideBarOpen;
   public showWeekend = this.agendaService.showWeekend;
+  public localeOffsetName = this.locale.localeOffsetName;
+  public dateTitle = signal('');
+  public todayDisable = signal(true);
+  public calendarApi = computed(() => this.fullCalendar().getApi());
+  public showOver = computed(() => this.layoutService.windowWidth() < 1024);
+  public sidenavMode = computed(() => (this.showOver() ? 'over' : 'push'));
   public viewMode = signal<ViewMode>(
     this.toViewMode(this.route.snapshot.queryParamMap.get('view'))
   );
+  public workspaces = this.workspaceService.workspaces();
+  public selectedWorkspaceIds = signal<string[]>([]);
   public selectedDate = signal(
     this.toClosestWeekDay(
-      this.paramToDate(this.route.snapshot.queryParamMap.get('s')) || new Date()
+      this.paramToDate(this.route.snapshot.queryParamMap.get('s')) || moment()
     )
   );
   public selectedRange = signal<DateRange>({
-    start: new Date(),
-    end: this.date.incrementDate(new Date(), 1, 'day'),
+    start: moment(),
+    end: this.date.incrementDate(moment(), 1, 'day'),
   });
-
-  private events = this.eventService.agendaEvents(this.selectedRange);
-  private filteredEvents = computed(() =>
-    this.events().filter((x) =>
-      this.selectedWorkspaceIds().includes(x.workspace.id)
-    )
-  );
-
-  public calendarApi = computed(() => this.fullCalendar().getApi());
-  public dateTitle = signal('');
-
-  public todayDisable = signal(true);
-  public showOver = computed(() => this.layoutService.windowWidth() < 1024);
-  public sidenavMode = computed(() => (this.showOver() ? 'over' : 'push'));
-
   public calendarOptions: CalendarOptions = {
-    plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin],
+    plugins: [
+      interactionPlugin,
+      dayGridPlugin,
+      timeGridPlugin,
+      momentPlugin,
+      momentTimezonePlugin,
+    ],
     headerToolbar: false,
     initialView: this.viewMode(), // initial view mode
     weekends: this.showWeekend(), // show hide weekends
@@ -166,11 +150,11 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     selectMirror: true, // show event getting created
     dayMaxEvents: true,
     allDaySlot: false, // top space for all day slot
-    initialDate: this.selectedDate(),
+    initialDate: this.selectedDate().toISOString(),
     timeZone: this.locale.currentTz(),
     locale: this.locale.currentLang(),
     slotDuration: '00:05:00',
-    firstDay: 0, // first day print 0 = sunday
+    firstDay: this.locale.currentLang() === 'en' ? 0 : 1, // first day 0 = sunday 1 = monday
     slotLabelFormat: [
       {
         hour: '2-digit',
@@ -188,91 +172,21 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
     loading: this.handleLoading.bind(this),
     select: this.handleDateSelect.bind(this),
     eventClick: this.handleEventClick.bind(this),
-    eventsSet: this.handleEvents.bind(this),
-    events: this.fetch.bind(this),
+    events: this.handleFetch.bind(this),
     windowResize: this.autoResize.bind(this),
     datesSet: this.onDatesSet.bind(this),
   };
-
+  private events = this.eventService.agendaEvents(this.selectedRange);
+  private filteredEvents = computed(() =>
+    this.events().filter((x) =>
+      this.selectedWorkspaceIds().includes(x.workspace.id)
+    )
+  );
   // for debouctime time
   private subject = new Subject<(eventInputs: EventInput[]) => void>();
 
-  private setLocale() {
-    this.calendarApi().setOption('locale', this.locale.currentLang());
-    this.calendarApi().setOption(
-      'firstDay',
-      this.locale.currentLang() === 'fr' ? 1 : 0
-    );
-  }
-
-  private toViewMode(key: string | null | undefined): ViewMode {
-    if (key && (key === 'd' || key === 'w' || key === 'm')) {
-      let viewMode: ViewMode = 'timeGridDay';
-      if (key === 'w') {
-        viewMode = 'timeGridWeek';
-      } else if (key === 'm') {
-        viewMode = 'dayGridMonth';
-      }
-      return viewMode;
-    } else {
-      return 'timeGridDay';
-    }
-  }
-
-  private setViewModeToParams() {
-    const viewMode = this.viewMode();
-    let viewKey = 'd';
-    if (viewMode === 'timeGridWeek') {
-      viewKey = 'w';
-    } else if (viewMode === 'dayGridMonth') {
-      viewKey = 'm';
-    }
-    this.router.navigate(['/agenda'], {
-      queryParams: {
-        view: viewKey,
-      },
-      queryParamsHandling: 'merge',
-    });
-  }
-
-  private toEventInput(
-    events: Event<{
-      eventCategory: EventCategory;
-      room: Room;
-      tags: Tag[];
-      workspace: Workspace;
-    }>[]
-  ): EventInput[] {
-    const mapped = events.map((event) => ({
-      id: event.id,
-      title: event.eventCategory.name,
-      start: this.date.toLocaleString(event.startDate),
-      end: this.date.toLocaleString(event.endDate),
-      color: event.eventCategory.color,
-      backgroundColor: event.workspace.color,
-      classNames: ['!shadow-none', 'border-0', 'border-l-8'],
-      extendedProps: {
-        event: event,
-      },
-    }));
-    console.log(mapped);
-    return mapped;
-  }
-
-  private handleLoading(isLoading: boolean) {
-    this.isLoading.set(isLoading);
-  }
-
-  private fetch(
-    arg: EventSourceFuncArg,
-    successCallback: (eventInputs: EventInput[]) => void,
-    failureCallback: (error: Error) => void
-  ) {
-    this.subject.next(successCallback);
-  }
-
   public ngOnInit(): void {
-    this.setViewModeToParams();
+    this.setViewModeToParams(this.viewMode());
     this.isLoading.set(true);
     this.isLoadingWorkspaces.set(true);
     const unit =
@@ -302,257 +216,63 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
               start: this.selectedRange().start,
               end: this.selectedRange().end,
             })
-            .pipe(
-              tap(() => {
-                // console.log(this.filteredEvents());
-                fn(this.toEventInput(this.filteredEvents()));
-              })
-            )
+            .pipe(tap(() => fn(this.toEventInput(this.filteredEvents()))))
         )
       )
       .subscribe();
-
-    this.sidebar().openedChange.subscribe((x) => this.isSideBarOpen.set(x));
-    // TODO Les 3 subscribe en dessous sont a remplacer par des fonctions
-    this.viewModeSelect().selectionChange.subscribe((x) => {
-      this.viewMode.set(x.value);
-      this.calendarApi().changeView(x.value);
-      this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
-
-      this.calendarApi().gotoDate(this.selectedDate());
-
-      this.setViewModeToParams();
-    });
-  }
-
-  selectionChange(event: MatSelectionListChange) {
-    this.calendarApi().refetchEvents();
-  }
-
-  private toClosestWeekDay(date: Date): Date {
-    if (this.showWeekend()) return date;
-    if (this.viewMode() === 'timeGridDay') {
-      if (date.getDay() === 0 || date.getDay() === 6) {
-        return this.date.incrementDate(
-          date,
-          date.getDay() === 0 ? 1 : 2,
-          'day'
-        );
-      }
-    } else if (this.viewMode() === 'timeGridWeek') {
-      if (date.getDay() === 0 || date.getDay() === 6) {
-        return this.date.incrementDate(
-          date,
-          date.getDay() === 0 ? 2 : 1,
-          'day'
-        );
-      }
-    }
-    return date;
   }
 
   public ngAfterViewInit(): void {
-    this.locale.currentLang$.subscribe(() => this.setLocale());
-    this.locale.currentTz$.subscribe(() => {
-      console.log('LOCALE TZ SUBSCRIBE: ', this.locale.currentTz());
-      this.calendarApi().setOption('timeZone', this.locale.currentTz());
-    });
-    this.agendaService.showWeekendObs.subscribe((x) => {
+    this.locale.currentLang$.pipe(skip(1)).subscribe(() => this.setLocale());
+    this.locale.currentTz$.pipe(skip(1)).subscribe(() => this.setTimezone());
+    this.agendaService.showWeekendObs.pipe(skip(1)).subscribe((x) => {
       this.calendarApi().setOption('weekends', x);
       this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
       this.matCalendar().activeDate = this.selectedDate();
       this.matCalendar().updateTodaysDate();
     });
   }
-  public showWeekendChange(event: MatSlideToggleChange) {
-    this.agendaService.setShowWeekends(event.checked);
-  }
 
-  private paramToDate(param?: string | null): Date | null {
-    if (!param) {
-      return null;
-    }
-    try {
-      const [day, month, year] = param.split('/').map(Number);
-      // build a Date at 00:00 UTC
-      const utcMidnight = new Date(Date.UTC(year, month - 1, day));
-      console.log(utcMidnight);
-      return utcMidnight;
-    } catch (error) {
-      return null;
-    }
+  public viewModeChange(event: MatSelectChange) {
+    this.viewMode.set(event.value);
+    this.calendarApi().changeView(event.value);
+    this.selectedDate.set(this.toClosestWeekDay(this.selectedDate()));
+    this.calendarApi().gotoDate(this.selectedDate().toISOString());
+    this.calendarApi().refetchEvents();
+    this.setViewModeToParams(this.viewMode());
   }
-
-  selectedChange(selectedDate: Date | null) {
+  public selectedDateChange(selectedDate: Moment | null) {
     if (selectedDate) {
-      this.selectedDate.set(
-        new Date(
-          Date.UTC(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate()
-          )
-        )
-      );
+      this.selectedDate.set(selectedDate);
       if (this.viewMode() === 'timeGridDay') {
         this.calendarApi().gotoDate(
-          this.date.incrementDate(selectedDate, 1, 'day')
+          this.date.incrementDate(selectedDate, 1, 'day').toISOString()
         );
       } else {
-        this.calendarApi().gotoDate(selectedDate);
+        this.calendarApi().gotoDate(selectedDate.toDate());
       }
     }
   }
 
-  isOpenChanged(isOpen: boolean) {
-    this.agendaService.setSideBarOpen(isOpen);
+  public selectionChange(event: MatSelectionListChange) {
+    this.calendarApi().refetchEvents();
+  }
+  public showWeekendChange(event: MatSlideToggleChange) {
+    this.agendaService.setShowWeekends(event.checked);
   }
 
-  onDatesSet(args: DatesSetArg) {
-    // set date title
-    this.dateTitle.set(args.view.title);
-    // set today disable or not
-    const today = new Date();
-    if (this.showWeekend() === false && today.getDay() === (0 || 6)) {
-      this.todayDisable.set(true);
-    } else {
-      this.todayDisable.set(
-        today >= args.view.currentStart && today <= args.view.currentEnd
-      );
-    }
-    this.selectedRange.set({
-      start: args.view.currentStart,
-      end: args.view.currentEnd,
-    });
-    // update the current month view if we change month for small calendar
-    this.matCalendar().activeDate = this.selectedDate();
-    this.matCalendar().updateTodaysDate();
-    // update query params
-    this.router.navigate(['/agenda'], {
-      queryParams: {
-        s: this.date.format(this.selectedDate(), 'DD/MM/YYYY'),
-      },
-      queryParamsHandling: 'merge',
-    });
-  }
-
-  previous() {
-    const viewMode = this.calendarApi().view.type as ViewMode;
-    switch (viewMode) {
-      case 'timeGridDay':
-        if (!this.showWeekend() && this.selectedDate().getDay() === 1) {
-          this.selectedDate.set(
-            this.date.decrementDate(this.selectedDate(), 3, 'day')
-          );
-        } else {
-          this.selectedDate.set(
-            this.date.decrementDate(this.selectedDate(), 1, 'day')
-          );
-        }
-        this.selectedRange.update((range) => ({
-          start: this.date.decrementDate(range.start, 1, 'day'),
-          end: this.date.decrementDate(range.end, 1, 'day'),
-        }));
-        break;
-      case 'timeGridWeek':
-        this.selectedRange.update((range) => ({
-          start: this.date.decrementDate(range.start, 1, 'week'),
-          end: this.date.decrementDate(range.end, 1, 'week'),
-        }));
-        this.selectedDate.set(
-          this.date.decrementDate(this.selectedDate(), 1, 'week')
-        );
-        break;
-      case 'dayGridMonth':
-        this.selectedRange.update((range) => ({
-          start: this.date.decrementDate(range.start, 1, 'month'),
-          end: this.date.decrementDate(range.end, 1, 'month'),
-        }));
-        this.selectedDate.set(
-          this.date.decrementDate(this.selectedDate(), 1, 'month')
-        );
-        break;
-    }
-    this.calendarApi().prev();
-  }
-
-  next() {
-    const viewMode = this.calendarApi().view.type as ViewMode;
-    switch (viewMode) {
-      case 'timeGridDay':
-        if (!this.showWeekend() && this.selectedDate().getDay() === 5) {
-          this.selectedDate.set(
-            this.date.incrementDate(this.selectedDate(), 3, 'day')
-          );
-        } else {
-          this.selectedDate.set(
-            this.date.incrementDate(this.selectedDate(), 1, 'day')
-          );
-        }
-        this.selectedRange.update((range) => ({
-          start: this.date.incrementDate(range.start, 1, 'day'),
-          end: this.date.incrementDate(range.end, 1, 'day'),
-        }));
-        break;
-      case 'timeGridWeek':
-        this.selectedRange.update((range) => ({
-          start: this.date.incrementDate(range.start, 1, 'week'),
-          end: this.date.incrementDate(range.end, 1, 'week'),
-        }));
-        this.selectedDate.set(
-          this.date.incrementDate(this.selectedDate(), 1, 'week')
-        );
-        break;
-      case 'dayGridMonth':
-        this.selectedRange.update((range) => ({
-          start: this.date.incrementDate(range.start, 1, 'month'),
-          end: this.date.incrementDate(range.end, 1, 'month'),
-        }));
-        this.selectedDate.set(
-          this.date.incrementDate(this.selectedDate(), 1, 'month')
-        );
-        break;
-    }
-    this.calendarApi().next();
-  }
-
-  setToday() {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    this.selectedDate.set(
-      new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-    );
-    this.calendarApi().today();
+  public setToday() {
+    this.selectedDate.set(moment());
+    this.calendarApi().gotoDate(this.selectedDate().toISOString());
   }
 
   public weekEndFilter = this.agendaService.weekEndFilter;
 
-  getCurrentDateInput() {
-    const date = new Date();
-    return {
-      hour: date.getHours(),
-      minute: date.getMinutes(),
-    };
-  }
-
-  private handleDateSelect(selectInfo: DateSelectArg) {
-    this.calendarApi().unselect();
-    this.openDialog(
-      undefined,
-      this.date.localeToUtc(selectInfo.start),
-      this.date.localeToUtc(selectInfo.end)
-    );
-  }
-
-  public openDialog(eventId?: string, start?: Date, end?: Date) {
-    console.log(
-      'OPENING DIALOG',
-      eventId,
-      start,
-      typeof start,
-      end,
-      typeof end
-    );
+  public openDialog(
+    eventId?: string,
+    start?: Moment | string,
+    end?: Moment | string
+  ) {
     this.matDialog
       .open(EventDetailsComponent, {
         data: {
@@ -567,23 +287,209 @@ export class FullCalendarComponent implements OnInit, AfterViewInit {
       .subscribe(() => this.calendarApi().refetchEvents());
   }
 
-  private handleEventClick(clickInfo: EventClickArg) {
-    this.openDialog(
-      clickInfo.event.id,
-      clickInfo.event.start ?? undefined,
-      clickInfo.event.end ?? undefined
+  public toggleSidebar() {
+    this.agendaService.setSideBarOpen(!this.isSideBarOpen());
+  }
+
+  public previous() {
+    const viewMode = this.calendarApi().view.type as ViewMode;
+    let number = 1;
+    let unit: 'day' | 'week' | 'month' = 'day';
+    if (viewMode === 'timeGridDay') {
+      if (!this.showWeekend() && this.selectedDate().day() === 1) number = 3;
+    } else if (viewMode === 'timeGridWeek') {
+      unit = 'week';
+    } else if (viewMode === 'dayGridMonth') {
+      unit = 'month';
+    }
+    this.selectedDate.set(
+      this.date.decrementDate(this.selectedDate(), number, unit)
+    );
+    this.calendarApi().prev();
+  }
+
+  public next() {
+    const viewMode = this.calendarApi().view.type as ViewMode;
+    let number = 1;
+    let unit: 'day' | 'week' | 'month' = 'day';
+    if (viewMode === 'timeGridDay') {
+      if (!this.showWeekend() && this.selectedDate().day() === 5) number = 3;
+    } else if (viewMode === 'timeGridWeek') {
+      unit = 'week';
+    } else if (viewMode === 'dayGridMonth') {
+      unit = 'month';
+    }
+    this.selectedDate.set(
+      this.date.incrementDate(this.selectedDate(), number, unit)
+    );
+    this.calendarApi().next();
+  }
+
+  private setLocale() {
+    this.calendarApi().setOption('locale', this.locale.currentLang());
+    this.calendarApi().setOption(
+      'firstDay',
+      this.locale.currentLang() === 'fr' ? 1 : 0
     );
   }
 
-  private handleEvents(events: EventApi[]) {
-    console.log('EVENTS', events);
+  private toViewMode(key: string | null | undefined): ViewMode {
+    if (key && (key === 'w' || key === 'm')) {
+      return key === 'w' ? 'timeGridWeek' : 'dayGridMonth';
+    }
+    return 'timeGridDay';
   }
 
-  autoResize(arg: { view: ViewApi }) {
-    setTimeout(() => this.calendarApi().updateSize(), 300);
+  private setViewModeToParams(viewMode: ViewMode) {
+    let viewKey = 'd';
+    if (viewMode === 'timeGridWeek') {
+      viewKey = 'w';
+    } else if (viewMode === 'dayGridMonth') {
+      viewKey = 'm';
+    }
+    this.router.navigate(['/agenda'], {
+      queryParams: {
+        view: viewKey,
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 
-  toggleSidebar() {
-    this.isSideBarOpen.set(!this.isSideBarOpen());
+  private toEventInput(
+    events: Event<{
+      eventCategory: EventCategory;
+      room: Room;
+      tags: Tag[];
+      workspace: Workspace;
+    }>[]
+  ): EventInput[] {
+    return events.map((event) => ({
+      id: event.id,
+      title: event.eventCategory.name,
+      start: event.startDate
+        .tz(this.locale.currentTz())
+        .format('YYYY-MM-DDTHH:mm:ssZ'),
+      end: event.endDate
+        .tz(this.locale.currentTz())
+        .format('YYYY-MM-DDTHH:mm:ssZ'),
+      color:
+        this.viewMode() === 'dayGridMonth'
+          ? event.workspace.color
+          : event.eventCategory.color,
+      backgroundColor: event.workspace.color,
+      startEditable: false,
+      durationEditable: false,
+      classNames:
+        this.viewMode() === 'dayGridMonth'
+          ? ['!shadow-none', 'border-0']
+          : ['!shadow-none', 'border-0', 'border-l-8'],
+      extendedProps: {
+        event: event,
+      },
+    }));
+  }
+
+  private handleLoading(isLoading: boolean) {
+    this.isLoading.set(isLoading);
+  }
+
+  private handleFetch(
+    arg: EventSourceFuncArg,
+    successCallback: (eventInputs: EventInput[]) => void,
+    failureCallback: (error: Error) => void
+  ) {
+    this.subject.next(successCallback);
+  }
+
+  private toClosestWeekDay(date: Moment): Moment {
+    if (this.showWeekend()) return date;
+    if (this.viewMode() === 'timeGridDay') {
+      if (date.day() === 0 || date.day() === 6) {
+        return this.date.incrementDate(date, date.day() === 0 ? 1 : 2, 'day');
+      }
+    } else if (this.viewMode() === 'timeGridWeek') {
+      if (date.day() === 0 || date.day() === 6) {
+        return this.date.incrementDate(date, date.day() === 0 ? 2 : 1, 'day');
+      }
+    }
+    return date;
+  }
+
+  private paramToDate(param?: string | null): Moment | null {
+    if (!param) return null;
+    try {
+      const [day, month, year] = param.split('/').map(Number);
+      const utcMidnight = moment(new Date(Date.UTC(year, month - 1, day)));
+      return utcMidnight;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private onDatesSet(args: DatesSetArg) {
+    // set date title
+    this.dateTitle.set(args.view.title);
+    // set today disable or not
+    const today = new Date();
+    if (this.showWeekend() === false && today.getDay() === (0 || 6)) {
+      this.todayDisable.set(true);
+    } else {
+      this.todayDisable.set(
+        today >= args.view.currentStart && today <= args.view.currentEnd
+      );
+    }
+    this.selectedRange.set({
+      start: moment(args.view.currentStart),
+      end: moment(args.view.currentEnd),
+    });
+    // update the current month view if we change month for small calendar
+    this.matCalendar().activeDate = moment(this.selectedDate());
+    this.matCalendar().updateTodaysDate();
+    // update query params
+    this.router.navigate(['/agenda'], {
+      queryParams: {
+        s: this.selectedDate().format('DD/MM/YYYY'),
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  private setTimezone() {
+    const newTimezone = this.locale.currentTz();
+    this.calendarApi().setOption('timeZone', newTimezone);
+    const currentRange = this.selectedRange();
+    const newRange = {
+      start: currentRange.start.clone().tz(newTimezone),
+      end: currentRange.end.clone().tz(newTimezone),
+    };
+    this.selectedRange.set(newRange);
+    this.calendarApi().refetchEvents();
+  }
+
+  private getCurrentDateInput() {
+    const date = new Date();
+    return {
+      hour: date.getHours(),
+      minute: date.getMinutes(),
+    };
+  }
+
+  private handleDateSelect(selectInfo: DateSelectArg) {
+    this.calendarApi().unselect();
+    const start = moment(selectInfo.startStr).utc().tz(this.locale.currentTz());
+    const end = moment(selectInfo.endStr).utc().tz(this.locale.currentTz());
+    this.openDialog(undefined, start, end);
+  }
+
+  private handleEventClick(clickInfo: EventClickArg) {
+    this.openDialog(
+      clickInfo.event.id,
+      clickInfo.event.start ? moment.utc(clickInfo.event.start) : undefined,
+      clickInfo.event.end ? moment.utc(clickInfo.event.end) : undefined
+    );
+  }
+
+  private autoResize(arg: { view: ViewApi }) {
+    this.calendarApi().updateSize();
   }
 }

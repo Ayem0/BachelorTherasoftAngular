@@ -1,8 +1,9 @@
 <div class="flex flex-row items-center gap-2">
     @if (workspaceInvitation()) {
-        <p [matTooltip]="workspaceInvitation()!.sender.firstName + ' ' + workspaceInvitation()!.sender.lastName">{{ invitation().receiver.email }}</p>
+    <p [matTooltip]="workspaceInvitation()?.sender?.firstName + ' ' + workspaceInvitation()?.sender?.lastName">{{
+        invitation()?.receiver?.email }}</p>
     } @else {
-        <p> {{ invitation().receiver.email }}</p>
+    <p> {{ invitation()?.receiver?.email }}</p>
     }
     <button mat-icon-button matTooltip="Cancel" (click)="cancel()" [disabled]="isLoading()">
         @if (isLoading()) {

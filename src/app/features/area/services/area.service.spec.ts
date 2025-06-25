@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AreaService } from '../area.service';
+import { DEFAULT_PROVIDERS } from '../../../app.config';
+import { AreaService } from './area.service';
 
 describe('AreaService', () => {
   let service: AreaService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: DEFAULT_PROVIDERS,
+    });
     service = TestBed.inject(AreaService);
   });
 

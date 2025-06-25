@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -29,6 +34,7 @@ import { AuthService } from '../../services/auth.service';
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterComponent {
   private readonly authService = inject(AuthService);
@@ -62,6 +68,7 @@ export class RegisterComponent {
     const { email, password, confirmPassword } = this.registerForm.value;
 
     if (this.registerForm.valid && email && password && confirmPassword) {
+      this.registerForm.disable();
       this.authService
         .register(email, password, confirmPassword)
         .subscribe((res) => {
@@ -71,6 +78,7 @@ export class RegisterComponent {
             this.sonnerService.error('Invalid credentials');
           }
           this.isLoading.set(false);
+          this.registerForm.enable();
         });
     }
   }

@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -26,6 +31,7 @@ import { WorkspaceRoleService } from '../../services/workspace-role.service';
   ],
   templateUrl: './workspace-role-dialog.component.html',
   styleUrl: './workspace-role-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspaceRoleDialogComponent {
   private readonly workspaceRoleService = inject(WorkspaceRoleService);

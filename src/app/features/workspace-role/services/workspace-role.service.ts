@@ -5,7 +5,7 @@ import { environment } from '../../../../environments/environment';
 import { Id } from '../../../shared/models/entity';
 import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
-import { Store } from '../../../shared/services/store/store';
+import { Store } from '../../../shared/services/store/store.service';
 import {
   UNKNOW_WORKSPACE_ROLE,
   WorkspaceRole,

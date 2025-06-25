@@ -8,7 +8,7 @@ import { Id } from '../../../shared/models/entity';
 import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SocketService } from '../../../shared/services/socket/socket.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
-import { Store } from '../../../shared/services/store/store';
+import { Store } from '../../../shared/services/store/store.service';
 import { Workspace } from '../../workspace/models/workspace';
 import {
   ContactInvitation,

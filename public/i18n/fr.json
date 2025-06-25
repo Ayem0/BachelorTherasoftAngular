@@ -11,10 +11,14 @@
         "accept": "Accepter",
         "invite": "Inviter",
         "search": "Rechercher",
-        "close": "Fermer"
+        "close": "Fermer",
+        "showPlanner": "Ouvrir le planificateur"
     },
+    "home": {},
     "area": {
+        "name": "Zone",
         "title": "Zones",
+        "no-options": "Aucune zone trouvée",
         "create": {
             "success": "Zone créée avec succès",
             "error": "Erreur lors de la création de la zone"
@@ -28,7 +32,9 @@
         }
     },
     "location": {
+        "name": "Site",
         "title": "Sites",
+        "no-options": "Aucun site trouvé",
         "create": {
             "success": "Site créé avec succès",
             "error": "Erreur lors de la création du site"
@@ -42,7 +48,9 @@
         }
     },
     "room": {
+        "name": "Salle",
         "title": "Salles",
+        "no-options": "Aucune salle trouvée",
         "create": {
             "success": "Salle créée avec succès",
             "error": "Erreur lors de la création de la salle"
@@ -56,7 +64,9 @@
         }
     },
     "tag": {
+        "name": "Tag",
         "title": "Tags",
+        "no-options": "Aucun tag trouvé",
         "create": {
             "success": "Tag créé avec succès",
             "error": "Erreur lors de la création du tag"
@@ -70,7 +80,9 @@
         }
     },
     "slot": {
+        "name": "Créneau",
         "title": "Créneaux",
+        "no-options": "Aucun créneau trouvé",
         "create": {
             "success": "Créneau créé avec succès",
             "error": "Erreur lors de la création du créneau"
@@ -84,7 +96,9 @@
         }
     },
     "event-category": {
+        "name": "Catégorie d'événement",
         "title": "Catégories d'événement",
+        "no-options": "Aucune catégorie d'événement trouvée",
         "create": {
             "success": "Catégorie d'événement créée avec succès",
             "error": "Erreur lors de la création de la catégorie d'événement"
@@ -98,7 +112,9 @@
         }
     },
     "participant-category": {
+        "name": "Catégorie de participant",
         "title": "Catégories de participant",
+        "no-options": "Aucune catégorie de participant trouvé",
         "create": {
             "success": "Catégorie de participant créée avec succès",
             "error": "Erreur lors de la création de la catégorie de participant"
@@ -112,7 +128,9 @@
         }
     },
     "participant": {
+        "name": "Participant",
         "title": "Participants",
+        "no-options": "Aucun participant trouvé",
         "create": {
             "success": "Participant créé avec succès",
             "error": "Erreur lors de la création du participant"
@@ -126,7 +144,9 @@
         }
     },
     "role": {
+        "name": "Rôle",
         "title": "Rôles",
+        "no-options": "Aucun rôle trouvé",
         "create": {
             "success": "Rôle créé avec succès",
             "error": "Erreur lors de la création du rôle"
@@ -140,7 +160,9 @@
         }
     },
     "workspace": {
+        "name": "Espace de travail",
         "title": "Espaces de travail",
+        "no-options": "Aucun espace de travail trouvé",
         "create": {
             "success": "Espace de travail créé avec succès",
             "error": "Erreur lors de la création de l'espace de travail"
@@ -154,6 +176,7 @@
         }
     },
     "member": {
+        "name": "Membre",
         "title": "Membres",
         "no-options": "Aucun membre trouvé",
         "update": {

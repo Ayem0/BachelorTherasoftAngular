@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -43,6 +44,7 @@ import { EventCategoryDialogComponent } from '../event-category-dialog/event-cat
   ],
   templateUrl: './event-category-list.component.html',
   styleUrl: './event-category-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventCategoryListComponent {
   private readonly matDialog = inject(MatDialog);

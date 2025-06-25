@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { DEFAULT_PROVIDERS } from '../../../../app.config';
 import { WorkspaceRoleDetailsComponent } from './workspace-role-details.component';
 
 describe('WorkspaceRoleDetailsComponent', () => {
@@ -8,9 +8,9 @@ describe('WorkspaceRoleDetailsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WorkspaceRoleDetailsComponent]
-    })
-    .compileComponents();
+      providers: DEFAULT_PROVIDERS,
+      imports: [WorkspaceRoleDetailsComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(WorkspaceRoleDetailsComponent);
     component = fixture.componentInstance;

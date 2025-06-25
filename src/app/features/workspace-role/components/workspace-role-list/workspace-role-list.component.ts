@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -45,6 +46,7 @@ import { WorkspaceRoleDialogComponent } from '../workspace-role-dialog/workspace
   ],
   templateUrl: './workspace-role-list.component.html',
   styleUrl: './workspace-role-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspaceRoleListComponent implements OnInit, AfterViewInit {
   private readonly matDialog = inject(MatDialog);

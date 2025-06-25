@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { DEFAULT_PROVIDERS } from '../../../../app.config';
 import { InvitationComponent } from './invitation.component';
 
 describe('InvitationComponent', () => {
@@ -8,11 +9,13 @@ describe('InvitationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InvitationComponent]
-    })
-    .compileComponents();
+      providers: DEFAULT_PROVIDERS,
+      imports: [InvitationComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(InvitationComponent);
+    fixture.componentRef.setInput('invitation', {});
+
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

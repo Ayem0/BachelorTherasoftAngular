@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -27,6 +32,7 @@ import { TagService } from '../../services/tag.service';
   ],
   templateUrl: './tag-dialog.component.html',
   styleUrl: './tag-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TagDialogComponent {
   private readonly tagService = inject(TagService);

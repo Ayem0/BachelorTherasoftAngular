@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { DEFAULT_PROVIDERS } from '../../app.config';
 import { CguComponent } from './cgu.component';
 
 describe('CguComponent', () => {
@@ -8,9 +9,9 @@ describe('CguComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CguComponent]
-    })
-    .compileComponents();
+      providers: DEFAULT_PROVIDERS,
+      imports: [CguComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CguComponent);
     component = fixture.componentInstance;

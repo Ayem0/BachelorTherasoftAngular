@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -44,6 +45,7 @@ import { SlotDialogComponent } from '../slot-dialog/slot-dialog.component';
   ],
   templateUrl: './slot-list.component.html',
   styleUrl: './slot-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SlotListComponent {
   private readonly matDialog = inject(MatDialog);

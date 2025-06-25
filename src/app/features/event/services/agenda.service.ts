@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { Moment } from 'moment';
 
 @Injectable({
   providedIn: 'root',
@@ -12,9 +13,10 @@ export class AgendaService {
   public showWeekend = signal<boolean>(this.getShowWeekendsFromLocalstorage());
   public showWeekendObs = toObservable(this.showWeekend);
 
-  public weekEndFilter = (d: Date | null): boolean => {
+  public weekEndFilter = (d: Moment | null): boolean => {
     if (this.showWeekend()) return true;
-    const day = (d || new Date()).getDay();
+    if (!d) return false;
+    const day = d.day();
     return day !== 0 && day !== 6;
   };
 

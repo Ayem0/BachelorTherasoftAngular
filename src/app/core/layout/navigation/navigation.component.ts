@@ -1,4 +1,11 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -17,6 +24,7 @@ import { SidebarService } from '../sidebar/sidebar.service';
   ],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavigationComponent implements OnInit {
   private readonly sidebarService = inject(SidebarService);

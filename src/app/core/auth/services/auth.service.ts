@@ -3,7 +3,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, firstValueFrom, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../shared/services/socket/socket.service';
-import { Store } from '../../../shared/services/store/store';
+import { Store } from '../../../shared/services/store/store.service';
 import { User } from '../models/auth';
 
 @Injectable({

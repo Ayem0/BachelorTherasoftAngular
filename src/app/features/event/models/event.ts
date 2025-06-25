@@ -1,4 +1,5 @@
 import { FormControl } from '@angular/forms';
+import moment, { Moment } from 'moment';
 import { User } from '../../../core/auth/models/auth';
 import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
 import { Entity, Id } from '../../../shared/models/entity';
@@ -26,11 +27,11 @@ type BaseEvent = {
   workspaceId?: Id;
   eventCategoryId?: Id;
   description?: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: Moment;
+  endDate: Moment;
   repetitionInterval?: Interval;
   repetitionNumber?: number;
-  repetitionEndDate?: Date;
+  repetitionEndDate?: Moment;
 } & Entity;
 
 export type Event<R extends EventRelations = {}> = BaseEvent &
@@ -39,12 +40,12 @@ export type Event<R extends EventRelations = {}> = BaseEvent &
 export interface EventRequest {
   description?: string;
   userIds: string[];
-  startDate: Date;
-  endDate: Date;
+  startDate: Moment;
+  endDate: Moment;
   roomId: string;
   repetitionInterval?: Interval;
   repetitionNumber?: number;
-  repetitionEndDate?: Date;
+  repetitionEndDate?: Moment;
   participantIds: string[];
   eventCategoryId: string;
   workspaceId: string;
@@ -53,8 +54,8 @@ export interface EventRequest {
 
 export interface EventRequestForm {
   description: FormControl<string | undefined>;
-  startDate: FormControl<Date>;
-  endDate: FormControl<Date>;
+  startDate: FormControl<Moment>;
+  endDate: FormControl<Moment>;
   eventCategory: FormControl<EventCategory | string>;
   workspace: FormControl<Workspace | string>;
   room: FormControl<Room | string>;
@@ -63,12 +64,12 @@ export interface EventRequestForm {
   users: FormControl<User[]>;
   repetitionInterval: FormControl<Interval | undefined>;
   repetitionNumber: FormControl<number | undefined>;
-  repetitionEndDate: FormControl<Date | undefined>;
+  repetitionEndDate: FormControl<Moment | undefined>;
 }
 
 export interface DateRange {
-  start: Date;
-  end: Date;
+  start: Moment;
+  end: Moment;
 }
 
 type year = number;
@@ -78,6 +79,6 @@ export type EventKey = `${Id}/${year}/${month}/${day}`;
 
 export const UNKNOWN_EVENT: Event = {
   id: 'unknown',
-  startDate: new Date(),
-  endDate: new Date(),
+  startDate: moment(),
+  endDate: moment(),
 };

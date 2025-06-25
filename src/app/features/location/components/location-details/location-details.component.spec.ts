@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { DEFAULT_PROVIDERS } from '../../../../app.config';
 import { LocationDetailsComponent } from './location-details.component';
 
 describe('LocationDetailsComponent', () => {
@@ -8,9 +9,9 @@ describe('LocationDetailsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LocationDetailsComponent]
-    })
-    .compileComponents();
+      providers: DEFAULT_PROVIDERS,
+      imports: [LocationDetailsComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LocationDetailsComponent);
     component = fixture.componentInstance;

@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -26,6 +31,7 @@ import { LocationService } from '../../services/location.service';
   ],
   templateUrl: './location-dialog.component.html',
   styleUrl: './location-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationDialogComponent {
   private readonly locationService = inject(LocationService);

@@ -6,7 +6,7 @@ import { Id } from '../../../shared/models/entity';
 import { DateService } from '../../../shared/services/date/date.service';
 import { LocaleService } from '../../../shared/services/locale/locale.service';
 import { SonnerService } from '../../../shared/services/sonner/sonner.service';
-import { Store } from '../../../shared/services/store/store';
+import { Store } from '../../../shared/services/store/store.service';
 import { Slot, SlotRequest, UNKNOWN_SLOT } from '../models/slot';
 
 @Injectable({

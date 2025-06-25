@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   effect,
   inject,
@@ -44,12 +45,13 @@ import { AreaDialogComponent } from '../area-dialog/area-dialog.component';
   ],
   templateUrl: './area-list.component.html',
   styleUrl: './area-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AreaListComponent {
   private readonly matDialog = inject(MatDialog);
   private readonly areaService = inject(AreaService);
 
-  public readonly locationId = input.required<string>();
+  public locationId = input.required<string>();
   private areas = this.areaService.areasByLocationId(this.locationId);
   private paginator = viewChild.required(MatPaginator);
   private sort = viewChild.required(MatSort);

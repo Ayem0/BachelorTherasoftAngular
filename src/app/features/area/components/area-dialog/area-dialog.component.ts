@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -26,6 +31,7 @@ import { AreaService } from '../../services/area.service';
   ],
   templateUrl: './area-dialog.component.html',
   styleUrl: './area-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AreaDialogComponent {
   private readonly areaService = inject(AreaService);

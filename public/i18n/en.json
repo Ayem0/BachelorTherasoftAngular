@@ -1,28 +1,248 @@
 {
-    "navigation": {
-        "agenda": "Agenda",
-        "workspaces": "Workspaces",
-        "contacts": "Contacts",
-        "conversations": "Conversations"
-    },
     "action": {
         "add": "Add",
-        "edit": "Edit",
         "create": "Create",
         "update": "Update",
-        "delete": "Delete"
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "refuse": "Refuse",
+        "save": "Save",
+        "edit": "Edit",
+        "accept": "Accept",
+        "invite": "Invite",
+        "search": "Search",
+        "close": "Close",
+        "show-planner": "Open planner"
     },
     "area": {
+        "name": "Area",
+        "title": "Areas",
+        "no-options": "No areas found",
         "create": {
-            "success": "Area succesfully created",
-            "error": "Error creating area"
+            "success": "Area created successfully",
+            "error": "Error while creating the area"
         },
         "update": {
-            "success": "Area succesfully updated",
-            "error": "Error updating area"
+            "success": "Area updated successfully",
+            "error": "Error while updating the area"
         },
         "get": {
-            "error": "Error getting area"
+            "error": {
+                "single": "Error while getting the area",
+                "multiple": "Error while getting the areas"
+            }
         }
+    },
+    "location": {
+        "name": "Site",
+        "title": "Sites",
+        "no-options": "No locations found",
+        "create": {
+            "success": "Site created successfully",
+            "error": "Error while creating the site"
+        },
+        "update": {
+            "success": "Site updated successfully",
+            "error": "Error while updating the site"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the location",
+                "multiple": "Error while getting the locations"
+            }
+        }
+    },
+    "room": {
+        "name": "Room",
+        "title": "Rooms",
+        "no-options": "No rooms found",
+        "create": {
+            "success": "Room created successfully",
+            "error": "Error while creating the room"
+        },
+        "update": {
+            "success": "Room updated successfully",
+            "error": "Error while updating the room"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the room",
+                "multiple": "Error while getting the rooms"
+            }
+        }
+    },
+    "tag": {
+        "name": "Tag",
+        "title": "Tags",
+        "no-options": "No tags found",
+        "create": {
+            "success": "Tag created successfully",
+            "error": "Error while creating the tag"
+        },
+        "update": {
+            "success": "Tag updated successfully",
+            "error": "Error while updating the tag"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the tag",
+                "multiple": "Error while getting the tags"
+            }
+        }
+    },
+    "slot": {
+        "name": "Slot",
+        "title": "Slots",
+        "no-options": "No slots found",
+        "create": {
+            "success": "Slot created successfully",
+            "error": "Error while creating the slot"
+        },
+        "update": {
+            "success": "Slot updated successfully",
+            "error": "Error while updating the slot"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the slot",
+                "multiple": "Error while getting the slots"
+            }
+        }
+    },
+    "event-category": {
+        "name": "Event category",
+        "title": "Event categories",
+        "no-options": "No event categories found",
+        "create": {
+            "success": "Event category created successfully",
+            "error": "Error while creating event category"
+        },
+        "update": {
+            "success": "Event category updated successfully",
+            "error": "Error while updating the event category"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the event category",
+                "multiple": "Error while getting the event categories"
+            }
+        }
+    },
+    "participant-category": {
+        "name": "Participant category",
+        "title": "Participant categories",
+        "no-options": "No participant categories found",
+        "create": {
+            "success": "Participant category created successfully",
+            "error": "Error while creating participant category"
+        },
+        "update": {
+            "success": "Participant category updated successfully",
+            "error": "Error while updating the participant category"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the participant category",
+                "multiple": "Error while getting the participant categories"
+            }
+        }
+    },
+    "participant": {
+        "name": "Participant",
+        "title": "Participants",
+        "no-options": "No participants found",
+        "create": {
+            "success": "Participant created successfully",
+            "error": "Error while creating the participant"
+        },
+        "update": {
+            "success": "Participant updated successfully",
+            "error": "Error while updating the participant"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the participant",
+                "multiple": "Error while getting the participants"
+            }
+        }
+    },
+    "role": {
+        "name": "Role",
+        "title": "Roles",
+        "no-options": "No roles found",
+        "create": {
+            "success": "Role created successfully",
+            "error": "Error while creating the role"
+        },
+        "update": {
+            "success": "Role updated successfully",
+            "error": "Error while updating the role"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the role",
+                "multiple": "Error while getting the roles"
+            }
+        }
+    },
+    "workspace": {
+        "name": "Workspace",
+        "title": "Workspaces",
+        "no-options": "No workspaces found",
+        "create": {
+            "success": "Workspace created successfully",
+            "error": "Error while creating the workspace"
+        },
+        "update": {
+            "success": "Workspace updated successfully",
+            "error": "Error while updating the workspace"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the workspace",
+                "multiple": "Error while getting the workspaces"
+            }
+        }
+    },
+    "member": {
+        "name": "Member",
+        "title": "Members",
+        "no-options": "No members found",
+        "update": {
+            "success": "Membre updated successfully",
+            "error": "Error while updating the member"
+        },
+        "get": {
+            "error": {
+                "single": "Error while getting the member",
+                "multiple": "Error while getting the members"
+            }
+        }
+    },
+    "calendar": {
+        "title": "Calendar",
+        "today": "Today",
+        "day": "Day",
+        "week": "Week",
+        "month": "Month",
+        "weekends": "Show weekends"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "theme": "Appearence",
+        "profile": "Profile",
+        "logout": "Logout"
+    },
+    "contact": {
+        "title": "Contacts",
+        "invite": "Invite to workspace",
+        "add": "Add contact"
+    },
+    "form": {
+        "startDate": "Start date",
+        "endDate": "End date",
+        "startTime": "Start time",
+        "endTime": "End time"
     }
 }

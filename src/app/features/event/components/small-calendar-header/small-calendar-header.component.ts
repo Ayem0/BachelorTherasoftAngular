@@ -1,4 +1,10 @@
-import { Component, inject, OnDestroy, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnDestroy,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatCalendar } from '@angular/material/datepicker';
@@ -10,10 +16,11 @@ import { startWith, Subject, takeUntil } from 'rxjs';
   imports: [MatIcon, MatButtonModule],
   templateUrl: './small-calendar-header.component.html',
   styleUrl: './small-calendar-header.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SmallCalendarHeaderComponent<D> implements OnDestroy {
-  private _calendar = inject<MatCalendar<D>>(MatCalendar);
-  private _dateAdapter = inject<DateAdapter<D>>(DateAdapter);
+export class SmallCalendarHeaderComponent<Moment> implements OnDestroy {
+  private _calendar = inject<MatCalendar<Moment>>(MatCalendar);
+  private _dateAdapter = inject<DateAdapter<Moment>>(DateAdapter);
   private _dateFormats = inject(MAT_DATE_FORMATS);
 
   private _destroyed = new Subject<void>();

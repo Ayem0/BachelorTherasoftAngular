@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "BachelorTherasoftAngular": {
+    "Taskify": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/bachelor-therasoft-angular",
+            "outputPath": "dist/taskify",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [],
@@ -40,7 +40,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumError": "30MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -68,10 +68,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "BachelorTherasoftAngular:build:production"
+              "buildTarget": "Taskify:build:production"
             },
             "development": {
-              "buildTarget": "BachelorTherasoftAngular:build:development"
+              "buildTarget": "Taskify:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -95,7 +95,8 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "karmaConfig": "karma.conf.js"
           }
         }
       }

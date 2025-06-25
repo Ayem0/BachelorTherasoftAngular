@@ -3,6 +3,7 @@ import {
   provideHttpClient,
   withInterceptors,
 } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import {
   ApplicationConfig,
   importProvidersFrom,
@@ -10,7 +11,7 @@ import {
   provideAppInitializer,
   provideExperimentalZonelessChangeDetection,
 } from '@angular/core';
-import { provideNativeDateAdapter } from '@angular/material/core';
+import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -22,9 +23,27 @@ import { AuthService } from './core/auth/services/auth.service';
 import { ThemeService } from './features/theme/services/theme.service';
 import { LocaleService } from './shared/services/locale/locale.service';
 
-const httpLoaderFactory: (http: HttpClient) => TranslateHttpLoader = (
+export const httpLoaderFactory: (http: HttpClient) => TranslateHttpLoader = (
   http: HttpClient
 ) => new TranslateHttpLoader(http, './i18n/', '.json');
+
+export const DEFAULT_PROVIDERS = [
+  provideExperimentalZonelessChangeDetection(),
+  provideRouter(routes),
+  provideAnimationsAsync(),
+  provideHttpClient(),
+  provideHttpClientTesting(),
+  provideMomentDateAdapter(),
+  importProvidersFrom([
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: httpLoaderFactory,
+        deps: [HttpClient],
+      },
+    }),
+  ]),
+];
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,7 +52,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideNativeDateAdapter(),
+    provideMomentDateAdapter(),
     importProvidersFrom([
       TranslateModule.forRoot({
         loader: {

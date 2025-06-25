@@ -1,4 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -27,6 +32,7 @@ import { AuthService } from '../../services/auth.service';
   ],
   templateUrl: './initial-login.component.html',
   styleUrl: './initial-login.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InitialLoginComponent {
   private readonly authService = inject(AuthService);

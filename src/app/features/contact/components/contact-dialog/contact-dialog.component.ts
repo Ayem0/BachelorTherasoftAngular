@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -29,6 +35,7 @@ import { ContactForm } from '../../models/contact';
   ],
   templateUrl: './contact-dialog.component.html',
   styleUrl: './contact-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContactDialogComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<ContactDialogComponent>);
