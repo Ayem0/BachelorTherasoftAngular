@@ -15,7 +15,7 @@ export interface ParticipantForm {
   dateOfBirth: FormControl<Date | undefined>;
 }
 
-interface ParticipantRelations {
+export interface ParticipantRelations {
   workspace?: unknown;
   participantCategory?: unknown;
 }

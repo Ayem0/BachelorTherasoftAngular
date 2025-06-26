@@ -2,7 +2,7 @@ import { FormControl } from '@angular/forms';
 import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
 import { Entity, Id } from '../../../shared/models/entity';
 
-interface eventCategoryRelations {
+export interface EventCategoryRelations {
   workspace?: unknown;
 }
 
@@ -13,14 +13,15 @@ type BaseEventCategory = {
   workspaceId: Id;
 } & Entity;
 
-export type EventCategory = BaseEventCategory &
-  FilterRelations<eventCategoryRelations>;
+export type EventCategory<R extends EventCategoryRelations = {}> =
+  BaseEventCategory & FilterRelations<R>;
 
 export interface EventCategoryRequest {
   name: string;
   color: string;
   description?: string;
 }
+
 export interface EventCategoryForm {
   name: FormControl<string>;
   color: FormControl<string>;

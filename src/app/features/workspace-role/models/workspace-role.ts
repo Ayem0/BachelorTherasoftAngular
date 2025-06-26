@@ -3,7 +3,7 @@ import { FilterRelations } from '../../../shared/helpers/filter-relations.helper
 import { Entity, Id } from '../../../shared/models/entity';
 import { Workspace } from '../../workspace/models/workspace';
 
-interface WorkspaceRoleRelations {
+export interface WorkspaceRoleRelations {
   workspace?: Workspace;
 }
 

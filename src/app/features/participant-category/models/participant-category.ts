@@ -14,7 +14,7 @@ export interface ParticipantCategoryForm {
   description: FormControl<string | undefined>;
 }
 
-interface ParticipantCategoryRelations {
+export interface ParticipantCategoryRelations {
   workspace?: unknown;
 }
 

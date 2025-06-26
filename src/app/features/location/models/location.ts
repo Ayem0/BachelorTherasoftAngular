@@ -2,7 +2,7 @@ import { FormControl } from '@angular/forms';
 import { FilterRelations } from '../../../shared/helpers/filter-relations.helper';
 import { Entity } from '../../../shared/models/entity';
 
-interface LocationRelations {
+export interface LocationRelations {
   workspace?: unknown;
   events?: unknown;
   area?: unknown;

@@ -7,7 +7,7 @@ export type BaseMember = {
   workspaceId: Id;
 } & Entity;
 
-interface MemberRelations {
+export interface MemberRelations {
   workspace?: unknown;
   workspaceRoles?: unknown;
 }
